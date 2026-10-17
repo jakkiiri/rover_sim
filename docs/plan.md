@@ -85,7 +85,7 @@ from the table above.
 - [x] B2 suspension + `docs/suspension.md`
 - [x] B3 mechanical limits: 5/10 cm climb at any speed, 15 cm needs >= 0.8 m/s + 8 N m, 20-40 cm blocked; slopes climb to 20-25°, stall at 30°+; parking hold added
 - [x] B4 plugin: torque-speed model, suspension joints, ground truth, diagnostics, parking hold
-- [ ] B5 final `validate_step_climb` / `validate_slope` runs, `docs/mechanics.md` measured section, commit
+- [x] B5 final `validate_step_climb` / `validate_slope` runs, `docs/mechanics.md` measured section, commit ab88041
 - [ ] D1-D4 LiDAR profiles, IMU, RViz, `validate_lidar3d`, `docs/lidar.md`, commit
-- [ ] C1-C8 controller rewrite, odometry, teleop, tests (268 unit tests green), `validate_controller` running, `docs/controller.md` drafted, commit
+- [x] C1-C8 controller rewrite, odometry, teleop, 274 unit tests, `validate_controller` 7/7, hardening 10/10, teleop 10/10, shutdown 2/2, `docs/controller.md`, commit
 - [ ] E1-E3 launch, `validate_traverse`, README, reports, clean-checkout build, final commit

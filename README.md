@@ -40,7 +40,7 @@ colcon test-result --verbose
 
 The build runs `scripts/generate_terrain.py` for the default seed and
 installs the heightmap DEM, textures, rock meshes and worlds under
-`share/rover_sim/generated/`. UNIT_TEST_COUNT
+`share/rover_sim/generated/`. The unit suite has **274 pytest tests** (158 controller, 36 kinematics/odometry, 35 teleop, 20 LiDAR/IMU/RViz, 19 terrain); `colcon test` reports them plus five CTest wrappers.
 
 ## Run
 
@@ -127,4 +127,26 @@ reports describe the prototype this overhaul replaced.
 
 ## Limitations
 
-LIMITATIONS
+- **Rigid terrain.** ODE cannot model deformable regolith: no sinkage,
+  bulldozing or slip-sinkage; traction is a Coulomb friction cone with one μ.
+- **Step climbing depends on momentum.** With rigid 0.20 m wheels and
+  μ = 0.65 the 15 cm step is climbed only at ≥ 0.8 m/s approach; at 0.5 m/s
+  the quasi-static limit of this four-wheel layout is 10 cm. 20 cm and above
+  are blocked (30 cm never climbs, tunnels or flips). See `docs/mechanics.md`.
+- **Slope limits** come from per-axle load transfer and friction: 25° is
+  climbed at reduced speed, 30° stalls (does not slide) because
+  tan 30° < μ. On Earth gravity the same motors manage far less.
+- **Rock coverage** is far below real landing sites (performance budget);
+  rocks under 10 cm have no collision; texture blending is height-only.
+- **LiDAR realism** stops at range noise, dropout, ring/time fields and an
+  intensity model: no dust, multipath, beam divergence or motion distortion
+  within a sweep.
+- **Wheel-only stall sensing is impossible when all wheels spin**; the
+  IMU-fused discrepancy detects impacts but decays (10 s), so a very long
+  stall is kept flagged only through the traction-control state.
+- **Single command source**: no `/cmd_vel` multiplexer; teleop key release
+  is inferred by a 0.7 s deadman.
+- **GPU LiDAR** needs an OpenGL context; on this machine (Intel iGPU) the
+  CPU sensor is the default.
+- **Wall-clock watchdogs** can trip under heavy host load or suspend
+  (documented since the prototype); the actuator watchdog is 0.3 s.

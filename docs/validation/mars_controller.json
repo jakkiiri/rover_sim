@@ -1,0 +1,73 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "case": "circle_path",
+      "passed": true,
+      "radius": 1.0,
+      "cross_track_rms": 0.00184222682866473,
+      "cross_track_max": 0.003106220708520846,
+      "laps": 1,
+      "samples": 630
+    },
+    {
+      "case": "figure_eight_path",
+      "passed": true,
+      "loop_a": {
+        "rms": 0.0017826667440332634,
+        "max": 0.0030236131232312946
+      },
+      "loop_b": {
+        "rms": 0.0006975252070699517,
+        "max": 0.0014503748868979205
+      }
+    },
+    {
+      "case": "odometry_drift",
+      "passed": true,
+      "segment": "figure_eight",
+      "distance_travelled": 14.123951407744515,
+      "position_error_m": 0.01875272679222649,
+      "drift_percent": 0.13277252413898777,
+      "yaw_error_deg": 0.2434852149517667
+    },
+    {
+      "case": "drive_modes",
+      "passed": true,
+      "crab_body_displacement": [
+        0.010333955179863375,
+        1.047247427153771
+      ],
+      "point_turn_yaw_change": null,
+      "point_turn_ok": true,
+      "ackermann_ignores_lateral": true
+    },
+    {
+      "case": "stall_diagnostic",
+      "passed": true,
+      "diagnostics_received": 30,
+      "stall_warnings": 0,
+      "slip_warnings": 9,
+      "first_warning_after_s": 1.3852755569987494
+    },
+    {
+      "case": "command_timeout_stops_rover",
+      "passed": true,
+      "speed_before": 0.49274295522273404,
+      "stop_after_s": 0.8999999999999915
+    },
+    {
+      "case": "reset_handshake",
+      "passed": true,
+      "epoch_before": 9551178350571,
+      "epoch_after": 9551178350572,
+      "speed_after_fresh_command": 0.3124332411156386,
+      "resume_after_s": 0.5
+    }
+  ],
+  "launch_args": [
+    "gui:=false",
+    "lidar:=false",
+    "world:=flat"
+  ]
+}

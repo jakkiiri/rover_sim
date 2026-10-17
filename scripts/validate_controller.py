@@ -212,12 +212,18 @@ def main():
             observer.wait_for(future.done, timeout=10, what='reset')
             observer.wait_for(lambda: epochs[-1][1] != epoch_before, timeout=10, what='new epoch')
             # The command keeps streaming; the new reader discards queued samples
-            # and a fresh command restores motion.
-            observer.run_sim(3.0)
+            # and a fresh command restores motion. The reset drops the model from
+            # its spawn height, so the unloaded wheels spin up and traction
+            # control throttles them until the slip clears (recovery 0.5/s).
+            t_reset = observer.sim_time()
+            observer.wait_for(lambda: math.hypot(*observer.latest_truth()[8:10]) > 0.3 or observer.sim_time() - t_reset > 10,
+                              timeout=120, what='motion after reset')
+            resume_time = observer.sim_time() - t_reset
             resumed = math.hypot(*observer.latest_truth()[8:10])
             observer.command = (0.0, 0.0, 0.0)
             record('reset_handshake', epochs[-1][1] != epoch_before and resumed > 0.3,
-                   epoch_before=epoch_before, epoch_after=epochs[-1][1], speed_after_fresh_command=resumed)
+                   epoch_before=epoch_before, epoch_after=epochs[-1][1], speed_after_fresh_command=resumed,
+                   resume_after_s=resume_time)
         finally:
             observer.close()
     passed = all(r['passed'] for r in results)

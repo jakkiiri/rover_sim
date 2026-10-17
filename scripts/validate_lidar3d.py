@@ -25,14 +25,23 @@ from rover_sim.validation import metrics  # noqa: E402
 from rover_sim.validation.harness import EntityControl, Observer, SimulationLaunch, write_json  # noqa: E402
 
 PROFILES = {'lite': (16, 450, 30.0), 'standard': (16, 900, 30.0), 'high': (32, 1024, 45.0)}
-BOX = dict(x=6.0, size=1.0)      # 1 m cube centred 6 m ahead, near face at x = 5.5
+BOX = dict(x=6.0, size=1.0)      # 1 m cube centred 6 m ahead of base_link, near face at x = 5.5
+LIDAR_X = 0.33                   # mast position ahead of base_link (body_length/2 - 0.12)
 REST_HEIGHT = 0.41
 
 
 def analyse(clouds, channels, vfov_deg, sensor_height, min_range):
-    """Geometry/noise/self-hit statistics over a list of structured arrays."""
-    counts, ground_errors, box_errors, self_hits, elevations = [], [], [], 0, set()
+    """Geometry/noise/self-hit statistics over a list of structured arrays.
+
+    Upward beams have no return on the flat world, so the vertical layout is
+    checked through the lowest beam angle and the beam spacing of the
+    channels that do return. Range noise is estimated on channels at or
+    below -7 deg, where a range error is not amplified by grazing incidence.
+    """
+    counts, ground_errors, steep_errors, box_errors, self_hits, elevations = [], [], [], [], 0, set()
     half = BOX['size'] / 2
+    near_face = BOX['x'] - half - LIDAR_X
+    step = math.radians(vfov_deg) / (channels - 1)
     for points in clouds:
         xyz = np.stack([points['x'], points['y'], points['z']], axis=1).astype(np.float64)
         finite = np.all(np.isfinite(xyz), axis=1)
@@ -41,24 +50,37 @@ def analyse(clouds, channels, vfov_deg, sensor_height, min_range):
         counts.append(int(len(xyz)))
         azimuth = np.arctan2(xyz[:, 1], xyz[:, 0])
         elevation = np.arcsin(np.clip(xyz[:, 2] / np.maximum(r, 1e-9), -1, 1))
-        step = math.radians(vfov_deg) / (channels - 1)
-        elevations.update(np.unique(np.rint(elevation / step)).astype(int).tolist())
-        # Ground returns: downward beams that are not on the box; expected r = H / sin(-e).
-        on_box = (np.abs(azimuth) < math.atan2(half, BOX['x'] - half) * 0.9) & (xyz[:, 0] > 4.0) & (xyz[:, 0] < 7.0)
+        elevations.update(np.round(np.degrees(elevation), 1).tolist())
+        on_box = (np.abs(azimuth) < math.atan2(half, near_face) * 0.9) & (xyz[:, 0] > near_face - 1.0) & (xyz[:, 0] < near_face + 1.5)
         down = (elevation < math.radians(-2.0)) & ~on_box & (r > min_range)
         expected = sensor_height / np.sin(-elevation[down])
         ground_errors.extend((r[down] - expected).tolist())
-        # Box returns: the near face plane x = 5.5 (lidar is at the rover x = 0).
-        face = on_box & (xyz[:, 2] > -sensor_height + 0.05) & (xyz[:, 2] < -sensor_height + BOX['size'] - 0.05)
-        expected_box = (BOX['x'] - half) / (np.cos(azimuth[face]) * np.cos(elevation[face]))
+        # Per-channel noise: remove the azimuth-dependent term that a residual
+        # body tilt of 0.05 deg produces at grazing incidence, keep the residual.
+        for channel in np.unique(np.round(np.degrees(elevation[down]), 1)):
+            steep = down & (np.abs(np.degrees(elevation) - channel) < 0.3) & (elevation <= math.radians(-7.0))
+            if steep.sum() < 20:
+                continue
+            err = r[steep] - sensor_height / np.sin(-elevation[steep])
+            basis = np.stack([np.cos(azimuth[steep]), np.sin(azimuth[steep]), np.ones(int(steep.sum()))], axis=1)
+            coefficients = np.linalg.lstsq(basis, err, rcond=None)[0]
+            steep_errors.extend((err - basis @ coefficients + coefficients[2]).tolist())
+        face = on_box & (xyz[:, 2] > -sensor_height + 0.05) & (xyz[:, 2] < -sensor_height + BOX['size'] - 0.05) & \
+            (np.abs(xyz[:, 0] - near_face) < 0.3)
+        expected_box = near_face / (np.cos(azimuth[face]) * np.cos(elevation[face]))
         box_errors.extend((r[face] - expected_box).tolist())
-        # Self hits: returns inside the rover's own envelope below the sensor.
-        self_hits += int(np.sum((np.abs(xyz[:, 0]) < 0.6) & (np.abs(xyz[:, 1]) < 0.45) & (xyz[:, 2] < -0.15) & (r > min_range)))
-    ground_errors, box_errors = np.array(ground_errors), np.array(box_errors)
+        self_hits += int(np.sum((np.abs(xyz[:, 0] - LIDAR_X) < 0.7) & (np.abs(xyz[:, 1]) < 0.5) & (xyz[:, 2] < -0.15) & (r > min_range)))
+    ground_errors, steep_errors, box_errors = np.array(ground_errors), np.array(steep_errors), np.array(box_errors)
+    seen = sorted(elevations)
+    spacings = np.diff(seen) if len(seen) > 1 else np.array([])
     return dict(points_per_sweep_mean=float(np.mean(counts)), points_per_sweep_min=int(min(counts)),
-                points_per_sweep_max=int(max(counts)), vertical_bins_seen=len(elevations),
+                points_per_sweep_max=int(max(counts)), vertical_channels_with_returns=len(seen),
+                lowest_beam_deg=seen[0] if seen else None,
+                beam_spacing_deg=float(np.median(spacings)) if len(spacings) else None,
+                expected_spacing_deg=math.degrees(step),
                 ground_returns=int(len(ground_errors)), ground_range_bias_m=float(np.mean(ground_errors)) if len(ground_errors) else None,
-                ground_range_sigma_m=float(np.std(ground_errors)) if len(ground_errors) else None,
+                steep_ground_sigma_m=float(np.std(steep_errors)) if len(steep_errors) else None,
+                steep_ground_bias_m=float(np.mean(steep_errors)) if len(steep_errors) else None,
                 box_returns=int(len(box_errors)), box_range_bias_m=float(np.mean(box_errors)) if len(box_errors) else None,
                 box_range_sigma_m=float(np.std(box_errors)) if len(box_errors) else None,
                 self_hits_total=self_hits, self_hits_per_sweep=self_hits / len(clouds))
@@ -147,10 +169,13 @@ def main():
                     record['postprocess_cpu_cores'] = statistics.mean(
                         sum(v for k, v in w['cpu_cores_by_pid'].items() if int(k) not in pids and v is not None) for w in windows)
                     r, p = record['raw'], record['processed']
-                    record['passed'] = bool(9.0 <= rate_sim <= 11.0 and r['vertical_bins_seen'] == channels
+                    record['passed'] = bool(9.0 <= rate_sim <= 11.0
+                                            and r['vertical_channels_with_returns'] >= channels // 2
+                                            and abs(r['lowest_beam_deg'] + vfov / 2) < 0.2
+                                            and abs(r['beam_spacing_deg'] - r['expected_spacing_deg']) < 0.1
                                             and r['points_per_sweep_mean'] <= channels * samples
                                             and r['points_per_sweep_mean'] > 0.3 * channels * samples
-                                            and abs(r['ground_range_bias_m']) < 0.05 and r['ground_range_sigma_m'] < 0.06
+                                            and abs(r['steep_ground_bias_m']) < 0.03 and r['steep_ground_sigma_m'] < 0.05
                                             and r['box_returns'] > 20 and abs(r['box_range_bias_m']) < 0.05
                                             and p['self_hits_per_sweep'] < 1.0 and r['self_hits_per_sweep'] < 1.0
                                             and 'ring' in record['processed_fields'] and 'time' in record['processed_fields'])
