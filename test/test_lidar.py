@@ -228,3 +228,38 @@ def test_rviz_shows_tf_robot_and_odometry(rviz):
     assert {d['Topic']['Value'] for d in odom} == {'/odom', '/ground_truth/odom'}
     model = next(d for d in rviz['Displays'] if d.get('Class') == 'rviz_default_plugins/RobotModel')
     assert model['Description Topic']['Durability Policy'] == 'Transient Local'
+
+
+def test_gpu_vertical_label_shift_is_corrected():
+    """Points labelled one beam too low are re-projected one step up and the top label dropped."""
+    channels, vfov = 16, math.radians(30.0)
+    step = vfov / (channels - 1)
+    H = 1.2
+    rows = []
+    for k in range(channels + 1):                     # sensor configured with one extra beam below
+        label = -vfov / 2 - step + k * step
+        true_elev = label + step
+        if true_elev >= -1e-9:
+            continue                                  # upward beams: no ground return
+        r = H / math.sin(-true_elev)                  # the range belongs to the true beam
+        for az in np.linspace(-math.pi, math.pi, 90, endpoint=False):
+            rows.append((r * math.cos(label) * math.cos(az), r * math.cos(label) * math.sin(az), r * math.sin(label)))
+    points = np.zeros(len(rows), dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
+    points['x'], points['y'], points['z'] = zip(*rows)
+    xyz, _, ring, _ = process_cloud(points, np.random.default_rng(0), channels, vfov, 10.0, 0.0, 0.0, 0.0, 0.0,
+                                    0.5, 100.0, vertical_shift_steps=1.0)
+    r = np.linalg.norm(xyz, axis=1)
+    elevation = np.arcsin(xyz[:, 2] / r)
+    assert np.allclose(r * np.sin(-elevation), H, atol=1e-4)      # every corrected point lies on the ground plane
+    assert elevation.min() == pytest.approx(-vfov / 2, abs=1e-6)  # the lowest beam is back at -15 deg
+    assert ring.min() == 0 and ring.max() == 7           # beams -15 .. -1 deg
+
+
+def test_gpu_variant_requests_one_extra_beam_below():
+    sensor = sensor_of(expand(lidar_gpu='true'))
+    vertical = sensor.find('ray/scan/vertical')
+    assert int(vertical.findtext('samples')) == 17
+    assert math.degrees(float(vertical.findtext('min_angle'))) == pytest.approx(-17.0)
+    assert math.degrees(float(vertical.findtext('max_angle'))) == pytest.approx(15.0)
+    cpu = sensor_of(expand(lidar_gpu='false')).find('ray/scan/vertical')
+    assert int(cpu.findtext('samples')) == 16 and math.degrees(float(cpu.findtext('min_angle'))) == pytest.approx(-15.0)

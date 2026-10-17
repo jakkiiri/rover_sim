@@ -18,10 +18,29 @@ is used.
 | `standard` | 16 | 900 | ±15° | 144 000 |
 | `high` | 32 | 1024 | ±22.5° | 327 680 |
 
-`lidar_gpu:=auto|true|false` selects `gpu_ray`; `auto` picks the GPU sensor
-only when a display is available, the Gazebo client is open and
-`lidar_prefer_gpu:=true`, because the CPU sensor is the safe default on this
-Intel-iGPU machine (measured costs below).
+`lidar_gpu:=auto|true|false` selects `gpu_ray`. Two measured facts decide
+the default (details and numbers under **Measured cost per profile**):
+
+1. **The CPU `ray` sensor hangs gzserver on the heightmap world.** With
+   `world:=mars` the simulation clock never advances once a ray sensor is
+   present, even with a single 450-sample channel, low rock density or a
+   30 m range; gzserver ignores SIGINT and has to be killed. This is the ODE
+   ray-vs-heightfield collider, not the rock meshes. The CPU sensor is exact
+   and cheap on the flat and test worlds.
+2. **`gpu_ray` + `gazebo_ros_ray_sensor` labels every point one vertical
+   beam step too low** (measured 0.99–1.00 steps on 16- and 32-channel
+   configurations): the point labelled −15° carries the range of the −13°
+   beam, so the raw ground looks 0.7–45 m too far. The GPU variant therefore
+   requests one extra beam below the field of view and `lidar_postprocess`
+   (`vertical_shift_steps: 1.0`) re-projects each point one step up and drops
+   the top label, which restores the nominal −15°…+15° layout exactly. The
+   raw `/points_raw` topic keeps the uncorrected labels for comparison.
+
+`auto` therefore picks `gpu_ray` on `world:=mars` whenever a display is
+available (gzserver needs an OpenGL context even headless; Xwayland's `:0`
+works on this machine), disables the LiDAR with a warning on the Mars world
+without a display, and uses the CPU sensor elsewhere unless
+`lidar_prefer_gpu:=true`.
 
 The `-15°` beam reaches the ground at `d = h / tan 15° = 1.18 / 0.268 ≈
 4.4 m`; the mast height keeps the deck, e-box and wheels out of the field of

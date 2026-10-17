@@ -1,0 +1,23 @@
+{"profile": "lite", "gpu": "true", "channels": 16, "samples": 450, "vertical_fov_deg": 30.0, "sensor_height_m": 1.1772225862340269, "ground_hit_distance_at_min_elevation_m": 4.393454503643023, "publish_rate_sim_hz": 10.005265929436543, "raw_fields": ["x", "y", "z", "intensity"], "processed_fields": ["x", "y", "z", "intensity", "ring", "time"], "frame_id": "lidar_link", "raw": {"points_per_sweep_mean": 3600.0, "points_per_sweep_min": 3600, "points_per_sweep_max": 3600, "vertical_channels_with_returns": 8, "lowest_beam_deg": -17.0, "beam_spacing_deg": 2.0, "expected_spacing_deg": 2.0, "ground_returns": 68160, "ground_range_bias_m": 7.944743011602784, "steep_ground_sigma_m": 1.1440676498309867, "steep_ground_bias_m": 1.5823427487408537, "box_returns": 960, "box_range_bias_m": -0.02161464535293045, "box_range_sigma_m": 0.021446010666134267, "self_hits_total": 0, "self_hits_per_sweep": 0.0}, "processed": {"points_per_sweep_mean": 3402.1, "points_per_sweep_min": 3381, "points_per_sweep_max": 3426, "vertical_channels_with_returns": 8, "lowest_beam_deg": -15.0, "beam_spacing_deg": 2.0, "expected_spacing_deg": 2.0, "ground_returns": 57239, "ground_range_bias_m": -0.0024310043341509236, "steep_ground_sigma_m": 0.029257329451602348, "steep_ground_bias_m": 0.0018476667012551121, "box_returns": 1165, "box_range_bias_m": 0.0004088033665795779, "box_range_sigma_m": 0.02313520392688846, "self_hits_total": 0, "self_hits_per_sweep": 0.0}, "median_real_time_factor": 0.9990572282195012, "gzserver_cpu_cores": 0.4255839584042541, "postprocess_cpu_cores": 0.23626903226022838, "passed": true}
+{"profile": "standard", "gpu": "true", "channels": 16, "samples": 900, "vertical_fov_deg": 30.0, "sensor_height_m": 1.1772224806145304, "ground_hit_distance_at_min_elevation_m": 4.393454109465695, "publish_rate_sim_hz": 9.999999999999998, "raw_fields": ["x", "y", "z", "intensity"], "processed_fields": ["x", "y", "z", "intensity", "ring", "time"], "frame_id": "lidar_link", "raw": {"points_per_sweep_mean": 7200.0, "points_per_sweep_min": 7200, "points_per_sweep_max": 7200, "vertical_channels_with_returns": 8, "lowest_beam_deg": -17.0, "beam_spacing_deg": 2.0, "expected_spacing_deg": 2.0, "ground_returns": 136000, "ground_range_bias_m": 7.939711502429346, "steep_ground_sigma_m": 1.143921533593357, "steep_ground_bias_m": 1.5822003622293097, "box_returns": 1920, "box_range_bias_m": -0.02195927272960049, "box_range_sigma_m": 0.02145106829105272, "self_hits_total": 0, "self_hits_per_sweep": 0.0}, "processed": {"points_per_sweep_mean": 6811.0, "points_per_sweep_min": 6774, "points_per_sweep_max": 6856, "vertical_channels_with_returns": 8, "lowest_beam_deg": -15.0, "beam_spacing_deg": 2.0, "expected_spacing_deg": 2.0, "ground_returns": 114330, "ground_range_bias_m": -0.0021316240337008094, "steep_ground_sigma_m": 0.029406112037566417, "steep_ground_bias_m": 0.00173860770230813, "box_returns": 2305, "box_range_bias_m": 0.00037446097275284915, "box_range_sigma_m": 0.023315558494950546, "self_hits_total": 0, "self_hits_per_sweep": 0.0}, "median_real_time_factor": 0.9985309923872887, "gzserver_cpu_cores": 0.686821284629046, "postprocess_cpu_cores": 0.43107392710699577, "passed": true}
+Traceback (most recent call last):
+  File "/home/jakkii/rover_ws/src/rover_sim/scripts/validate_lidar3d.py", line 126, in main
+    observer.wait_for(lambda: observer.latest_truth() is not None, timeout=150, what='rover', launch=launch)
+  File "/home/jakkii/rover_ws/src/rover_sim/rover_sim/validation/harness.py", line 185, in wait_for
+    raise RuntimeError('observer failed: ' + self.errors[-1])
+RuntimeError: observer failed: ExternalShutdownException()
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/jakkii/rover_ws/src/rover_sim/scripts/validate_lidar3d.py", line 201, in <module>
+    raise SystemExit(main())
+  File "/home/jakkii/rover_ws/src/rover_sim/scripts/validate_lidar3d.py", line 189, in main
+    observer.close()
+  File "/home/jakkii/rover_ws/src/rover_sim/rover_sim/validation/harness.py", line 221, in close
+    self._publish()
+  File "/home/jakkii/rover_ws/src/rover_sim/rover_sim/validation/harness.py", line 166, in _publish
+    self.publisher.publish(msg)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/publisher.py", line 70, in publish
+    self.__publisher.publish(msg)
+rclpy._rclpy_pybind11.RCLError: Failed to publish: publisher's context is invalid, at ./src/rcl/publisher.c:389

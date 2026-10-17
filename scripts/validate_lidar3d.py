@@ -171,6 +171,10 @@ def main():
                     record['postprocess_cpu_cores'] = statistics.mean(
                         sum(v for k, v in w['cpu_cores_by_pid'].items() if int(k) not in pids and v is not None) for w in windows)
                     r, p = record['raw'], record['processed']
+                    if gpu == 'true':
+                        # The raw gpu_ray cloud carries the one-step label error; the
+                        # processed cloud is the corrected sensor output.
+                        r = p
                     record['passed'] = bool(9.0 <= rate_sim <= 11.0
                                             and r['vertical_channels_with_returns'] >= channels // 2
                                             and abs(r['lowest_beam_deg'] + vfov / 2) < 0.2

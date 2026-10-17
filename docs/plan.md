@@ -89,3 +89,39 @@ from the table above.
 - [x] D1-D4 LiDAR profiles, IMU, RViz, `validate_lidar3d` 3/3 (CPU), gpu_ray measured and rejected, `docs/lidar.md`, commit
 - [x] C1-C8 controller rewrite, odometry, teleop, 274 unit tests, `validate_controller` 7/7, hardening 10/10, teleop 10/10, shutdown 2/2, `docs/controller.md`, commit
 - [ ] E1-E3 launch, `validate_traverse`, README, reports, clean-checkout build, final commit
+
+
+## Paused 2026-10-17 — resume here
+
+State: Phases A–D committed; Phase E in progress on `feat/mars-overhaul`.
+Uncommitted-at-pause work is committed as "Phase E (WIP)". All simulations
+were stopped cleanly; nothing is running.
+
+What was found right before the pause (see `docs/lidar.md`):
+- the CPU `ray` sensor hangs gzserver on the heightmap world (all variants);
+- `gpu_ray` works headless with `DISPLAY=:0` but mislabels points one beam
+  step low; the correction (`vertical_shift_steps: 1.0`) is implemented and
+  unit-tested; launch `auto` now picks `gpu_ray` on `world:=mars`.
+- GPU LiDAR validation with the correction had completed `lite` and
+  `standard` on the flat world (both passed geometrically; see
+  `docs/validation/partial/lidar_gpu_corrected_partial.out`); `high` and the
+  traverse had not finished.
+
+Next steps, in order (each command launches its own isolated headless sim):
+1. `cd ~/rover_ws && source /opt/ros/humble/setup.bash && colcon build --packages-select rover_sim && source install/setup.bash`
+2. `ros2 run rover_sim validate_lidar3d.py --output /tmp/lidar_gpu.json --profiles lite standard high --gpu true`
+   → copy to `docs/validation/mars_lidar_gpu.json`, update the GPU rows/table in `docs/lidar.md`
+   and `docs/validation/mars_lidar.md` (the current text still describes the uncorrected GPU result).
+3. `ros2 run rover_sim validate_traverse.py --output /tmp/traverse.json --snapshots /tmp/snap`
+   (uses `world:=mars`, `lidar_gpu:=auto` → GPU lite) → `docs/validation/mars_traverse.json` + `mars_traverse.md`
+   (success, max tilt, stuck events, RTF, odometry drift, snapshot PNGs). If RTF < 0.9 while
+   driving, try `rock_density:=low` and report both.
+4. `ros2 run rover_sim measure_performance.py --launch rover_mars.launch.py --arg world:=mars --arg lidar_profile:=standard`
+   and `high` for the Mars-world GPU cost table.
+5. README: replace `RESULTS_TABLE` with the measured table (terrain RTF 0.998, steps, slopes,
+   suspension, LiDAR per profile, odometry drift 0.13 %, traverse); update the launch-arg table
+   (`lidar_gpu auto` semantics, `lidar_channels/samples/vfov_deg/max_range`).
+6. Clean-checkout reproduction: `git clone` into a scratch workspace, `colcon build`, `colcon test`,
+   one headless smoke run (`ros2 launch rover_sim rover_mars.launch.py gui:=false`), record in `docs/validation/`.
+7. Final commit; write the short report (per-phase changes, measured table, test counts
+   274→276 unit tests, commands, unmet targets: 15 cm step needs ≥ 0.8 m/s; CPU LiDAR unusable on terrain).

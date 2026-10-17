@@ -38,8 +38,14 @@ def cloud_to_array(msg):
 
 
 def process_cloud(points, rng, channels, vertical_fov, rate, sigma0, sigma_per_metre, p0, p_per_metre,
-                  min_range, max_range):
-    """Pure function: returns (xyz, intensity, ring, time) arrays of kept points."""
+                  min_range, max_range, vertical_shift_steps=0.0):
+    """Pure function: returns (xyz, intensity, ring, time) arrays of kept points.
+
+    ``vertical_shift_steps`` re-labels the elevation of every point by that
+    many beam steps (the Gazebo ``gpu_ray`` + gazebo_ros_ray_sensor
+    combination reports each beam one step too low); points whose corrected
+    elevation lies above the top beam are dropped.
+    """
     xyz = np.stack([points['x'], points['y'], points['z']], axis=1).astype(np.float64)
     finite = np.all(np.isfinite(xyz), axis=1)
     xyz = xyz[finite]
@@ -53,6 +59,14 @@ def process_cloud(points, rng, channels, vertical_fov, rate, sigma0, sigma_per_m
     azimuth = np.arctan2(xyz[:, 1], xyz[:, 0])
     elevation = np.arcsin(np.clip(xyz[:, 2] / np.maximum(r, 1e-9), -1, 1))
     step = vertical_fov / max(channels - 1, 1)
+    if vertical_shift_steps:
+        elevation = elevation + vertical_shift_steps * step
+        inside = elevation <= vertical_fov / 2 + 0.25 * step
+        xyz, r, azimuth, elevation = xyz[inside], r[inside], azimuth[inside], elevation[inside]
+        if intensity is not None:
+            intensity = intensity[inside]
+        xyz = np.stack([r * np.cos(elevation) * np.cos(azimuth), r * np.cos(elevation) * np.sin(azimuth),
+                        r * np.sin(elevation)], axis=1)
     ring = np.clip(np.rint((elevation + vertical_fov / 2) / step), 0, channels - 1).astype(np.uint16)
     # Dropout and range-dependent noise.
     p_drop = np.clip(p0 + p_per_metre * r, 0.0, 0.95)
@@ -118,7 +132,8 @@ class LidarPostprocess(Node):
         p = {name: self.declare_parameter(name, value).value for name, value in dict(
             input_topic='/points_raw', output_topic='/points', channels=16, vertical_fov_deg=30.0, rate=10.0,
             sigma0=0.01, sigma_per_metre=0.0003, dropout_base=0.02, dropout_per_metre=0.002,
-            min_range=0.5, max_range=100.0, seed=1, publish_scan=False, scan_samples=720).items()}
+            min_range=0.5, max_range=100.0, seed=1, publish_scan=False, scan_samples=720,
+            vertical_shift_steps=0.0).items()}
         for key in ('channels', 'scan_samples'):
             if p[key] <= 0:
                 raise ValueError(f'{key} must be positive')
@@ -128,6 +143,8 @@ class LidarPostprocess(Node):
         for key in ('sigma0', 'sigma_per_metre', 'dropout_base', 'dropout_per_metre', 'min_range'):
             if not math.isfinite(p[key]) or p[key] < 0:
                 raise ValueError(f'{key} must be finite and nonnegative')
+        if not math.isfinite(p['vertical_shift_steps']) or abs(p['vertical_shift_steps']) > 2:
+            raise ValueError('vertical_shift_steps must be finite and within [-2, 2]')
         self.p = p
         self.rng = np.random.default_rng(int(p['seed']))
         self.scan_ring = int(round((p['channels'] - 1) / 2.0))
@@ -143,7 +160,8 @@ class LidarPostprocess(Node):
         points = cloud_to_array(msg)
         xyz, intensity, ring, time = process_cloud(
             points, self.rng, int(p['channels']), math.radians(p['vertical_fov_deg']), p['rate'], p['sigma0'],
-            p['sigma_per_metre'], p['dropout_base'], p['dropout_per_metre'], p['min_range'], p['max_range'])
+            p['sigma_per_metre'], p['dropout_base'], p['dropout_per_metre'], p['min_range'], p['max_range'],
+            float(p['vertical_shift_steps']))
         self.publisher.publish(make_cloud(msg.header, xyz, intensity, ring, time))
         if self.scan_publisher is not None:
             self.scan_publisher.publish(make_scan(msg.header, xyz, ring, self.scan_ring, int(p['scan_samples']),

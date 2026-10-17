@@ -8,6 +8,10 @@
   <xacro:arg name="enable_lidar" default="true"/>
   <xacro:arg name="lidar_profile" default="lite"/>
   <xacro:arg name="lidar_gpu" default="false"/>
+  <xacro:arg name="lidar_channels" default=""/>
+  <xacro:arg name="lidar_samples" default=""/>
+  <xacro:arg name="lidar_vfov_deg" default=""/>
+  <xacro:arg name="lidar_max_range" default="100.0"/>
   <xacro:arg name="mast_height" default="0.60"/>
   <xacro:arg name="wheel_collision" default="sphere"/>
   <xacro:arg name="wheel_stall_torque" default="8.0"/>
@@ -125,7 +129,8 @@
   <xacro:rover_imu parent="base_link"/>
   <xacro:if value="$(arg enable_lidar)">
     <xacro:rover_lidar3d parent="base_link" xyz="${mast_x} 0 ${body_height/2+0.02+mast_height+0.04}"
-                         profile="$(arg lidar_profile)" gpu="$(arg lidar_gpu)"/>
+                         profile="$(arg lidar_profile)" gpu="$(arg lidar_gpu)" channels="$(arg lidar_channels)"
+                         samples="$(arg lidar_samples)" vfov_deg="$(arg lidar_vfov_deg)" max_range="$(arg lidar_max_range)"/>
   </xacro:if>
 
   <xacro:if value="$(arg enable_control)">

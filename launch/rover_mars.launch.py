@@ -92,6 +92,7 @@ def setup(context):
         'world', 'seed', 'rock_density', 'gravity', 'shadows', 'gui', 'rviz', 'lidar', 'lidar_profile',
         'lidar_gpu', 'scan_2d', 'drive_mode', 'actuator_watchdog', 'terrain_dir', 'regenerate',
         'resolution', 'x', 'y', 'z', 'roll', 'pitch', 'yaw', 'wheel_collision', 'wheel_stall_torque', 'lidar_prefer_gpu',
+        'lidar_channels', 'lidar_samples', 'lidar_vfov_deg', 'lidar_max_range',
         'wheel_no_load_speed', 'wheel_mu', 'mast_height', 'ground_truth_tf', 'robot', 'suspension_mode',
         'strut_inertia_size')}
     if cfg['world'] not in WORLDS:
@@ -121,12 +122,31 @@ def setup(context):
     if lidar_profile not in ('lite', 'standard', 'high'):
         raise ValueError('lidar_profile must be lite, standard or high')
     lidar_gpu = cfg['lidar_gpu'].lower()
+    lidar_enabled = _truthy(cfg['lidar'])
+    heightmap_world = cfg['world'] == 'mars'
     if lidar_gpu == 'auto':
-        # gpu_ray needs an OpenGL context; measured on this machine the CPU
-        # sensor is the safe default, so auto only picks the GPU when a
-        # display exists and the GUI is open (docs/lidar.md).
-        lidar_gpu = 'true' if os.environ.get('DISPLAY') and _truthy(cfg['gui']) and _truthy(cfg['lidar_prefer_gpu']) else 'false'
+        # The CPU ray sensor hangs gzserver on the heightmap world (measured,
+        # docs/lidar.md), so the Mars world needs gpu_ray, which needs an
+        # OpenGL context (a display). Flat/test worlds use the exact CPU sensor
+        # unless lidar_prefer_gpu is set.
+        if heightmap_world:
+            if os.environ.get('DISPLAY'):
+                lidar_gpu = 'true'
+            else:
+                print('[rover_mars.launch] no DISPLAY for gpu_ray and the CPU ray sensor cannot be used on the '
+                      'heightmap world: disabling the LiDAR', flush=True)
+                lidar_enabled = False
+                lidar_gpu = 'false'
+        else:
+            lidar_gpu = 'true' if os.environ.get('DISPLAY') and _truthy(cfg['lidar_prefer_gpu']) else 'false'
+    elif lidar_gpu == 'false' and heightmap_world and lidar_enabled:
+        print('[rover_mars.launch] WARNING: the CPU ray sensor is known to hang on the heightmap world; '
+              'use lidar_gpu:=true or lidar:=false', flush=True)
     channels, vertical_fov = (32, 45.0) if lidar_profile == 'high' else (16, 30.0)
+    if cfg['lidar_channels']:
+        channels = int(cfg['lidar_channels'])
+    if cfg['lidar_vfov_deg']:
+        vertical_fov = float(cfg['lidar_vfov_deg'])
     if cfg['drive_mode'] not in ('ackermann', 'crab', 'point_turn', 'auto'):
         raise ValueError('drive_mode must be ackermann, crab, point_turn or auto')
 
@@ -136,8 +156,10 @@ def setup(context):
 
     description = xacro.process_file(
         os.path.join(share, 'urdf', cfg['robot']),
-        mappings={'actuator_watchdog': str(watchdog), 'enable_lidar': cfg['lidar'],
-                  'lidar_profile': lidar_profile, 'lidar_gpu': lidar_gpu,
+        mappings={'actuator_watchdog': str(watchdog), 'enable_lidar': 'true' if lidar_enabled else 'false',
+                  'lidar_profile': lidar_profile, 'lidar_gpu': lidar_gpu, 'lidar_channels': cfg['lidar_channels'],
+                  'lidar_samples': cfg['lidar_samples'], 'lidar_vfov_deg': cfg['lidar_vfov_deg'],
+                  'lidar_max_range': cfg['lidar_max_range'],
                   'wheel_collision': cfg['wheel_collision'], 'wheel_stall_torque': cfg['wheel_stall_torque'],
                   'wheel_no_load_speed': cfg['wheel_no_load_speed'], 'wheel_mu': cfg['wheel_mu'],
                   'mast_height': cfg['mast_height'], 'ground_truth_tf': cfg['ground_truth_tf'],
@@ -157,7 +179,7 @@ def setup(context):
              parameters=[{'robot_description': description, 'use_sim_time': True}], output='screen'),
         Node(package='gazebo_ros', executable='spawn_entity.py', arguments=spawn_args, output='screen'),
     ]
-    if _truthy(cfg['lidar']):
+    if lidar_enabled:
         scan_from_postprocess = False
         if _truthy(cfg['scan_2d']):
             try:
@@ -172,7 +194,8 @@ def setup(context):
                 scan_from_postprocess = True   # fallback documented in docs/lidar.md
         actions.append(Node(package='rover_sim', executable='lidar_postprocess', name='lidar_postprocess',
                             parameters=[{'use_sim_time': True, 'channels': channels, 'vertical_fov_deg': vertical_fov,
-                                         'publish_scan': scan_from_postprocess, 'seed': seed}], output='screen'))
+                                         'publish_scan': scan_from_postprocess, 'seed': seed,
+                                         'vertical_shift_steps': 1.0 if lidar_gpu == 'true' else 0.0}], output='screen'))
     if _truthy(cfg['gui']):
         actions.append(IncludeLaunchDescription(
             PythonLaunchDescriptionSource(os.path.join(gazebo_launch_dir, 'gzclient.launch.py'))))
@@ -197,6 +220,10 @@ def generate_launch_description():
         DeclareLaunchArgument('lidar_profile', default_value='lite', description='lite|standard|high'),
         DeclareLaunchArgument('lidar_gpu', default_value='auto', description='auto|true|false (gpu_ray needs OpenGL)'),
         DeclareLaunchArgument('lidar_prefer_gpu', default_value='false', description='let auto choose gpu_ray with a display'),
+        DeclareLaunchArgument('lidar_channels', default_value='', description='override the profile channel count'),
+        DeclareLaunchArgument('lidar_samples', default_value='', description='override the profile samples per revolution'),
+        DeclareLaunchArgument('lidar_vfov_deg', default_value='', description='override the vertical field of view (deg)'),
+        DeclareLaunchArgument('lidar_max_range', default_value='100.0', description='sensor maximum range (m)'),
         DeclareLaunchArgument('scan_2d', default_value='false', description='also publish a 2D /scan'),
         DeclareLaunchArgument('drive_mode', default_value='ackermann', description='initial drive mode'),
         DeclareLaunchArgument('actuator_watchdog', default_value='0.3', description='actuator watchdog wall seconds'),

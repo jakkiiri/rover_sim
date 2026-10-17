@@ -10,10 +10,10 @@
      sensor_msgs/PointCloud2 on /points_raw; rover_sim's lidar_postprocess
      node adds ring/time fields, dropout and range-dependent noise on /points. -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="rover_lidar3d" params="parent xyz profile gpu">
-    <xacro:property name="lidar_channels" value="${32 if profile == 'high' else 16}"/>
-    <xacro:property name="lidar_samples" value="${1024 if profile == 'high' else (900 if profile == 'standard' else 450)}"/>
-    <xacro:property name="lidar_vfov" value="${radians(45.0) if profile == 'high' else radians(30.0)}"/>
+  <xacro:macro name="rover_lidar3d" params="parent xyz profile gpu channels:='' samples:='' vfov_deg:='' max_range:=100.0">
+    <xacro:property name="lidar_channels" value="${int(channels) if str(channels) else (32 if profile == 'high' else 16)}"/>
+    <xacro:property name="lidar_samples" value="${int(samples) if str(samples) else (1024 if profile == 'high' else (900 if profile == 'standard' else 450))}"/>
+    <xacro:property name="lidar_vfov" value="${radians(float(vfov_deg)) if str(vfov_deg) else (radians(45.0) if profile == 'high' else radians(30.0))}"/>
     <xacro:property name="lidar_type" value="${'gpu_ray' if str(gpu).lower() in ('true', '1') else 'ray'}"/>
     <link name="lidar_link">
       <inertial>
@@ -49,12 +49,16 @@
               <samples>${lidar_samples}</samples><resolution>1</resolution>
               <min_angle>${-pi}</min_angle><max_angle>${pi}</max_angle>
             </horizontal>
+            <!-- gpu_ray: gazebo_ros_ray_sensor labels every point one vertical
+                 step too low (measured 1.00 steps on 16 and 32 channels), so the
+                 GPU variant requests one extra beam below the FOV and the
+                 post-processor shifts the labels back and drops the top one. -->
             <vertical>
-              <samples>${lidar_channels}</samples><resolution>1</resolution>
-              <min_angle>${-lidar_vfov/2}</min_angle><max_angle>${lidar_vfov/2}</max_angle>
+              <samples>${lidar_channels + (1 if (lidar_type == 'gpu_ray' and lidar_channels > 1) else 0)}</samples><resolution>1</resolution>
+              <min_angle>${(-lidar_vfov/2 - (lidar_vfov/(lidar_channels-1) if lidar_type == 'gpu_ray' else 0.0)) if lidar_channels > 1 else 0.0}</min_angle><max_angle>${lidar_vfov/2 if lidar_channels > 1 else 0.0}</max_angle>
             </vertical>
           </scan>
-          <range><min>0.5</min><max>100.0</max><resolution>0.002</resolution></range>
+          <range><min>0.5</min><max>${max_range}</max><resolution>0.002</resolution></range>
           <noise><type>gaussian</type><mean>0.0</mean><stddev>0.02</stddev></noise>
         </ray>
         <plugin name="lidar3d_ros" filename="libgazebo_ros_ray_sensor.so">
