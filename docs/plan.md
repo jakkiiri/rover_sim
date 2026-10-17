@@ -80,12 +80,12 @@ from the table above.
 - [x] A2 textures, lighting, gravity
 - [x] A3 rock library, scatter, chunked models, density presets
 - [x] A4 test worlds (`step_test`, `slope_test`, `boulder_garden`)
-- [ ] A5 `validate_terrain`, `docs/terrain.md`, commit
+- [x] A5 `validate_terrain` (6/6 pass), `docs/terrain.md`, commit d954acc
 - [x] B1 chassis + swerve modules + wheel collision candidates (strut inertia fix; sphere/multisphere/cylinder stable)
 - [x] B2 suspension + `docs/suspension.md`
-- [ ] B3 mechanical limits calibrated on test worlds
-- [ ] B4 plugin: torque-speed model, suspension joints, ground truth, diagnostics
-- [ ] B5 `validate_step_climb` / `validate_slope` / `validate_suspension`, `docs/mechanics.md`, commit
+- [x] B3 mechanical limits: 5/10 cm climb at any speed, 15 cm needs >= 0.8 m/s + 8 N m, 20-40 cm blocked; slopes climb to 20-25°, stall at 30°+; parking hold added
+- [x] B4 plugin: torque-speed model, suspension joints, ground truth, diagnostics, parking hold
+- [ ] B5 final `validate_step_climb` / `validate_slope` runs, `docs/mechanics.md` measured section, commit
 - [ ] D1-D4 LiDAR profiles, IMU, RViz, `validate_lidar3d`, `docs/lidar.md`, commit
-- [ ] C1-C8 controller rewrite, odometry, teleop, tests, `validate_controller`, `docs/controller.md`, commit
+- [ ] C1-C8 controller rewrite, odometry, teleop, tests (268 unit tests green), `validate_controller` running, `docs/controller.md` drafted, commit
 - [ ] E1-E3 launch, `validate_traverse`, README, reports, clean-checkout build, final commit

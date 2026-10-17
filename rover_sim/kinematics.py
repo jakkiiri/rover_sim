@@ -80,11 +80,9 @@ def modules_from_urdf(xml):
         for element in wheel.findall('collision') + wheel.findall('visual'):
             cylinder = element.find('geometry/cylinder')
             sphere = element.find('geometry/sphere')
-            if cylinder is not None:
-                radius = float(cylinder.get('radius'))
+            if cylinder is not None or sphere is not None:
+                radius = float((cylinder if cylinder is not None else sphere).get('radius'))
                 break
-            if sphere is not None and radius is None:
-                radius = float(sphere.get('radius'))
         if radius is None:
             raise ValueError('Expected a cylindrical or spherical wheel geometry')
         limit, dl = j.find('limit'), d.find('limit')
@@ -138,3 +136,63 @@ def inverse(modules, vx, vy, yaw_rate, previous, max_wheel_speed=None):
         angles.append(angle)
         speeds.append(speed)
     return angles, [s*scale for s in speeds]
+
+
+def forward(modules, angles, wheel_rates):
+    """Least-squares body twist (vx, vy, wz) from measured steering and wheel rates.
+
+    Each module contributes two equations
+    ``rho_i cos(theta_i) = vx - wz*y_i`` and ``rho_i sin(theta_i) = vy + wz*x_i``
+    with ``rho_i = rate_i * drive_sign_i * R_i`` the signed rolling speed.
+    Returns ``(twist, residuals)`` where residuals are per-module speed
+    mismatches (m/s) between the measured rolling velocity and the fitted
+    twist, used for slip detection.
+    """
+    if len(angles) != len(modules) or len(wheel_rates) != len(modules):
+        raise ValueError('One steering angle and one wheel rate required per module')
+    if not all(math.isfinite(v) for v in list(angles) + list(wheel_rates)):
+        raise ValueError('Measurements must be finite')
+    # Normal equations A^T A x = A^T b for the 2N x 3 system.
+    ata = [[0.0] * 3 for _ in range(3)]
+    atb = [0.0] * 3
+    rows = []
+    for m, theta, rate in zip(modules, angles, wheel_rates):
+        rho = rate * m.drive_sign * m.radius
+        for coefficients, value in (((1.0, 0.0, -m.y), rho * math.cos(theta)),
+                                    ((0.0, 1.0, m.x), rho * math.sin(theta))):
+            rows.append((coefficients, value))
+            for i in range(3):
+                atb[i] += coefficients[i] * value
+                for j in range(3):
+                    ata[i][j] += coefficients[i] * coefficients[j]
+    twist = _solve3(ata, atb)
+    residuals = []
+    for m, theta, rate in zip(modules, angles, wheel_rates):
+        rho = rate * m.drive_sign * m.radius
+        px = twist[0] - twist[2] * m.y
+        py = twist[1] + twist[2] * m.x
+        residuals.append(math.hypot(rho * math.cos(theta) - px, rho * math.sin(theta) - py))
+    return twist, residuals
+
+
+def _solve3(a, b):
+    """Cramer's rule for a symmetric positive 3x3 system; zero on singularity."""
+    det = (a[0][0] * (a[1][1] * a[2][2] - a[1][2] * a[2][1])
+           - a[0][1] * (a[1][0] * a[2][2] - a[1][2] * a[2][0])
+           + a[0][2] * (a[1][0] * a[2][1] - a[1][1] * a[2][0]))
+    if abs(det) < 1e-12:
+        return (0.0, 0.0, 0.0)
+    result = []
+    for column in range(3):
+        m = [list(row) for row in a]
+        for row in range(3):
+            m[row][column] = b[row]
+        d = (m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
+             - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
+             + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]))
+        result.append(d / det)
+    return tuple(result)
+
+
+def wrap_angle(angle):
+    return math.atan2(math.sin(angle), math.cos(angle))

@@ -53,7 +53,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--trials', type=int, default=3)
-    parser.add_argument('--speed', type=float, default=0.5)
+    parser.add_argument('--speed', type=float, default=0.8, help='approach speed m/s (momentum matters)')
     parser.add_argument('--timeout', type=float, default=25.0, help='simulation seconds per trial')
     parser.add_argument('--heights', type=float, nargs='*', help='subset of step heights in metres')
     parser.add_argument('--yaw-offsets', type=float, nargs='*', default=[0.0, 6.0, -6.0], help='degrees')

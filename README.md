@@ -1,187 +1,130 @@
-# rover_sim
+# rover_sim — Mars rover simulation (ROS 2 Humble, Gazebo Classic 11)
 
-Initial rover simulation prototype: a desert world with three hills, a
-four-module proxy rover, separate keyboard teleop, a Gazebo Classic 2D ray
-LiDAR publishing `/scan`, and optional robot-local RViz visualization.
-Milestone assessment: **PASS WITH LIMITATIONS**.
+A 53 kg four-module swerve rover with passive sprung suspension on a
+procedurally generated 120 × 120 m Martian heightmap with rocks, boulders
+and craters, a VLP-16-class 3-D LiDAR and IMU, wheel odometry and a drive
+controller with drive modes, tilt limits, traction control and stall
+detection. Mechanical limits (step and slope) emerge from mass, wheel
+radius, friction and motor torque through ODE physics and are measured, not
+scripted. Status: see the **Measured results** table and **Limitations**
+below; every number there comes from a validator run recorded under
+`docs/validation/`.
 
-## Required environment and dependencies
+## Requirements
 
-Use Ubuntu 22.04, ROS 2 Humble, Gazebo **Classic 11.x** and Bash. Validation
-used Gazebo Classic 11.10.2. Integration uses `gazebo_ros_pkgs`; modern Gazebo
-(`gz sim`) and `ros_gz` are not part of this package.
-
-On a clean machine, first follow the official
-[ROS 2 Humble Ubuntu installation guide](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html)
-to configure a UTF-8 locale, enable Ubuntu Universe, configure the ROS apt
-repository, and apply its Ubuntu update prerequisites. Then install the ROS
-desktop, Classic integration, build tools and test dependencies:
-
-```bash
-sudo apt update
-sudo apt install -y \
-  git build-essential cmake \
-  python3-colcon-common-extensions python3-rosdep python3-pytest python3-yaml \
-  ros-humble-desktop ros-humble-gazebo-ros-pkgs ros-humble-gazebo-dev \
-  ros-humble-xacro
-```
-
-The desktop installation includes RViz. The Classic packages provide the
-simulator, development libraries and `gazebo_plugins` ray plugin. The rosdep
-step below installs the remaining dependencies declared in [package.xml](package.xml).
-
-## Fresh checkout
-
-Obtain this project's Git clone URL from the team repository or maintainer.
-Enter that URL at the prompt below. Clone the package repository itself,
-rather than its upstream model repository:
+Ubuntu 22.04, ROS 2 Humble, Gazebo Classic 11.x (`gazebo_ros_pkgs`), colcon,
+Python 3.10 with numpy, scipy and Pillow (`rosdep` installs them). No
+Gazebo Sim / Ignition. Optional: `ros-humble-pointcloud-to-laserscan` for
+the 2-D `/scan` (a built-in fallback exists), `ros-humble-joy` for the
+gamepad teleop.
 
 ```bash
-mkdir -p ~/rover_ws/src
-read -r -p "rover_sim repository clone URL: " rover_repo_url
-git clone "$rover_repo_url" ~/rover_ws/src/rover_sim
-test -f ~/rover_ws/src/rover_sim/package.xml
-```
-
-The expected layout is `~/rover_ws/src/rover_sim/package.xml`, with `urdf/`,
-`worlds/`, `launch/`, `rover_sim/` and the other package directories alongside
-it. The upstream model components are vendored under `urdf/upstream/`; a
-second upstream clone or model download is not required.
-
-Initialize rosdep once per machine, refresh its index as your normal user,
-and install this checkout's dependencies:
-
-```bash
-source /opt/ros/humble/setup.bash
-if [ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]; then
-  sudo rosdep init
-fi
-rosdep update
-cd ~/rover_ws
+sudo apt install -y git build-essential cmake python3-colcon-common-extensions \
+  python3-rosdep python3-pytest ros-humble-desktop ros-humble-gazebo-ros-pkgs \
+  ros-humble-gazebo-dev ros-humble-xacro
+mkdir -p ~/rover_ws/src && cd ~/rover_ws/src && git clone <this repository> rover_sim
+cd ~/rover_ws && source /opt/ros/humble/setup.bash
 rosdep install --from-paths src/rover_sim --ignore-src --rosdistro humble -y
 ```
 
 ## Build and test
 
-Build from the real workspace, then source its installed environment:
-
 ```bash
 cd ~/rover_ws
 source /opt/ros/humble/setup.bash
-colcon build --packages-select rover_sim
-source ~/rover_ws/install/setup.bash
+colcon build --packages-select rover_sim        # also generates the terrain assets (~7 s)
+source install/setup.bash
 colcon test --packages-select rover_sim --event-handlers console_direct+
 colcon test-result --verbose
 ```
 
-The current suite contains **131 unit tests**: 22 kinematics, 22 teleop,
-73 controller and 14 LiDAR description/RViz tests. Colcon reports 135 results
-when its four CTest wrappers are included. Unit tests are separate from the
-**44 recorded integration checks** linked in the
-[current milestone validation report](docs/validation/phase5.md).
+The build runs `scripts/generate_terrain.py` for the default seed and
+installs the heightmap DEM, textures, rock meshes and worlds under
+`share/rover_sim/generated/`. UNIT_TEST_COUNT
 
-Colcon generates `build/`, `install/` and `log/` under `~/rover_ws`; do not
-edit those directories manually. Rebuild after source changes. Source the
-ROS and workspace setup scripts in each new terminal before running ROS commands.
-
-## Run the simulation and RViz
-
-Normal Gazebo Classic launch, with LiDAR enabled and RViz off:
+## Run
 
 ```bash
-source /opt/ros/humble/setup.bash
-source ~/rover_ws/install/setup.bash
-ros2 launch rover_sim rover_desert.launch.py
+source /opt/ros/humble/setup.bash && source ~/rover_ws/install/setup.bash
+ros2 launch rover_sim rover_mars.launch.py world:=mars rviz:=true      # Gazebo GUI + RViz
+ros2 launch rover_sim rover_mars.launch.py world:=mars gui:=false      # headless server
 ```
 
-To start Gazebo and RViz together, use this launch instead of the previous
-one; do not start a second simulation for visualization:
+In a second terminal:
 
 ```bash
-source /opt/ros/humble/setup.bash
-source ~/rover_ws/install/setup.bash
-ros2 launch rover_sim rover_desert.launch.py rviz:=true
+source /opt/ros/humble/setup.bash && source ~/rover_ws/install/setup.bash
+ros2 run rover_sim rover_teleop            # W/S A/D, Q/E strafe (crab/auto), +/- speed, M mode, X e-stop, Space, Ctrl+C
+ros2 run rover_sim rover_teleop_joy        # gamepad via the joy package
+ros2 topic pub -1 /swerve/set_drive_mode std_msgs/String "{data: crab}"
 ```
 
-Use `gui:=false` for a headless Gazebo server. RViz uses simulation time,
-Fixed Frame `base_link` and only the current scan. `lidar:=false` omits the
-sensor for a performance comparison. For a separate RViz instance, isolated
-validation commands and the Snap IDE GUI workaround, see
-[the LiDAR guide](docs/lidar.md).
+### Launch arguments (`rover_mars.launch.py`)
 
-Stop the launch with Ctrl+C. For Gazebo rendering problems, launch with
-`gui:=false` and open its client in another sourced terminal:
+| Argument | Default | Meaning |
+| --- | --- | --- |
+| `world` | `mars` | `mars`, `flat`, `step_test`, `slope_test`, `boulder_garden`, `desert` (legacy) |
+| `seed` | `7` | terrain seed; other seeds are generated once into `~/.cache/rover_sim` |
+| `resolution` | `513` | heightmap pixels per side (`513` or `1025`) |
+| `rock_density` | `medium` | `low` (≈300 rocks), `medium` (≈700), `high` (≈1500) |
+| `gravity` | `3.71` | m/s² (use `9.81` for Earth tests) |
+| `shadows` | `false` | cast shadows (GPU cost) |
+| `gui`, `rviz` | `true`, `false` | Gazebo client, RViz (`rviz/rover_mars.rviz`) |
+| `lidar`, `lidar_profile` | `true`, `lite` | `lite` 16×450, `standard` 16×900, `high` 32×1024 at 10 Hz |
+| `lidar_gpu` | `auto` | `true` uses `gpu_ray` (needs OpenGL); `auto` stays on the CPU sensor unless `lidar_prefer_gpu:=true` with a display and GUI |
+| `scan_2d` | `false` | also publish a planar `/scan` |
+| `drive_mode` | `ackermann` | `ackermann`, `crab`, `point_turn`, `auto` |
+| `x`, `y`, `z`, `yaw` | `0 0 auto 0` | spawn pose; `z:=auto` samples the heightmap at the spawn pad |
+| `wheel_collision` | `sphere` | `sphere`, `multisphere`, `cylinder`, `band` |
+| `wheel_stall_torque`, `wheel_no_load_speed`, `wheel_mu` | `8.0`, `10.0`, `0.8` | motor and tyre parameters |
+| `mast_height` | `0.60` | LiDAR mast height above the deck |
+| `actuator_watchdog` | `0.3` | plugin wall-clock watchdog |
+
+`rover_desert.launch.py` is kept as a compatibility wrapper (legacy desert
+world, Earth gravity).
+
+## Topics
+
+`/cmd_vel` (in), `/joint_states`, `/odom` + TF `odom→base_link`,
+`/swerve/diagnostics`, `/swerve/drive_mode`, `/imu/data`, `/points_raw`
+(sensor), `/points` (post-processed: ring/time/dropout/noise), `/scan`
+(optional), `/ground_truth/odom` (validation only),
+`/swerve/actuator_diagnostics`. Details: `docs/controller.md`,
+`docs/lidar.md`.
+
+## Measured results (2026-10-17, headless, this machine: i7-13700H, Intel iGPU)
+
+RESULTS_TABLE
+
+## Validation scripts
+
+Each launches its own isolated headless simulation and writes JSON:
 
 ```bash
-source /opt/ros/humble/setup.bash
-source ~/rover_ws/install/setup.bash
-LIBGL_ALWAYS_SOFTWARE=1 QT_X11_NO_MITSHM=1 gzclient --verbose
+ros2 run rover_sim validate_terrain.py --output /tmp/terrain.json
+ros2 run rover_sim validate_step_climb.py --output /tmp/step.json
+ros2 run rover_sim validate_slope.py --output /tmp/slope.json
+ros2 run rover_sim validate_suspension.py --output /tmp/suspension.json
+ros2 run rover_sim validate_lidar3d.py --output /tmp/lidar.json --profiles lite standard high
+ros2 run rover_sim validate_controller.py --output /tmp/controller.json
+ros2 run rover_sim validate_traverse.py --output /tmp/traverse.json
+ros2 run rover_sim run_hardening_and_teleop.py --output-dir /tmp/hardening
+ROS_DOMAIN_ID=46 ros2 run rover_sim validate_shutdown.py --output /tmp/shutdown.json
+ros2 run rover_sim measure_performance.py --launch rover_mars.launch.py --arg world:=mars
 ```
 
-## Keyboard controls
+Reports: `docs/validation/mars_terrain.md`, `mars_mechanics.md`,
+`mars_lidar.md`, `mars_controller.md`, `mars_traverse.md`.
 
-In a separate interactive terminal while the simulation is running:
+## Documentation
 
-```bash
-source /opt/ros/humble/setup.bash
-source ~/rover_ws/install/setup.bash
-ros2 run rover_sim rover_teleop
-```
+`docs/terrain.md` (generator, Gazebo heightmap findings, rocks, worlds),
+`docs/mechanics.md` (limits derivation and measurements),
+`docs/suspension.md`, `docs/controller.md`, `docs/lidar.md`,
+`docs/hardening.md` (watchdog/reset/shutdown), `docs/plan.md` (overhaul plan
+and TODO), `THIRD_PARTY_NOTICES.md`. Older `docs/validation/phase*.md`
+reports describe the prototype this overhaul replaced.
 
-Keep this terminal focused. W/S drive forward/backward, A/D rotate left/right,
-Space stops, and Ctrl+C stops and exits. Defaults are 0.4 m/s longitudinal
-speed and 0.5 rad/s yaw. Motion expires after 0.7 seconds without a key event.
-See [teleop configuration and terminal behavior](docs/teleop.md).
+## Limitations
 
-`/cmd_vel` uses `geometry_msgs/msg/Twist`: `linear.x` is forward and
-`angular.z` is counterclockwise yaw in the rover frame. Teleop always publishes
-`linear.y=0`; the controller clamps finite incoming `linear.y` to zero before
-kinematics. Pure lateral input stops drive, while nonfinite planar input stops
-all axes. Configuration is in [swerve.yaml](config/swerve.yaml) and
-[teleop.yaml](config/teleop.yaml). Module geometry and joint signs come from
-the expanded URDF.
-
-## Known Prototype Limitations
-
-- Motion validation focuses on flat ground and low speeds; slope mobility and
-  slope parking are not established. See [control limits](docs/swerve.md).
-- Terrain is rigid, and the centered 2 cm tire collision band approximates a
-  rounded tread rather than realistic sand/tire interaction. See
-  [model geometry](docs/swerve.md).
-- Steering alignment transitions can pause drive; steering and independent
-  wheel ramps can cause transient drift. See [swerve behavior](docs/swerve.md).
-- There is no odometry or world-stable scan accumulation. RViz remains local
-  to `base_link`. See [LiDAR visualization limits](docs/lidar.md).
-- Only one normal command source is supported. The internal
-  `/swerve/joint_commands` actuator interface can bypass the no-strafe policy;
-  it is not an operator interface. See [command policy](docs/teleop.md).
-- Keyboard operation depends on terminal key-repeat; key release is inferred
-  through the deadman timeout. See [terminal behavior](docs/teleop.md).
-- Heavy host load or suspension can interrupt wall-time heartbeats and trigger
-  a watchdog stop. Timing resilience beyond the measured runs is not established.
-  See [clock semantics](docs/hardening.md) and
-  [observed performance and interruptions](docs/validation/phase5.md).
-- LiDAR is an instantaneous idealized 2D ray scan with simple Gaussian noise;
-  dust, reflectivity and spinning-beam distortion are not modeled. See
-  [sensor limitations](docs/lidar.md).
-- GUI behavior depends on the desktop environment. Snap IDE GTK paths may need
-  the documented command-local cleanup; Gazebo rendering may need the software
-  client command above. See [GUI workaround](docs/lidar.md).
-
-## Architecture, validation and provenance
-
-See [swerve architecture and equations](docs/swerve.md),
-[feedback, watchdog, reset and shutdown semantics](docs/hardening.md), and
-[the current validation index](docs/validation/phase5.md). The default actuator
-watchdog is 0.3 wall seconds, configurable through `actuator_watchdog` at launch.
-Robot_state_publisher owns fixed robot transforms, including
-`base_link -> lidar_link`; `base_root` is a coincident dummy root.
-
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) records the exact upstream
-commit, Apache-2.0 model portions, inherited BSD helpers and local modifications.
-Older dated [Phase 3](docs/validation/phase3.md),
-[Phase 4](docs/validation/phase4.md), [Phase 4.5](docs/validation/phase45.md)
-and [reliability](docs/validation/reliability.md) reports preserve historical
-behavior and test counts. Historical Phase 2 [flat](docs/validation/flat.png)
-and [slope](docs/validation/slope.png) screenshots used stronger passive braking
-and do not establish current slope behavior.
+LIMITATIONS

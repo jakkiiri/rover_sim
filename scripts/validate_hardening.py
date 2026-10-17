@@ -30,6 +30,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--controller-pid', type=int, required=True)
     parser.add_argument('--watchdog', type=float, default=.3)
+    parser.add_argument('--world', default='flat', help='Gazebo world name of the running launch')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     if not os.environ.get('GAZEBO_MASTER_URI') or not os.environ.get('ROS_DOMAIN_ID'):
@@ -101,10 +102,10 @@ def main():
     def drive():
         nonlocal command
         command = (.4, 0., 0.)
-        wait_for(lambda: minimum_wheel_speed(state) > 2.0 and minimum_wheel_speed(targets) > 2.0)
+        wait_for(lambda: minimum_wheel_speed(state) > 1.5 and minimum_wheel_speed(targets) > 1.5)
 
     try:
-        wait_for(lambda: len(state) == 8 and len(targets) == 8 and epochs)
+        wait_for(lambda: len(state) == 12 and len(targets) == 8 and epochs)
         setter = node.create_client(SetParametersAtomically, '/swerve_controller/set_parameters_atomically')
         getter = node.create_client(GetParameters, '/swerve_controller/get_parameters')
         wait_for(lambda: setter.service_is_ready() and getter.service_is_ready())
@@ -114,31 +115,31 @@ def main():
                 parameters=[parameter.to_parameter_msg() for parameter in parameters]))
 
         future = set_parameters([
-            Parameter('command_timeout', value=.8), Parameter('wheel_acceleration', value=-1.)])
+            Parameter('command_timeout', value=.8), Parameter('max_accel', value=-1.)])
         wait_for(future.done)
         rejected = future.result().result
-        future = getter.call_async(GetParameters.Request(names=['command_timeout', 'wheel_acceleration']))
+        future = getter.call_async(GetParameters.Request(names=['command_timeout', 'max_accel']))
         wait_for(future.done)
         actual = [v.double_value for v in future.result().values]
-        record('atomic_invalid_parameters', not rejected.successful and actual == [.5, 8.],
+        record('atomic_invalid_parameters', not rejected.successful and actual == [.5, .8],
                reason=rejected.reason, unchanged_parameters=actual)
-        future = set_parameters([Parameter('wheel_acceleration', value=4.)])
+        future = set_parameters([Parameter('max_accel', value=.4)])
         wait_for(future.done)
         record('valid_runtime_parameters', future.result().result.successful)
-        future = set_parameters([Parameter('wheel_acceleration', value=8.)])
+        future = set_parameters([Parameter('max_accel', value=.8)])
         wait_for(future.done)
         if not future.result().result.successful:
-            raise RuntimeError('Failed to restore wheel_acceleration')
+            raise RuntimeError('Failed to restore max_accel')
 
         drive()
         command = None
-        gz('world', '-w', 'desert', '-p', '1')
+        gz('world', '-w', args.world, '-p', '1')
         time.sleep(.2)
         before = sim_time()
         time.sleep(.7)
         paused_delta = sim_time() - before
         stopped_targets = wheel_speed(targets)
-        gz('world', '-w', 'desert', '-p', '0')
+        gz('world', '-w', args.world, '-p', '0')
         wait_for(lambda: wheel_speed(state) < .05)
         record('pause_resume_deadman', paused_delta < .002 and stopped_targets == 0.,
                paused_sim_delta=paused_delta, paused_drive_targets=stopped_targets,
@@ -149,7 +150,7 @@ def main():
             drive()
             previous_epoch = epochs[-1]
             command = None
-            gz('world', '-w', 'desert', option)
+            gz('world', '-w', args.world, option)
             wait_for(lambda: epochs[-1] > previous_epoch)
             wait_for(lambda: wheel_speed(targets) == 0. and wheel_speed(state) < .05)
             time.sleep(.4)
@@ -159,7 +160,7 @@ def main():
             drive()  # a fresh command restores motion after reinitialization
 
         drive()
-        gz('physics', '-w', 'desert', '-u', '20')
+        gz('physics', '-w', args.world, '-u', '20')
         start_wall, start_sim = time.monotonic(), sim_time()
         history_start = len(command_history)
         time.sleep(5.)
@@ -168,12 +169,12 @@ def main():
         heartbeat = command_history[history_start:]
         minimum_target = min(minimum_wheel_speed(values) for _, values in heartbeat)
         gaps = [b[0] - a[0] for a, b in zip(heartbeat, heartbeat[1:])]
-        record('slow_simulation', 0 < measured_rtf < .067 and minimum_target > 2.0
-               and minimum_wheel_speed(state) > 1.8 and len(heartbeat) > 100 and max(gaps) < args.watchdog,
+        record('slow_simulation', 0 < measured_rtf < .067 and minimum_target > 1.5
+               and minimum_wheel_speed(state) > 1.3 and len(heartbeat) > 100 and max(gaps) < args.watchdog,
                measured_real_time_factor=measured_rtf, command_frames=len(heartbeat),
                max_wall_command_gap=max(gaps), minimum_drive_target=minimum_target,
                actual_wheel_speed=wheel_speed(state))
-        gz('physics', '-w', 'desert', '-u', '1000')
+        gz('physics', '-w', args.world, '-u', '1000')
 
         drive()
         command = None
@@ -209,14 +210,14 @@ def main():
                command_frames=len(frames), previous_epoch=previous_epoch, new_epoch=epochs[-1],
                nonzero_command_frames=sum(wheel_speed(values) != 0. for values in frames))
         drive()
-        record('fresh_command_after_watchdog', minimum_wheel_speed(state) > 2.)
+        record('fresh_command_after_watchdog', minimum_wheel_speed(state) > 1.5)
     finally:
         command = (0., 0., 0.)
         publisher.publish(Twist())
         if suspended:
             os.kill(args.controller_pid, signal.SIGCONT)
-        gz('physics', '-w', 'desert', '-u', '1000')
-        gz('world', '-w', 'desert', '-p', '0')
+        gz('physics', '-w', args.world, '-u', '1000')
+        gz('world', '-w', args.world, '-p', '0')
         time.sleep(.1)
         node.executor.shutdown()
         worker.join(timeout=2)

@@ -33,7 +33,7 @@ from rclpy.node import Node
 import rover_sim.controller as controller
 
 description = xacro.process_file(str(Path(get_package_share_directory('rover_sim')) /
-                                     'urdf/proxy_rover.urdf.xacro')).toxml()
+                                     'urdf/mars_rover.urdf.xacro'), mappings={'enable_lidar': 'false'}).toxml()
 class Configured(controller.SwerveController):
     def declare_parameter(self, name, value=None, *args, **kwargs):
         if name == 'robot_description': value = description
@@ -70,8 +70,10 @@ def main():
     node.create_subscription(JointState, '/swerve/joint_commands', targets, 10)
     prefixes = ['front_left', 'front_right', 'rear_left', 'rear_right']
     feedback = JointState()
-    feedback.name = [p+'_kingpin' for p in prefixes] + [p+'_wheel_joint' for p in prefixes]
-    feedback.position = [0.]*8
+    feedback.name = ([p+'_kingpin' for p in prefixes] + [p+'_wheel_joint' for p in prefixes] +
+                     [p+'_suspension' for p in prefixes])
+    feedback.position = [0.]*12
+    feedback.velocity = [0.]*12
     results = []
     child = None
 

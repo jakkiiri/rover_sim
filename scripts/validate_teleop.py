@@ -23,7 +23,6 @@ from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 
-from validate_swerve import pose
 
 ZERO = (0.0, 0.0, 0.0)
 CASES = [('W', (.4, 0., 0.)), ('S', (-.4, 0., 0.)),
@@ -89,7 +88,18 @@ def main():
     args = parser.parse_args()
     rclpy.init()
     node = Node('keyboard_teleop_validation')
-    messages, state = [], {}
+    messages, state, truth = [], {}, []
+    from nav_msgs.msg import Odometry
+    from rover_sim.validation.harness import quaternion_to_euler
+
+    def on_truth(m):
+        p, q = m.pose.pose.position, m.pose.pose.orientation
+        truth.append((m.header.stamp.sec + m.header.stamp.nanosec / 1e9, p.x, p.y, p.z, *quaternion_to_euler(q.x, q.y, q.z, q.w)))
+    node.create_subscription(Odometry, '/ground_truth/odom', on_truth, 50)
+
+    def pose():
+        t = truth[-1]
+        return [t[1], t[2], t[3], t[4], t[5], t[6]], t[0]
     node.create_subscription(Twist, '/cmd_vel', lambda m: messages.append(
         (time.monotonic(), (m.linear.x, m.linear.y, m.angular.z))), 10)
     node.create_subscription(JointState, '/joint_states', lambda m: state.update(
@@ -115,15 +125,15 @@ def main():
         print(json.dumps(result), flush=True)
 
     try:
-        wait_for(lambda: len(state) >= 8, 25)
+        wait_for(lambda: len(state) >= 12 and bool(truth), 25)
         terminal = TerminalProcess()
         wait_for(lambda: messages and messages[-1][1] == ZERO)
         for key, command in CASES:
             terminal.key = None
             terminal.send(b' ')
             wait_for(lambda: messages[-1][1] == ZERO and wheel_speed() < .05)
-            subprocess.run(['gz', 'model', '-m', 'proxy_rover', '-x', '0', '-y', '0',
-                            '-z', '0.34', '-R', '0', '-P', '0', '-Y', '0'],
+            subprocess.run(['gz', 'model', '-m', 'mars_rover', '-x', '0', '-y', '0',
+                            '-z', '0.44', '-R', '0', '-P', '0', '-Y', '0'],
                            check=True, timeout=10)
             terminal.key = key
             wait_for(lambda: messages[-1][1] == command)
@@ -143,8 +153,8 @@ def main():
                         translation_error=translation_error, heading_error=heading_error,
                         passed=translation_error < .15 and heading_error < .08))
 
-        # Removed controls are unsupported keys: they immediately stop existing
-        # motion and never introduce a rotation or lateral command.
+        # In the default ackermann mode the strafe keys are inactive: they
+        # immediately stop existing motion and never introduce a lateral command.
         for key in ('Q', 'E'):
             terminal.key = 'w'
             wait_for(lambda: messages[-1][1] == (.4, 0., 0.) and wheel_speed() > 1.)
@@ -197,7 +207,7 @@ def main():
                                      result['terminal_restored'] and result['active_command_printed'])
                 terminal = None
             record(result)
-        record(dict(case='teleop_never_publishes_lateral', messages_checked=len(messages),
+        record(dict(case='teleop_never_publishes_lateral_in_ackermann', messages_checked=len(messages),
                     passed=bool(messages) and all(cmd[1] == 0. for _, cmd in messages)))
     finally:
         if terminal is not None:

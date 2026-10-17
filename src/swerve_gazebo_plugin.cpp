@@ -40,6 +40,7 @@ class SwerveActuators : public gazebo::ModelPlugin {
     double available = 0;
     double slip = 0;
     double ground_speed = 0;
+    bool holding = false;
   };
   std::map<std::string, Actuator> actuators_;
   std::vector<std::string> actuated_names_;
@@ -189,6 +190,7 @@ class SwerveActuators : public gazebo::ModelPlugin {
     for (auto &[name, a] : actuators_) {
       a.target = a.kind == Kind::Steering ? a.joint->Position(0) : 0.0;
       a.integral = 0.0;
+      ReleaseBrake(a);
     }
   }
 
@@ -199,7 +201,11 @@ class SwerveActuators : public gazebo::ModelPlugin {
     received_ = {};
     last_update_ = -1;
     last_publish_ = last_truth_ = last_diag_ = -1;
-    for (auto &[name, a] : actuators_) { a.target = 0.0; a.integral = 0.0; }
+    for (auto &[name, a] : actuators_) { a.target = 0.0; a.integral = 0.0; ReleaseBrake(a); }
+  }
+
+  static void ReleaseBrake(Actuator &a) {
+    if (a.holding) { a.holding = false; a.joint->SetParam("fmax", 0, 0.0); }
   }
 
   bool ExpireWatchdog() {
@@ -251,15 +257,29 @@ class SwerveActuators : public gazebo::ModelPlugin {
       } else if (a.kind == Kind::Drive) {
         const double target = fresh ? a.target : 0.0;
         const double error = target - velocity;
-        if (std::abs(target) < 1e-9) a.integral = 0.0;
-        const double proposed_integral = std::clamp(a.integral + wheel_ki_ * error * dt,
-                                                    -0.5 * a.effort_limit, 0.5 * a.effort_limit);
-        const double candidate = wheel_kp_ * error + proposed_integral;
-        a.available = AvailableTorque(candidate, velocity, a.effort_limit, a.velocity_limit);
-        // Integrate only when unsaturated or when unwinding a saturated command.
-        if (std::abs(target) > 1e-9 && (std::abs(candidate) < a.available || error * candidate < 0))
-          a.integral = proposed_integral;
-        effort = std::clamp(wheel_kp_ * error + a.integral, -a.available, a.available);
+        if (std::abs(target) < 1e-9) {
+          // Parking brake: once the wheel has slowed, an ODE velocity motor
+          // (vel = 0, fmax = stall torque) holds it implicitly and without the
+          // oscillation an explicit spring would produce against the rover
+          // mass. Above the stall torque the joint slips, so steep slopes creep.
+          a.integral = 0.0;
+          if (!a.holding && std::abs(velocity) < 0.5) {
+            a.holding = true;
+            a.joint->SetParam("fmax", 0, a.effort_limit);
+            a.joint->SetParam("vel", 0, 0.0);
+          }
+          a.available = a.effort_limit;
+          effort = a.holding ? 0.0 : std::clamp(wheel_kp_ * error, -a.available, a.available);
+        } else {
+          if (a.holding) { a.holding = false; a.joint->SetParam("fmax", 0, 0.0); }
+          const double proposed_integral = std::clamp(a.integral + wheel_ki_ * error * dt,
+                                                      -0.5 * a.effort_limit, 0.5 * a.effort_limit);
+          const double candidate = wheel_kp_ * error + proposed_integral;
+          a.available = AvailableTorque(candidate, velocity, a.effort_limit, a.velocity_limit);
+          // Integrate only when unsaturated or when unwinding a saturated command.
+          if (std::abs(candidate) < a.available || error * candidate < 0) a.integral = proposed_integral;
+          effort = std::clamp(wheel_kp_ * error + a.integral, -a.available, a.available);
+        }
         // Slip: rim speed against the wheel centre's ground speed along the rolling direction.
         auto wheel = a.joint->GetChild();
         const auto axis = a.joint->GlobalAxis(0);
@@ -351,6 +371,7 @@ class SwerveActuators : public gazebo::ModelPlugin {
       kv("no_load_speed_rad_s", a.velocity_limit);
       kv("ground_speed_m_s", a.ground_speed);
       kv("slip_ratio", a.slip);
+      kv("parking_hold", a.holding ? 1.0 : 0.0);
       array.status.push_back(status);
     }
     diag_pub_->publish(array);

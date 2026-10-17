@@ -1,0 +1,123 @@
+{
+  "passed": true,
+  "max_stable_angle": 25,
+  "trials": [
+    {
+      "angle": 5,
+      "lane": -14.0,
+      "outcome": "climbed",
+      "max_x": 12.034784965898378,
+      "height_reached": 0.6981810343580821,
+      "top_height": 0.6999093082073921,
+      "mean_body_speed_on_ramp": 0.39579426427519687,
+      "commanded_speed": 0.4,
+      "max_pitch_deg": 5.5919327630697255,
+      "max_roll_deg": 0.03000227258601937,
+      "hold_drift_m": 0.0028545573754345578,
+      "holds": true
+    },
+    {
+      "angle": 10,
+      "lane": -10.0,
+      "outcome": "climbed",
+      "max_x": 12.09901739516943,
+      "height_reached": 1.4095338623286688,
+      "top_height": 1.4106158456677198,
+      "mean_body_speed_on_ramp": 0.3957747496218024,
+      "commanded_speed": 0.4,
+      "max_pitch_deg": 11.105491045438482,
+      "max_roll_deg": 0.02965941731111903,
+      "hold_drift_m": 0.001716346321144521,
+      "holds": true
+    },
+    {
+      "angle": 15,
+      "lane": -6.0,
+      "outcome": "climbed",
+      "max_x": 12.099491882871465,
+      "height_reached": 2.1432922778278414,
+      "top_height": 2.1435935394489816,
+      "mean_body_speed_on_ramp": 0.39575329308142887,
+      "commanded_speed": 0.4,
+      "max_pitch_deg": 16.569718756623864,
+      "max_roll_deg": 0.05253926321702042,
+      "hold_drift_m": 0.0032691552702576016,
+      "holds": true
+    },
+    {
+      "angle": 20,
+      "lane": -2.0,
+      "outcome": "climbed",
+      "max_x": 12.058687478259836,
+      "height_reached": 2.9121393892155756,
+      "top_height": 2.9117618741296187,
+      "mean_body_speed_on_ramp": 0.3956797078020867,
+      "commanded_speed": 0.4,
+      "max_pitch_deg": 21.878814575218694,
+      "max_roll_deg": 0.07137641969492033,
+      "hold_drift_m": 0.007032822671238914,
+      "holds": true
+    },
+    {
+      "angle": 25,
+      "lane": 2.0,
+      "outcome": "climbed",
+      "max_x": 12.145307312475156,
+      "height_reached": 3.7311852264593712,
+      "top_height": 3.7304612652399887,
+      "mean_body_speed_on_ramp": 0.2115872732166205,
+      "commanded_speed": 0.4,
+      "max_pitch_deg": 26.95185549000336,
+      "max_roll_deg": 0.6029378082411491,
+      "hold_drift_m": 0.007495418106233707,
+      "holds": true
+    },
+    {
+      "angle": 30,
+      "lane": 6.0,
+      "outcome": "stalled",
+      "max_x": 3.233688487777308,
+      "height_reached": 0.19881339962841643,
+      "top_height": 4.618802153517006,
+      "mean_body_speed_on_ramp": null,
+      "commanded_speed": 0.4,
+      "max_pitch_deg": 32.05175127427601,
+      "max_roll_deg": 0.03793421964925977,
+      "hold_drift_m": null,
+      "holds": null
+    },
+    {
+      "angle": 35,
+      "lane": 10.0,
+      "outcome": "stalled",
+      "max_x": 3.1465265200017636,
+      "height_reached": 0.19294943240826395,
+      "top_height": 5.601660305677678,
+      "mean_body_speed_on_ramp": null,
+      "commanded_speed": 0.4,
+      "max_pitch_deg": 37.45453034872535,
+      "max_roll_deg": 0.03000432021134041,
+      "hold_drift_m": null,
+      "holds": null
+    },
+    {
+      "angle": 40,
+      "lane": 14.0,
+      "outcome": "stalled",
+      "max_x": 3.0931710887883046,
+      "height_reached": 0.2051731199535401,
+      "top_height": 6.712797049418239,
+      "mean_body_speed_on_ramp": null,
+      "commanded_speed": 0.4,
+      "max_pitch_deg": 42.021519202375025,
+      "max_roll_deg": 0.029978040935590557,
+      "hold_drift_m": null,
+      "holds": null
+    }
+  ],
+  "launch_args": [
+    "gui:=false",
+    "lidar:=false",
+    "world:=slope_test"
+  ]
+}

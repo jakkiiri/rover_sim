@@ -1,0 +1,117 @@
+{
+  "passed": false,
+  "summary": {
+    "0.15": {
+      "height": 0.15,
+      "trials": 3,
+      "climbed": 0,
+      "blocked": 3,
+      "tunneled": 0,
+      "flipped": 0,
+      "timeout": 0,
+      "pass_rate": 0.0
+    },
+    "0.20": {
+      "height": 0.2,
+      "trials": 3,
+      "climbed": 0,
+      "blocked": 3,
+      "tunneled": 0,
+      "flipped": 0,
+      "timeout": 0,
+      "pass_rate": 0.0
+    }
+  },
+  "trials": [
+    {
+      "height": 0.15,
+      "lane": -4.0,
+      "trial": 0,
+      "yaw_offset_deg": 0.0,
+      "speed": 0.5,
+      "outcome": "blocked",
+      "max_x": 3.1952522332149917,
+      "max_tilt_deg": 13.896094304408594,
+      "min_z_on_step": null,
+      "crossing_time_s": null,
+      "max_pitch_deg": 13.896094304408594,
+      "max_roll_deg": 0.03435275179488203
+    },
+    {
+      "height": 0.15,
+      "lane": -4.0,
+      "trial": 1,
+      "yaw_offset_deg": 6.000000000000001,
+      "speed": 0.5,
+      "outcome": "blocked",
+      "max_x": 3.197184784693765,
+      "max_tilt_deg": 13.90014653089304,
+      "min_z_on_step": null,
+      "crossing_time_s": null,
+      "max_pitch_deg": 13.90014653089304,
+      "max_roll_deg": 0.7880453091427869
+    },
+    {
+      "height": 0.15,
+      "lane": -4.0,
+      "trial": 2,
+      "yaw_offset_deg": -6.000000000000001,
+      "speed": 0.5,
+      "outcome": "blocked",
+      "max_x": 3.19645085879164,
+      "max_tilt_deg": 13.900760803314677,
+      "min_z_on_step": null,
+      "crossing_time_s": null,
+      "max_pitch_deg": 13.900760803314677,
+      "max_roll_deg": 0.8388082611101384
+    },
+    {
+      "height": 0.2,
+      "lane": 0.0,
+      "trial": 0,
+      "yaw_offset_deg": 0.0,
+      "speed": 0.5,
+      "outcome": "blocked",
+      "max_x": 3.1422828120836948,
+      "max_tilt_deg": 17.163646327536746,
+      "min_z_on_step": null,
+      "crossing_time_s": null,
+      "max_pitch_deg": 17.163646327536746,
+      "max_roll_deg": 0.035490857630539475
+    },
+    {
+      "height": 0.2,
+      "lane": 0.0,
+      "trial": 1,
+      "yaw_offset_deg": 6.000000000000001,
+      "speed": 0.5,
+      "outcome": "blocked",
+      "max_x": 3.14136003450086,
+      "max_tilt_deg": 17.12433897431256,
+      "min_z_on_step": null,
+      "crossing_time_s": null,
+      "max_pitch_deg": 17.12433897431256,
+      "max_roll_deg": 0.9668368145141828
+    },
+    {
+      "height": 0.2,
+      "lane": 0.0,
+      "trial": 2,
+      "yaw_offset_deg": -6.000000000000001,
+      "speed": 0.5,
+      "outcome": "blocked",
+      "max_x": 3.14153961522559,
+      "max_tilt_deg": 17.13864094452679,
+      "min_z_on_step": null,
+      "crossing_time_s": null,
+      "max_pitch_deg": 17.13864094452679,
+      "max_roll_deg": 0.9387543363425352
+    }
+  ],
+  "launch_args": [
+    "gui:=false",
+    "lidar:=false",
+    "world:=step_test",
+    "wheel_stall_torque:=10.0"
+  ]
+}

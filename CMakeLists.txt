@@ -19,10 +19,13 @@ ament_target_dependencies(rover_swerve_actuators gazebo_dev gazebo_ros rclcpp se
   nav_msgs diagnostic_msgs tf2_msgs geometry_msgs)
 install(TARGETS rover_swerve_actuators LIBRARY DESTINATION lib)
 ament_python_install_package(${PROJECT_NAME})
-install(PROGRAMS scripts/swerve_controller scripts/validate_swerve.py
+install(PROGRAMS scripts/swerve_controller
   scripts/rover_teleop scripts/validate_teleop.py scripts/validate_hardening.py
-  scripts/validate_shutdown.py scripts/validate_lidar.py
+  scripts/validate_shutdown.py
   scripts/generate_terrain.py scripts/measure_performance.py scripts/validate_terrain.py
+  scripts/validate_step_climb.py scripts/validate_slope.py scripts/validate_suspension.py
+  scripts/validate_lidar3d.py scripts/validate_controller.py scripts/validate_traverse.py
+  scripts/lidar_postprocess scripts/rover_teleop_joy scripts/run_hardening_and_teleop.py
   DESTINATION lib/${PROJECT_NAME})
 
 # Procedural Mars terrain assets are generated at build time (deterministic

@@ -1,6 +1,26 @@
 rover_teleop:
   ros__parameters:
     linear_speed: 0.4       # m/s, W/S
+    lateral_speed: 0.3      # m/s, Q/E in crab/auto modes
     angular_speed: 0.5      # rad/s, A/D
-    key_timeout: 0.7       # wall seconds since last motion key/repeat
-    publish_rate: 20.0     # Hz, wall time (independent of simulation pauses)
+    key_timeout: 0.7        # wall seconds since last motion key/repeat
+    publish_rate: 20.0      # Hz, wall time (independent of simulation pauses)
+    speed_step: 1.25        # factor applied by +/-
+    min_scale: 0.2
+    max_scale: 2.5
+    drive_mode: ackermann   # initial mode; M cycles ackermann -> crab -> point_turn -> auto
+rover_teleop_joy:
+  ros__parameters:
+    linear_speed: 0.6
+    lateral_speed: 0.4
+    angular_speed: 0.8
+    deadzone: 0.1
+    axis_linear: 1
+    axis_lateral: 0
+    axis_angular: 3
+    button_deadman: 4
+    button_mode: 0
+    button_estop: 1
+    joy_timeout: 0.5
+    publish_rate: 20.0
+    drive_mode: ackermann

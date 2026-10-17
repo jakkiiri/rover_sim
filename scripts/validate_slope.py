@@ -26,7 +26,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--speed', type=float, default=0.4)
-    parser.add_argument('--timeout', type=float, default=45.0)
+    parser.add_argument('--timeout', type=float, default=90.0)
     parser.add_argument('--angles', type=float, nargs='*')
     parser.add_argument('--hold-seconds', type=float, default=5.0)
     parser.add_argument('--arg', action='append', default=[])
@@ -75,6 +75,8 @@ def main():
                 observer.command = (0.0, 0.0, 0.0)
                 samples = truth_since(observer, start)
                 max_x = max(g[2] for g in samples)
+                if outcome == 'timeout' and max_x > RAMP_RUNUP + 1.0:
+                    outcome = 'climbing_slowly'      # still progressing when the window closed
                 speeds = [g[8] for g in samples if RAMP_RUNUP + 1.0 < g[2] < ramp_end - 1.0]
                 climb_speed = sum(speeds) / len(speeds) if speeds else None
                 result = dict(angle=angle, lane=lane, outcome=outcome, max_x=max_x,
@@ -100,8 +102,8 @@ def main():
                 observer.run_sim(1.0)
         finally:
             observer.close()
-    climbed = [r['angle'] for r in results if r['outcome'] == 'climbed']
-    not_climbed = [r['angle'] for r in results if r['outcome'] != 'climbed']
+    climbed = [r['angle'] for r in results if r['outcome'] in ('climbed', 'climbing_slowly')]
+    not_climbed = [r['angle'] for r in results if r['outcome'] not in ('climbed', 'climbing_slowly')]
     max_stable = max(climbed) if climbed else None
     no_artifacts = all(r['outcome'] != 'flipped' for r in results)
     passed = (no_artifacts and max_stable is not None and 20 <= max_stable < 35

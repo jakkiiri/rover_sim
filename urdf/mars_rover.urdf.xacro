@@ -10,7 +10,7 @@
   <xacro:arg name="lidar_gpu" default="false"/>
   <xacro:arg name="mast_height" default="0.60"/>
   <xacro:arg name="wheel_collision" default="sphere"/>
-  <xacro:arg name="wheel_stall_torque" default="6.5"/>
+  <xacro:arg name="wheel_stall_torque" default="8.0"/>
   <xacro:arg name="wheel_no_load_speed" default="10.0"/>
   <xacro:arg name="wheel_mu" default="0.8"/>
   <xacro:arg name="body_mass" default="26.0"/>

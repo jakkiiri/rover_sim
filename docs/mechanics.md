@@ -92,7 +92,71 @@ permissive than the quasi-static numbers.
 
 ## Measured thresholds
 
-MEASURED_SECTION
+All runs headless on the generated test worlds, Mars gravity, μ_ground = 0.65,
+wheel μ = 0.8, τ_stall = 8 N m, ω_nl = 10 rad/s, sphere wheels, 1 ms steps.
+Evidence: `docs/validation/mars_step_climb.json`, `mars_slope.json`,
+`mars_suspension.json`; narrative in `docs/validation/mars_mechanics.md`.
+
+### Step climb (`validate_step_climb.py`, 0.8 m/s approach, yaw offsets 0°, +6°, −6°)
+
+| Step | climbed | blocked | tunneled | flipped | max pitch | crossing time |
+| --- | --- | --- | --- | --- | --- | --- |
+| 5 cm (0.25 R) | 3/3 | 0 | 0 | 0 | 5.2° | 10.3 s |
+| 10 cm (0.50 R) | 3/3 | 0 | 0 | 0 | 9.4° | 10.4 s |
+| 15 cm (0.75 R) | 3/3 | 0 | 0 | 0 | 13.0° | 11.2 s |
+| 20 cm (1.00 R) | 0/3 | 3 | 0 | 0 | 3.4° | — |
+| 25 cm (1.25 R) | 0/3 | 3 | 0 | 0 | 3.5° | — |
+| 30 cm (1.50 R) | 0/3 | 3 | 0 | 0 | 3.4° | — |
+| 40 cm (2.00 R) | 0/3 | 3 | 0 | 0 | 3.4° | — |
+
+Every 20–40 cm trial stops with the front wheels against the step face
+(base_link x = 2.40 m, i.e. wheel contact at x = 3.0 m) with pitch < 4°; at
+20 cm with a 6° yaw offset the leading wheel can mount the edge but the
+rover is then blocked at the rear wheels. **30 cm: 0/3 climbed, 0 tunnelled,
+0 flipped.**
+
+Calibration history (same validator): at τ = 6.5 N m and 0.5 m/s the 15 cm
+step was blocked 3/3 with the front wheels already on top (pitch 13.6°) and
+the rear wheels unable to be pulled over the edge; raising torque alone to
+8 or 10 N m did not help (`mars_step_climb_10Nm_0p5ms.json`), approach
+momentum did: at 0.8 and 1.0 m/s with 8 N m the 15 cm step climbed 3/3. The
+quasi-static analysis above predicts this: the rear-wheel climb at
+h/R = 0.75 needs a front-pair pull that μ = 0.65 cannot supply once the
+nose-up pitch shifts load to the rear, so a 4-wheel rover with rigid 0.20 m
+wheels relies on momentum for 15 cm and is limited to ≈ 0.6 R quasi-statically.
+
+### Slopes (`validate_slope.py`, 0.4 m/s command, 90 s window)
+
+| Ramp | outcome | mean speed on ramp | max x | max pitch | hold drift in 5 s |
+| --- | --- | --- | --- | --- | --- |
+| 5° | climbed | 0.40 m/s | 12.03 m | 5.6° | 2.9 mm |
+| 10° | climbed | 0.40 m/s | 12.10 m | 11.1° | 1.7 mm |
+| 15° | climbed | 0.40 m/s | 12.10 m | 16.6° | 3.3 mm |
+| 20° | climbed | 0.40 m/s | 12.06 m | 21.9° | 7.0 mm |
+| 25° | climbed | 0.21 m/s | 12.15 m | 27.0° | 7.5 mm |
+| 30° | stalled | — | 3.23 m | 32.1° | — |
+| 35° | stalled | — | 3.15 m | 37.5° | — |
+| 40° | stalled | — | 3.09 m | 42.0° | — |
+
+Maximum climbed angle **25°** (at a reduced 0.21 m/s: motor derating plus
+the controller's traction control), **30° and steeper stall** at the ramp
+foot (x ≈ 3.1–3.2 m) without sliding back or flipping. The stall at 30° is
+earlier than the single-axle torque estimate (41°) because the nose-up load
+transfer leaves the front pair with little normal force while the rear pair
+is torque-limited: the sum of the per-axle thrust limits falls below the
+98 N needed at 30°. Holding: with the parking brake the rover drifts ≤ 8 mm
+in 5 s on every climbable ramp.
+
+### Suspension (`validate_suspension.py`, flat world, 0.5 m/s)
+
+| Test | 4/4 wheels in contact | ≥ 3 wheels | max pitch / roll | a_z peak / RMS | settling after bump |
+| --- | --- | --- | --- | --- | --- |
+| 12 cm full-width bump | 100.0 % | 100 % | 10.4° / 0.1° | 4.9 / 0.57 m/s² | 0.16 s |
+| rock field (24 blocks, 5–9 cm) | 98.8 % | 100 % | 3.4° / 3.2° | 2.0 / 0.43 m/s² | — |
+
+Contact is inferred from the strut position (a strut without wheel load
+extends to its free length; contact ⇔ compressed more than 6 mm beyond it).
+Both targets (≥ 95 % 4/4 contact, settling ≤ 2 s) are met.
 
 ## Limits of the ODE model
 

@@ -2,7 +2,7 @@
 """Suspension contact-retention and body-motion metrics over a bump and a rock field.
 
 Runs on the flat world: a 12 cm bump (full width) and a deterministic field
-of 8-14 cm rocks are spawned ahead of the rover. Wheels count as "in contact"
+of 5-9 cm rigid blocks are spawned ahead of the rover. Wheels count as "in contact"
 when their suspension strut is compressed beyond the free length (an
 airborne strut extends to +0.03 m under its own weight). Reports the
 fraction of time with 4/4 wheels in contact, body pitch/roll extremes,
@@ -56,6 +56,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--speed', type=float, default=0.5)
     parser.add_argument('--bump-height', type=float, default=0.12)
+    parser.add_argument('--rocks', type=int, default=24)
     parser.add_argument('--arg', action='append', default=[])
     parser.add_argument('--log', type=Path)
     args = parser.parse_args()
@@ -99,12 +100,14 @@ def main():
             control.remove('bump')
 
             # --- rock field --------------------------------------------------
+            # Moderately uneven ground: 5-9 cm rigid blocks (below the measured
+            # 10 cm step limit) scattered across both wheel tracks.
             rng = np.random.default_rng(11)
             rocks = []
-            for i in range(28):
-                size = float(rng.uniform(0.08, 0.14))
+            for i in range(args.rocks):
+                size = float(rng.uniform(0.05, 0.09))
                 x, y = float(rng.uniform(3.0, 9.0)), float(rng.uniform(-0.9, 0.9))
-                control.spawn_box(f'rock_{i}', x, y, size / 2 - 0.02, size, size * 1.3, size, colour='0.3 0.25 0.2')
+                control.spawn_box(f'rock_{i}', x, y, size / 2 - 0.01, size, size * 1.3, size, colour='0.3 0.25 0.2')
                 rocks.append((x, y, size))
             control.teleport(ENTITY, 0.0, 0.0, REST_HEIGHT + 0.03)
             observer.run_sim(1.5)

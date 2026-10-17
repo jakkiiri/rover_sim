@@ -20,9 +20,9 @@ See [current control validation](validation/no_strafe.md).
 ## Steering feedback and initialization
 
 The controller accepts feedback only when all four expected steering joints
-are present, names are unique/nonempty, position arrays match names, all
-supplied numeric arrays are finite, and optional velocity/effort arrays have
-the correct length. Negative, out-of-order and implausibly future timestamps
+are present (drive and suspension joints are read when present), names are
+unique/nonempty, position arrays match names, all supplied numeric arrays are
+finite, and optional velocity/effort arrays have the correct length. Negative, out-of-order and implausibly future timestamps
 are rejected. A 0.1 simulation-second allowance accommodates `/clock` delivery
 lag relative to the physical feedback timestamp.
 
@@ -42,21 +42,10 @@ and steering alignment are complete.
 ## Parameters
 
 `robot_description` is read-only after startup because it defines geometry.
-The ROS-managed `use_sim_time` parameter remains boolean. The five numeric
-controller parameters are validated at startup and before atomic runtime sets:
-
-| Parameter | Constraint / meaning |
-| --- | --- |
-| command_timeout | Finite, nonnegative wall seconds; zero inhibits drive |
-| feedback_timeout | Finite, nonnegative simulation seconds; zero inhibits drive |
-| max_wheel_speed | Finite, positive rad/s; cannot exceed the largest URDF wheel limit (20 here) |
-| wheel_acceleration | Finite, strictly positive rad/s² |
-| alignment_tolerance | Finite, 0 <= value < pi/2 rad; zero requires exact alignment |
-
-Invalid updates return a reason without committing any value in the atomic
-request. Runtime updates are consumed by the next wall tick. An inverse result
-that overflows despite finite inputs inhibits drive; the kinematics themselves
-are unchanged.
+Every numeric controller parameter in `config/swerve.yaml` is validated at
+startup (the node exits with the reason) and before atomic runtime sets
+(the request is rejected with the reason). The parameter list and meanings
+are in [controller.md](controller.md).
 
 ## Clocks, pause and watchdog
 
@@ -142,32 +131,24 @@ once and context shutdown still runs if cleanup reports another error.
 The independent actuator watchdog remains the fallback for transport failure
 or forced process termination. SIGKILL cannot run controller cleanup.
 
-## TF ownership and local visualization
+## TF ownership
 
 ```text
-base_root                         massless, coincident chassis dummy
-└── base_link                      fixed, robot_state_publisher
-    ├── lidar_link                 fixed lidar_joint, XYZ (0, 0, 0.20) m
-    ├── front_left_axle            front_left_kingpin
-    │   └── front_left_wheel       front_left_wheel_joint
-    ├── front_right_axle           front_right_kingpin
-    │   └── front_right_wheel      front_right_wheel_joint
-    ├── rear_left_axle             rear_left_kingpin
-    │   └── rear_left_wheel        rear_left_wheel_joint
-    └── rear_right_axle            rear_right_kingpin
-        └── rear_right_wheel       rear_right_wheel_joint
+odom                              wheel odometry, swerve_controller (publish_odom_tf)
+└── base_root                     massless, coincident chassis dummy
+    └── base_link                 fixed, robot_state_publisher
+        ├── imu_link              fixed
+        ├── lidar_link            fixed, on the mast (mast_height)
+        ├── <corner>_strut        <corner>_suspension (prismatic, passive spring)
+        │   └── <corner>_axle     <corner>_kingpin (continuous steering)
+        │       └── <corner>_wheel  <corner>_wheel_joint (continuous drive)
 ```
 
-`base_root` replaces the misleading `base_footprint` name without changing
-geometry, inertia or spawn coordinates. It does not represent ground contact.
-Robot_state_publisher owns all fixed robot transforms and uses measured joint
-states for articulated transforms. There is no `odom`, `map` or world-to-robot
-ROS transform yet. Local RViz should use `base_link` as Fixed Frame and
-`use_sim_time=true`. Robot_state_publisher owns `base_link -> lidar_link`;
-the ray sensor plugin publishes `/scan` in `lidar_link` and publishes no TF.
-The optional `lidar:=false` launch omits that sensor branch. A future odometry
-source must exclusively own the moving transform to the rover root; no static
-world-to-base transform is added.
+robot_state_publisher owns every fixed and articulated transform inside the
+robot from the plugin's `/joint_states` (12 joints). The controller owns
+`odom -> base_link`. The plugin can publish `world -> base_link` for
+validation only (`ground_truth_tf:=true`); never enable both on the same
+`base_link` parent. No `map` frame exists.
 
 ## Tests and integration validation
 

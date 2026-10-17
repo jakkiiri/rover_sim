@@ -1,7 +1,38 @@
+# Swerve controller configuration. Every value is validated at startup and on
+# atomic runtime updates; nonsense values abort the node with a message.
 swerve_controller:
   ros__parameters:
-    command_timeout: 0.5    # monotonic wall seconds; 0 inhibits drive
-    feedback_timeout: 0.5   # simulation seconds; 0 inhibits drive
-    max_wheel_speed: 8.0    # rad/s, below the URDF no-load speed (10)
-    wheel_acceleration: 6.0
-    alignment_tolerance: 0.08
+    drive_mode: ackermann       # ackermann | crab | point_turn | auto (runtime: /swerve/set_drive_mode)
+    publish_odom_tf: true       # broadcast odom -> base_link from wheel odometry
+    odom_frame: odom
+    base_frame: base_link
+    # --- safety timeouts ---
+    command_timeout: 0.5        # monotonic wall seconds without /cmd_vel; 0 inhibits drive
+    feedback_timeout: 0.5       # simulation seconds without valid /joint_states; 0 inhibits drive
+    # --- body-level limits (v and yaw rate, not per wheel) ---
+    max_speed: 1.0              # m/s
+    max_yaw_rate: 1.2           # rad/s
+    max_accel: 0.8              # m/s^2
+    max_yaw_accel: 1.5          # rad/s^2
+    max_jerk: 4.0               # m/s^3
+    max_yaw_jerk: 8.0           # rad/s^3
+    max_wheel_speed: 8.0        # rad/s cap, must not exceed the URDF limit (10)
+    # --- steering error handling: speed scale = max(0, cos e)^p, hard stop above the cutoff ---
+    steer_error_power: 2.0
+    steer_error_cutoff: 1.2     # rad
+    twist_scaling: true         # scale the whole twist by the worst module (consistent path)
+    # --- tilt limits from /imu/data ---
+    tilt_slowdown_deg: 15.0     # linear speed/accel reduction starts here
+    tilt_cutoff_deg: 32.0       # motion stops here (about 0.7 of the ~47 deg tipping angle)
+    # --- traction control ---
+    slip_threshold: 0.35        # slip ratio (rim speed vs odometry-predicted speed)
+    slip_speed_min: 0.15        # m/s below which slip is not evaluated
+    slip_reduction_rate: 2.0    # scale decrease per second while slipping
+    slip_recovery_rate: 0.5     # scale recovery per second
+    slip_min_scale: 0.3
+    # --- stall detection ---
+    stall_time: 2.0             # s of commanded motion without measured motion
+    stall_speed_fraction: 0.15
+    stall_scale: 0.6            # wheel-speed scale while stalled (limits wheel spin)
+    odometry_use_imu: true      # gyro yaw rate replaces the wheel yaw estimate
+    imu_velocity_tau: 10.0      # s, decay of the IMU-vs-wheel velocity discrepancy (stall/slip sensing)

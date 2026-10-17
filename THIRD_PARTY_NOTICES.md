@@ -1,4 +1,26 @@
-# Upstream model provenance
+# Third-party notices
+
+## Status after the Mars overhaul (2026-10-17)
+
+The rover description was rewritten from scratch
+(`urdf/mars_rover.urdf.xacro`, `urdf/modules/*.xacro`, `urdf/sensors/*`):
+original rover_sim code with its own inertia helpers. The vendored copies of
+`Kettenhoax/gazebo_ros_four_wheel_steering` (`urdf/upstream/`) and the
+`proxy_rover.urdf.xacro` assembly that used them were **removed** in this
+overhaul; they remain in the git history (commit `4905b38` and the Phase A
+commit) under the notice below. No upstream controller, plugin, terrain or
+sensor code was ever included. The terrain generator, rock meshes, textures,
+plugin, controller, LiDAR post-processing and validation scripts are
+original. The rock size-frequency law follows published parameters from
+Golombek & Rapp (1997) and Golombek et al. (2003), cited in
+`docs/terrain.md`; no data or code from those papers is included.
+
+The remaining sections record the provenance of the removed files for the
+history of this repository.
+
+---
+
+## Historical: upstream model provenance (files removed)
 
 Repository: https://github.com/Kettenhoax/gazebo_ros_four_wheel_steering
 
@@ -46,7 +68,7 @@ The same six sphere/cylinder/box inertia helpers survive at revision
 `e0cc5d44d8bc60975a2a2357a606655c4f46431c`, under
 `uos_common_urdf/urdf/common.xacro`. That repository publishes a BSD-3-Clause
 license, Copyright (c) 2020, Osnabrück University. Its complete original text is
-preserved verbatim in `LICENSES/UOS-BSD.txt`; this is a published 2020 notice,
+was preserved verbatim in `LICENSES/UOS-BSD.txt` (removed with the helpers, see git history); this is a published 2020 notice,
 not a claim that the helpers were first authored in 2020. The license was added
 by commit `bbad716ab55ec169ca030b36cb8f85f62b623f82` on 2020-04-27.
 Preserve this inherited notice alongside the Apache-2.0 AIT adaptation notice.

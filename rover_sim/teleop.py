@@ -1,4 +1,9 @@
-"""Standalone terminal teleop for the rover's body-frame Twist interface."""
+"""Standalone terminal teleop for the rover's body-frame Twist interface.
+
+Keys: W/S forward/backward, A/D rotate, Q/E strafe (crab/auto modes only),
++/- speed up/down, M cycle drive mode, X e-stop toggle, Space stop,
+Ctrl+C quit. A status line prints whenever the state changes.
+"""
 import math
 import os
 import select
@@ -12,39 +17,70 @@ from contextlib import contextmanager
 import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from rclpy.signals import SignalHandlerOptions
+from std_msgs.msg import String
 
 ZERO = (0.0, 0.0, 0.0)
-DEFAULTS = dict(linear_speed=0.4, angular_speed=0.5,
-                key_timeout=0.7, publish_rate=20.0)
+DRIVE_MODES = ('ackermann', 'crab', 'point_turn', 'auto')
+STRAFE_MODES = ('crab', 'auto')
+DEFAULTS = dict(linear_speed=0.4, lateral_speed=0.3, angular_speed=0.5,
+                key_timeout=0.7, publish_rate=20.0, speed_step=1.25,
+                min_scale=0.2, max_scale=2.5)
 
 
 class KeyboardCommand:
     """Input state, with an explicit monotonic time supplied by the caller."""
 
-    def __init__(self, linear_speed=0.4, angular_speed=0.5,
-                 key_timeout=0.7, publish_rate=20.0):
-        for name, value in locals().copy().items():
-            if name == 'self':
-                continue
+    def __init__(self, linear_speed=0.4, lateral_speed=0.3, angular_speed=0.5,
+                 key_timeout=0.7, publish_rate=20.0, speed_step=1.25,
+                 min_scale=0.2, max_scale=2.5, drive_mode='ackermann'):
+        for name, value in dict(linear_speed=linear_speed, lateral_speed=lateral_speed,
+                                angular_speed=angular_speed, key_timeout=key_timeout,
+                                publish_rate=publish_rate, speed_step=speed_step,
+                                min_scale=min_scale, max_scale=max_scale).items():
             if not math.isfinite(value) or value < 0 or (
-                    name in ('key_timeout', 'publish_rate') and value == 0):
+                    name in ('key_timeout', 'publish_rate', 'min_scale', 'max_scale') and value == 0):
                 raise ValueError(f'{name} must be finite and ' +
-                                 ('positive' if name in ('key_timeout', 'publish_rate')
+                                 ('positive' if name in ('key_timeout', 'publish_rate', 'min_scale', 'max_scale')
                                   else 'nonnegative'))
-        self.mapping = {
-            'w': ((linear_speed, 0.0, 0.0), 'W forward'),
-            's': ((-linear_speed, 0.0, 0.0), 'S backward'),
-            'a': ((0.0, 0.0, angular_speed), 'A rotate left'),
-            'd': ((0.0, 0.0, -angular_speed), 'D rotate right'),
-        }
+        if speed_step <= 1.0:
+            raise ValueError('speed_step must exceed 1')
+        if min_scale > max_scale:
+            raise ValueError('min_scale must not exceed max_scale')
+        if drive_mode not in DRIVE_MODES:
+            raise ValueError(f'drive_mode must be one of {DRIVE_MODES}')
+        self.speeds = dict(linear=linear_speed, lateral=lateral_speed, angular=angular_speed)
+        self.scale, self.speed_step, self.min_scale, self.max_scale = 1.0, speed_step, min_scale, max_scale
+        self.mode = drive_mode
+        self.mode_changed = False
+        self.estop = False
         self.timeout = key_timeout
         self.command, self.label = ZERO, 'STOP ready'
         self.last_key = -math.inf
         self.escape = ''
 
+    def _mapping(self):
+        lin, lat, ang = (self.speeds['linear'] * self.scale, self.speeds['lateral'] * self.scale,
+                         self.speeds['angular'] * self.scale)
+        mapping = {
+            'w': ((lin, 0.0, 0.0), 'W forward'),
+            's': ((-lin, 0.0, 0.0), 'S backward'),
+            'a': ((0.0, 0.0, ang), 'A rotate left'),
+            'd': ((0.0, 0.0, -ang), 'D rotate right'),
+        }
+        if self.mode in STRAFE_MODES:
+            mapping['q'] = ((0.0, lat, 0.0), 'Q strafe left')
+            mapping['e'] = ((0.0, -lat, 0.0), 'E strafe right')
+        return mapping
+
     def stop(self, reason):
         self.command, self.label = ZERO, 'STOP ' + reason
+
+    def status(self):
+        return (f'mode={self.mode} speed x{self.scale:.2f} '
+                f'({self.speeds["linear"] * self.scale:.2f} m/s, {self.speeds["angular"] * self.scale:.2f} rad/s) '
+                f'{"E-STOP " if self.estop else ""}{self.label}')
 
     def feed(self, data, now):
         """Return True for Ctrl+C. A stop takes precedence over queued motion."""
@@ -64,14 +100,31 @@ class KeyboardCommand:
                 elif self.escape == 'start' or '@' <= char <= '~':
                     self.escape = ''
                 continue
+            key = char.lower()
+            mapping = self._mapping()
             if char == '\x1b':
                 self.escape = 'start'
                 self.stop('unsupported key')
-            elif char.lower() in self.mapping:
-                self.command, self.label = self.mapping[char.lower()]
+            elif key == 'x':
+                self.estop = not self.estop
+                self.stop('e-stop engaged' if self.estop else 'e-stop released')
+            elif key == 'm':
+                self.mode = DRIVE_MODES[(DRIVE_MODES.index(self.mode) + 1) % len(DRIVE_MODES)]
+                self.mode_changed = True
+                self.stop('mode ' + self.mode)
+            elif key in ('+', '='):
+                self.scale = min(self.max_scale, self.scale * self.speed_step)
+                self.label = f'speed x{self.scale:.2f}'
+            elif key in ('-', '_'):
+                self.scale = max(self.min_scale, self.scale / self.speed_step)
+                self.label = f'speed x{self.scale:.2f}'
+            elif key in mapping and not self.estop:
+                self.command, self.label = mapping[key]
                 self.last_key = now
             else:
-                self.stop('unsupported key')
+                self.stop('e-stop' if self.estop and key in mapping else 'unsupported key')
+        if self.estop:
+            self.command = ZERO
         return False
 
     def expire(self, now):
@@ -99,22 +152,30 @@ class RoverTeleop(Node):
         super().__init__('rover_teleop')
         values = {name: self.declare_parameter(name, value).value
                   for name, value in DEFAULTS.items()}
-        self.input = KeyboardCommand(**values)
+        drive_mode = self.declare_parameter('drive_mode', 'ackermann').value
+        self.input = KeyboardCommand(drive_mode=drive_mode, **values)
         self.period = 1.0 / values['publish_rate']
         self.publisher = self.create_publisher(Twist, '/cmd_vel', 1)
+        self.mode_publisher = self.create_publisher(
+            String, '/swerve/set_drive_mode', QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
         self.displayed = None
 
     def publish_command(self):
         msg = Twist()
-        vx, _, wz = self.input.command
-        # Enforce the rover interface at publication as well as in key mappings.
-        msg.linear.x, msg.angular.z = vx, wz
-        msg.linear.y = 0.0
+        vx, vy, wz = self.input.command
+        if self.input.estop or self.input.mode not in STRAFE_MODES:
+            vy = 0.0
+        if self.input.estop:
+            vx = wz = 0.0
+        msg.linear.x, msg.linear.y, msg.angular.z = vx, vy, wz
         self.publisher.publish(msg)
-        display = (self.input.label, (vx, 0.0, wz))
+        if getattr(self.input, 'mode_changed', False):
+            self.mode_publisher.publish(String(data=self.input.mode))
+            self.input.mode_changed = False
+        display = (self.input.status(), (vx, vy, wz))
         if display != self.displayed:
-            print(f'{self.input.label}: vx={vx:+.3f} m/s '
-                  f'yaw={wz:+.3f} rad/s', flush=True)
+            print(f'{self.input.label}: vx={vx:+.3f} vy={vy:+.3f} m/s yaw={wz:+.3f} rad/s | '
+                  f'{self.input.status()}', flush=True)
             self.displayed = display
 
 
@@ -134,10 +195,11 @@ def main(args=None):
             previous[sig] = signal.signal(sig, request_stop)
         node = RoverTeleop()
         with keyboard_terminal(sys.stdin) as fd:
-            print('W/S forward/backward | A/D rotate left/right | '
-                  'Space stop | Ctrl+C quit\n'
+            print('W/S forward/backward | A/D rotate | Q/E strafe (crab/auto) | +/- speed | '
+                  'M drive mode | X e-stop | Space stop | Ctrl+C quit\n'
                   f'Hold one key; release stops after {node.input.timeout:g}s. '
                   'Keep this terminal focused.', flush=True)
+            node.mode_publisher.publish(String(data=node.input.mode))
             node.publish_command()
             next_publish = time.monotonic() + node.period
             while rclpy.ok() and not stopping:

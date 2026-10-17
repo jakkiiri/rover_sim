@@ -1,0 +1,44 @@
+{
+  "rest": {
+    "base_z": 0.4073745927056687,
+    "suspension": {
+      "front_left_suspension": -0.00034036396919186966,
+      "front_right_suspension": -0.00026678954592345913,
+      "rear_left_suspension": 0.0013140682834531646,
+      "rear_right_suspension": 0.0013881845523670859
+    }
+  },
+  "bump": {
+    "bump_height": 0.12,
+    "speed": 0.5,
+    "contact_4_of_4": 1.0,
+    "contact_at_least_3": 1.0,
+    "min_wheels_in_contact": 4,
+    "max_pitch_deg": 10.397804876609067,
+    "max_roll_deg": 0.06559761588597987,
+    "peak_vertical_accel": 4.930741231053767,
+    "rms_vertical_accel": 0.5705450941993002,
+    "settling_time_after_bump_s": 0.16000000000000014,
+    "crossed": true
+  },
+  "rock_field": {
+    "rocks": 24,
+    "speed": 0.5,
+    "contact_4_of_4": 0.9875690607734806,
+    "contact_at_least_3": 1.0,
+    "min_wheels_in_contact": 3,
+    "max_pitch_deg": 3.379230245861529,
+    "max_roll_deg": 3.244189974800184,
+    "peak_vertical_accel": 2.044515799707077,
+    "rms_vertical_accel": 0.4310481139406048,
+    "crossed": true,
+    "mean_speed": 0.48752704130881414
+  },
+  "passed": true,
+  "launch_args": [
+    "gui:=false",
+    "lidar:=false",
+    "world:=flat"
+  ],
+  "contact_threshold_m": -0.02616666666666667
+}
