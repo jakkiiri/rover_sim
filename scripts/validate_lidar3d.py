@@ -51,7 +51,9 @@ def analyse(clouds, channels, vfov_deg, sensor_height, min_range):
         azimuth = np.arctan2(xyz[:, 1], xyz[:, 0])
         elevation = np.arcsin(np.clip(xyz[:, 2] / np.maximum(r, 1e-9), -1, 1))
         elevations.update(np.round(np.degrees(elevation), 1).tolist())
-        on_box = (np.abs(azimuth) < math.atan2(half, near_face) * 0.9) & (xyz[:, 0] > near_face - 1.0) & (xyz[:, 0] < near_face + 1.5)
+        # Exclude a wedge wider than the box so beams grazing its side edges are
+        # not mistaken for ground returns (they produced 1-2 m residuals).
+        on_box = (np.abs(azimuth) < math.atan2(half + 0.4, near_face)) & (xyz[:, 0] > near_face - 1.5)
         down = (elevation < math.radians(-2.0)) & ~on_box & (r > min_range)
         expected = sensor_height / np.sin(-elevation[down])
         ground_errors.extend((r[down] - expected).tolist())
@@ -65,8 +67,8 @@ def analyse(clouds, channels, vfov_deg, sensor_height, min_range):
             basis = np.stack([np.cos(azimuth[steep]), np.sin(azimuth[steep]), np.ones(int(steep.sum()))], axis=1)
             coefficients = np.linalg.lstsq(basis, err, rcond=None)[0]
             steep_errors.extend((err - basis @ coefficients + coefficients[2]).tolist())
-        face = on_box & (xyz[:, 2] > -sensor_height + 0.05) & (xyz[:, 2] < -sensor_height + BOX['size'] - 0.05) & \
-            (np.abs(xyz[:, 0] - near_face) < 0.3)
+        face = (np.abs(azimuth) < math.atan2(half, near_face) * 0.9) & (xyz[:, 2] > -sensor_height + 0.05) & \
+            (xyz[:, 2] < -sensor_height + BOX['size'] - 0.05) & (np.abs(xyz[:, 0] - near_face) < 0.3)
         expected_box = near_face / (np.cos(azimuth[face]) * np.cos(elevation[face]))
         box_errors.extend((r[face] - expected_box).tolist())
         self_hits += int(np.sum((np.abs(xyz[:, 0] - LIDAR_X) < 0.7) & (np.abs(xyz[:, 1]) < 0.5) & (xyz[:, 2] < -0.15) & (r > min_range)))

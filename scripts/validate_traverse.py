@@ -63,7 +63,7 @@ def main():
         try:
             observer.wait_for(lambda: observer.latest_truth() is not None and observer.latest_joints() is not None
                               and bool(odom), timeout=200, what='rover', launch=launch)
-            observer.run_sim(3.0)
+            observer.run_sim(3.0, timeout_factor=60.0)
             pids = launch.pids('gzserver')
             sampler = metrics.CpuSampler(pids)
             wall_start = time.monotonic()
@@ -88,7 +88,7 @@ def main():
                 yaw_rate = max(-1.0, min(1.0, args.yaw_gain * heading_error))
                 speed = args.speed * max(0.0, math.cos(heading_error)) if abs(heading_error) < math.pi / 2 else 0.0
                 observer.command = (speed, 0.0, yaw_rate)
-                observer.run_sim(0.2)
+                observer.run_sim(0.2, timeout_factor=150.0)
                 max_tilt = max(max_tilt, abs(g[5]), abs(g[6]))
                 if math.hypot(g[2] - last_progress_pos[0], g[3] - last_progress_pos[1]) > 0.3:
                     last_progress_pos, last_progress_time = (g[2], g[3]), observer.sim_time()

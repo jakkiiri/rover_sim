@@ -61,4 +61,40 @@ TF, RobotModel and the `/odom` arrow trail are on. On a slow machine lower
 
 ## Measured cost per profile
 
-LIDAR_TABLE
+Headless flat world, rover at rest, two 10 s windows per profile, 20 sweeps
+analysed (`validate_lidar3d.py`, `docs/validation/mars_lidar.json`). The
+baseline without any LiDAR is RTF 0.998 / 0.56 cores (Phase A).
+
+| Profile | channels × samples | points per sweep (flat world) | median RTF | gzserver cores | post-processing cores | RTF ≥ 0.9 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `lite` (CPU `ray`) | 16 × 450 | 3600 | 0.946 | 0.66 | 0.43 | yes |
+| `standard` (CPU `ray`) | 16 × 900 | 7200 | 0.900 | 0.68 | 0.44 | yes |
+| `high` (CPU `ray`) | 32 × 1024 | 16114 | 0.723 | 0.80 | 0.42 | no |
+| `lite` (`gpu_ray`, Intel iGPU, headless with DISPLAY) | 16 × 450 | 3150 | 0.998 | 0.83 | 0.42 | yes, but ranges wrong (see below) |
+
+Only `lite` keeps the real-time factor above 0.9 on this machine, so it is
+the default. `standard` sits right at the budget (0.886–0.900 across runs)
+and `high` costs a quarter of real time. The CPU ray sensor does not run in
+a separate physics-free thread in practice: every doubling of rays shows up
+in RTF even though the gzserver process uses well under one core.
+
+`gpu_ray` on the Intel iGPU does work headless (the X display is reachable)
+and costs no RTF at all (0.998), **but its geometry is wrong**: the ground
+returns have a 1.27 m range bias with 0.57 m scatter, only 7 of 16 channels
+return, and 3150 instead of 3600 points arrive. This is the known Gazebo
+Classic GPU ray limitation (cube-map projection and vertical interpolation
+with few channels), so the launch keeps the CPU sensor unless explicitly
+asked for `lidar_gpu:=true`; `auto` never chooses it on its own
+(`lidar_prefer_gpu:=true` is required in addition to a display and GUI).
+
+Geometry and noise (CPU profiles): the lowest beam is at −15° (−22.5° for
+`high`) with exactly the configured 2° (1.45°) spacing; ground ranges match
+the analytic plane within 2 mm per channel after removing the 0.05° body
+tilt, with a per-channel residual σ of **2.0 cm** (the configured 2 cm);
+the 1 m test box's near face is measured within 3 mm. Self-hits on the
+rover's own links: **0 per sweep** in every profile. The processed cloud
+carries `ring` and `time` and adds the range-dependent noise and dropout.
+
+The RViz configuration was checked for the expected displays by the unit
+tests; an interactive GUI check was not possible in this headless session.
+

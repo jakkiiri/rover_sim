@@ -190,12 +190,17 @@ class Observer:
             time.sleep(0.02)
 
     def run_sim(self, seconds, command=None, timeout_factor=20.0):
-        """Hold ``command`` for ``seconds`` of simulation time."""
+        """Hold ``command`` for ``seconds`` of simulation time.
+
+        The wall timeout scales with the requested simulation time so that a
+        slow simulation (RTF down to 1/timeout_factor) still completes; a
+        stalled clock raises after that.
+        """
         if command is not None:
             self.command = command
         start = self.sim_time()
         self.wait_for(lambda: self.sim_time() is not None and self.sim_time() - start >= seconds,
-                      timeout=max(10.0, seconds * timeout_factor), what='simulation time to advance')
+                      timeout=max(30.0, seconds * timeout_factor), what='simulation time to advance')
 
     def measure(self, seconds, pids):
         """Sample RTF and CPU of ``pids`` over ``seconds`` of wall time."""
