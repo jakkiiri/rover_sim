@@ -1,0 +1,10 @@
+[
+  {
+    "case": "repeated_sigint_moving",
+    "passed": false,
+    "exit_code": -2,
+    "destruction_calls": 1,
+    "final_drive_target": null,
+    "child_output": "[INFO] [1791734822.443291949] [swerve_controller]: Waiting for complete steering feedback; modules: [('front_left_kingpin', 0.38, 0.45, 0.18, -1.0), ('front_right_kingpin', 0.38, -0.45, 0.18, -1.0), ('rear_left_kingpin', -0.38, 0.45, 0.18, -1.0), ('rear_right_kingpin', -0.38, -0.45, 0.18, -1.0)]\n[INFO] [1791734822.455138796] [swerve_controller]: Actuator epoch 1: cleared commands; waiting for steering feedback\nSHUTDOWN_DESTRUCTION_BOUNDARY\nTraceback (most recent call last):\n  File \"<string>\", line 24, in <module>\n  File \"/home/leokarras/rover_ws/install/rover_sim/local/lib/python3.10/dist-packages/rover_sim/controller.py\", line 90, in main\n    node.destroy_node()\n  File \"<string>\", line 21, in destroy\nKeyboardInterrupt\n"
+  }
+]

@@ -1,0 +1,7 @@
+swerve_controller:
+  ros__parameters:
+    command_timeout: 0.5    # monotonic wall seconds; 0 inhibits drive
+    feedback_timeout: 0.5   # simulation seconds; 0 inhibits drive
+    max_wheel_speed: 12.0
+    wheel_acceleration: 8.0
+    alignment_tolerance: 0.08

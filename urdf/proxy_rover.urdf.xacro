@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!-- Local assembly using the upstream steering and primitive macros.
+     Provenance and changes: THIRD_PARTY_NOTICES.md. Dimensions are metres. -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="proxy_rover">
+  <xacro:arg name="enable_control" default="true"/>
+  <xacro:arg name="actuator_watchdog" default="0.3"/>
+  <xacro:arg name="enable_lidar" default="true"/>
+  <xacro:include filename="upstream/wheel_steered.urdf.xacro"/>
+  <xacro:include filename="upstream/inertia_tensors.urdf.xacro"/>
+  <xacro:include filename="sensors/lidar.urdf.xacro"/>
+  <xacro:property name="axle_link_radius" value="0.06"/>
+  <xacro:property name="steering_link_mass" value="1.0"/>
+  <!-- Massless ROS root avoids the KDL root-inertia warning. -->
+  <link name="base_root"/>
+  <joint name="base_root_joint" type="fixed">
+    <parent link="base_root"/><child link="base_link"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+  <link name="base_link">
+    <xacro:box_primitive x="1.0" y="0.5" z="0.2"/>
+    <xacro:box_inertial x="1.0" y="0.5" z="0.2" mass="20"/>
+  </link>
+  <gazebo reference="base_link"><material>Gazebo/Orange</material></gazebo>
+  <xacro:macro name="wheel_module" params="prefix x side">
+    <xacro:wheel_steered prefix="${prefix}" parent_link="base_link" left_right="${side}">
+      <origin xyz="${x} ${side * 0.45} -0.15"/>
+    </xacro:wheel_steered>
+    <link name="${prefix}_wheel">
+      <!-- Narrow centered tread approximates a rounded tire contact band.
+           Full-width cylindrical collision edges cause turn scrub in ODE. -->
+      <visual><geometry><cylinder length="0.12" radius="0.18"/></geometry></visual>
+      <collision><geometry><cylinder length="0.02" radius="0.18"/></geometry></collision>
+      <xacro:cylinder_inertial length="0.12" radius="0.18" mass="1"/>
+    </link>
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="${prefix}_axle"/>
+      <child link="${prefix}_wheel"/>
+      <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+      <axis xyz="0 0 1"/>
+      <!-- Low passive drag; active control is provided by the Classic plugin. -->
+      <dynamics damping="0.05" friction="0.02"/>
+      <limit effort="40" velocity="20"/>
+    </joint>
+    <gazebo reference="${prefix}_axle"><material>Gazebo/Grey</material></gazebo>
+    <gazebo reference="${prefix}_wheel">
+      <material>Gazebo/Black</material>
+      <mu1>1.0</mu1><mu2>1.0</mu2>
+      <kp>1000000</kp><kd>100</kd>
+      <minDepth>0.001</minDepth><maxVel>0.1</maxVel>
+    </gazebo>
+  </xacro:macro>
+  <xacro:wheel_module prefix="front_left" x="0.38" side="1"/>
+  <xacro:wheel_module prefix="front_right" x="0.38" side="-1"/>
+  <xacro:wheel_module prefix="rear_left" x="-0.38" side="1"/>
+  <xacro:wheel_module prefix="rear_right" x="-0.38" side="-1"/>
+  <xacro:if value="$(arg enable_lidar)">
+    <xacro:rover_lidar parent="base_link"/>
+  </xacro:if>
+  <xacro:if value="$(arg enable_control)">
+    <gazebo>
+      <plugin name="swerve_actuators" filename="librover_swerve_actuators.so">
+        <watchdog_timeout>$(arg actuator_watchdog)</watchdog_timeout>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+</robot>

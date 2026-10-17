@@ -1,0 +1,76 @@
+[
+  {
+    "case": "atomic_invalid_parameters",
+    "passed": true,
+    "reason": "wheel_acceleration must be positive",
+    "unchanged_parameters": [
+      0.5,
+      8.0
+    ]
+  },
+  {
+    "case": "valid_runtime_parameters",
+    "passed": true
+  },
+  {
+    "case": "pause_resume_deadman",
+    "passed": true,
+    "paused_sim_delta": 0.0,
+    "paused_drive_targets": 0.0,
+    "resumed_wheel_speed": 9.478956460472338e-06
+  },
+  {
+    "case": "reset_all_while_moving",
+    "passed": true,
+    "previous_epoch": 2853149577114,
+    "new_epoch": 2853149577115,
+    "wheel_speed": 9.81520970681878e-06,
+    "drive_targets": 0.0
+  },
+  {
+    "case": "reset_models_while_moving",
+    "passed": true,
+    "previous_epoch": 2853149577115,
+    "new_epoch": 2853149577116,
+    "wheel_speed": 9.477660854756795e-06,
+    "drive_targets": 0.0
+  },
+  {
+    "case": "reset_time_while_moving",
+    "passed": true,
+    "previous_epoch": 2853149577116,
+    "new_epoch": 2853149577117,
+    "wheel_speed": 9.50566381680032e-06,
+    "drive_targets": 0.0
+  },
+  {
+    "case": "slow_simulation",
+    "passed": true,
+    "measured_real_time_factor": 0.019978927338270728,
+    "command_frames": 250,
+    "max_wall_command_gap": 0.024937174000115192,
+    "minimum_drive_target": 2.2222222222222223,
+    "actual_wheel_speed": 2.2440560425206026
+  },
+  {
+    "case": "actuator_watchdog",
+    "passed": true,
+    "configured_wall_timeout": 0.6,
+    "wheel_settling_wall_seconds": 0.7996180889999778,
+    "actual_wheel_speed": 0.025236058434345034
+  },
+  {
+    "case": "controller_resume_no_stale_motion",
+    "passed": true,
+    "actual_wheel_speed": 9.48664578052956e-06,
+    "maximum_resumed_wheel_speed": 0.011621996807115566,
+    "command_frames": 21,
+    "previous_epoch": 2853149577117,
+    "new_epoch": 2853149577118,
+    "nonzero_command_frames": 0
+  },
+  {
+    "case": "fresh_command_after_watchdog",
+    "passed": true
+  }
+]

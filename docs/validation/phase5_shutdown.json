@@ -1,0 +1,18 @@
+[
+  {
+    "case": "repeated_sigint_moving",
+    "passed": true,
+    "exit_code": 0,
+    "destruction_calls": 1,
+    "final_drive_target": 0.0,
+    "child_output": "[INFO] [1791737324.980633495] [swerve_controller]: Waiting for complete steering feedback; modules: [('front_left_kingpin', 0.38, 0.45, 0.18, -1.0), ('front_right_kingpin', 0.38, -0.45, 0.18, -1.0), ('rear_left_kingpin', -0.38, 0.45, 0.18, -1.0), ('rear_right_kingpin', -0.38, -0.45, 0.18, -1.0)]\n[INFO] [1791737327.388751077] [swerve_controller]: Actuator epoch 1: cleared commands; waiting for steering feedback\nSHUTDOWN_DESTRUCTION_BOUNDARY\nSHUTDOWN_COMPLETE\n"
+  },
+  {
+    "case": "repeated_sigint_before_feedback",
+    "passed": true,
+    "exit_code": 0,
+    "destruction_calls": 1,
+    "final_drive_target": null,
+    "child_output": "[INFO] [1791737328.852481520] [swerve_controller]: Waiting for complete steering feedback; modules: [('front_left_kingpin', 0.38, 0.45, 0.18, -1.0), ('front_right_kingpin', 0.38, -0.45, 0.18, -1.0), ('rear_left_kingpin', -0.38, 0.45, 0.18, -1.0), ('rear_right_kingpin', -0.38, -0.45, 0.18, -1.0)]\nSHUTDOWN_DESTRUCTION_BOUNDARY\nSHUTDOWN_COMPLETE\n"
+  }
+]

@@ -1,0 +1,125 @@
+[
+  {
+    "case": "W",
+    "command": [
+      0.4,
+      0.0,
+      0.0
+    ],
+    "duration": 3.1260000000000012,
+    "body_displacement": [
+      1.2504135750670595,
+      0.0001130348215964581
+    ],
+    "yaw_change": 0.00025389176015812114,
+    "translation_error": 0.00011384706117856884,
+    "heading_error": 0.00025389176015812114,
+    "passed": true
+  },
+  {
+    "case": "S",
+    "command": [
+      -0.4,
+      0.0,
+      0.0
+    ],
+    "duration": 3.164999999999999,
+    "body_displacement": [
+      -1.265999766632094,
+      8.119857325271818e-06
+    ],
+    "yaw_change": -0.00013553278899279197,
+    "translation_error": 8.123210175926093e-06,
+    "heading_error": 0.00013553278899279197,
+    "passed": true
+  },
+  {
+    "case": "A",
+    "command": [
+      0.0,
+      0.35,
+      0.0
+    ],
+    "duration": 3.1930000000000014,
+    "body_displacement": [
+      0.00012592570480092166,
+      1.117550128496693
+    ],
+    "yaw_change": -0.00023608711819299408,
+    "translation_error": 0.00012592577036099037,
+    "heading_error": 0.00023608711819299408,
+    "passed": true
+  },
+  {
+    "case": "D",
+    "command": [
+      0.0,
+      -0.35,
+      0.0
+    ],
+    "duration": 3.195999999999998,
+    "body_displacement": [
+      -3.504605952532364e-05,
+      -1.1185999720983426
+    ],
+    "yaw_change": -0.00013974654840522938,
+    "translation_error": 3.504607063216881e-05,
+    "heading_error": 0.00013974654840522938,
+    "passed": true
+  },
+  {
+    "case": "Q",
+    "command": [
+      0.0,
+      0.0,
+      0.5
+    ],
+    "duration": 3.1400000000000006,
+    "body_displacement": [
+      4.514158744243675e-06,
+      7.034497799919162e-06
+    ],
+    "yaw_change": 1.5633913967200674,
+    "translation_error": 8.358336465188463e-06,
+    "heading_error": 0.006608603279932845,
+    "passed": true
+  },
+  {
+    "case": "E",
+    "command": [
+      0.0,
+      0.0,
+      -0.5
+    ],
+    "duration": 3.2150000000000034,
+    "body_displacement": [
+      -3.1771585424420436e-06,
+      1.3576331369189155e-05
+    ],
+    "yaw_change": -1.6001651497205682,
+    "translation_error": 1.394313845050109e-05,
+    "heading_error": 0.00733485027943348,
+    "passed": true
+  },
+  {
+    "case": "Space",
+    "zero_latency_wall_seconds": 0.0034225730005346122,
+    "max_wheel_speed_after_stop": 1.8673327718341924e-05,
+    "passed": true
+  },
+  {
+    "case": "release",
+    "zero_latency_wall_seconds": 0.646494432999134,
+    "max_wheel_speed_after_stop": 6.0224047471596144e-05,
+    "passed": true
+  },
+  {
+    "case": "Ctrl+C",
+    "zero_latency_wall_seconds": 0.04720459500003926,
+    "max_wheel_speed_after_stop": 2.7837550080620273e-05,
+    "passed": true,
+    "exit_code": 0,
+    "terminal_restored": true,
+    "active_command_printed": true
+  }
+]

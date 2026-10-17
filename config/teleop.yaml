@@ -1,0 +1,6 @@
+rover_teleop:
+  ros__parameters:
+    linear_speed: 0.4       # m/s, W/S
+    angular_speed: 0.5      # rad/s, A/D
+    key_timeout: 0.7       # wall seconds since last motion key/repeat
+    publish_rate: 20.0     # Hz, wall time (independent of simulation pauses)

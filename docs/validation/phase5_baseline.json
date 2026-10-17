@@ -1,0 +1,162 @@
+{
+  "prior_failed_load_attempt": {"performance_only":true,"performance":[{"window":1,"wall_seconds":9.830644190000385,"real_time_factor":0.559475034768783,"scan_count":0,"scan_rate_sim_hz":null,"scan_rate_wall_hz":null,"maximum_heartbeat_wall_gap":0.330328684000051,"epochs":[4915308771313,4915308771314,4915308771315]}],"checks":[{"case":"performance_window_1","passed":false,"window":1,"wall_seconds":9.830644190000385,"real_time_factor":0.559475034768783,"scan_count":0,"scan_rate_sim_hz":null,"scan_rate_wall_hz":null,"maximum_heartbeat_wall_gap":0.330328684000051,"epochs":[4915308771313,4915308771314,4915308771315]}],"passed":false,"error":"RuntimeError('Failed performance_window_1')","temporary_entities_removed":true},
+  "performance_only": true,
+  "performance": [
+    {
+      "window": 1,
+      "wall_seconds": 9.812067103000118,
+      "real_time_factor": 0.784747996438554,
+      "scan_count": 0,
+      "scan_rate_sim_hz": null,
+      "scan_rate_wall_hz": null,
+      "maximum_heartbeat_wall_gap": 0.0613584640004774,
+      "maximum_clock_wall_gap": 0.18548460700003488,
+      "maximum_scan_wall_gap": null,
+      "epochs": [
+        4915308771316
+      ]
+    },
+    {
+      "window": 2,
+      "wall_seconds": 9.876025126999593,
+      "real_time_factor": 0.8100424915008754,
+      "scan_count": 0,
+      "scan_rate_sim_hz": null,
+      "scan_rate_wall_hz": null,
+      "maximum_heartbeat_wall_gap": 0.03222796899990499,
+      "maximum_clock_wall_gap": 0.15626354799951514,
+      "maximum_scan_wall_gap": null,
+      "epochs": [
+        4915308771316
+      ]
+    },
+    {
+      "window": 3,
+      "wall_seconds": 9.880559735999668,
+      "real_time_factor": 0.7995498444502569,
+      "scan_count": 0,
+      "scan_rate_sim_hz": null,
+      "scan_rate_wall_hz": null,
+      "maximum_heartbeat_wall_gap": 0.037604660999932094,
+      "maximum_clock_wall_gap": 0.1545377919992461,
+      "maximum_scan_wall_gap": null,
+      "epochs": [
+        4915308771316
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "case": "performance_window_1",
+      "passed": true,
+      "window": 1,
+      "wall_seconds": 9.812067103000118,
+      "real_time_factor": 0.784747996438554,
+      "scan_count": 0,
+      "scan_rate_sim_hz": null,
+      "scan_rate_wall_hz": null,
+      "maximum_heartbeat_wall_gap": 0.0613584640004774,
+      "maximum_clock_wall_gap": 0.18548460700003488,
+      "maximum_scan_wall_gap": null,
+      "epochs": [
+        4915308771316
+      ]
+    },
+    {
+      "case": "performance_window_2",
+      "passed": true,
+      "window": 2,
+      "wall_seconds": 9.876025126999593,
+      "real_time_factor": 0.8100424915008754,
+      "scan_count": 0,
+      "scan_rate_sim_hz": null,
+      "scan_rate_wall_hz": null,
+      "maximum_heartbeat_wall_gap": 0.03222796899990499,
+      "maximum_clock_wall_gap": 0.15626354799951514,
+      "maximum_scan_wall_gap": null,
+      "epochs": [
+        4915308771316
+      ]
+    },
+    {
+      "case": "performance_window_3",
+      "passed": true,
+      "window": 3,
+      "wall_seconds": 9.880559735999668,
+      "real_time_factor": 0.7995498444502569,
+      "scan_count": 0,
+      "scan_rate_sim_hz": null,
+      "scan_rate_wall_hz": null,
+      "maximum_heartbeat_wall_gap": 0.037604660999932094,
+      "maximum_clock_wall_gap": 0.1545377919992461,
+      "maximum_scan_wall_gap": null,
+      "epochs": [
+        4915308771316
+      ]
+    },
+    {
+      "case": "no_watchdog_false_trip_during_performance",
+      "passed": true,
+      "epochs": [
+        4915308771316
+      ]
+    }
+  ],
+  "epoch_events": [
+    {
+      "epoch": 4915308771316,
+      "monotonic_wall_time": 5080.534418288,
+      "simulation_time": 0.0,
+      "stage": "startup",
+      "stage_details": {},
+      "command": {
+        "linear_x": 0.0,
+        "linear_y": 0.0,
+        "angular_z": 0.0
+      },
+      "last_clock_wall_age": null,
+      "last_scan_wall_age": null,
+      "last_heartbeat_wall_age": 0.0007881249994170503
+    }
+  ],
+  "stage_events": [
+    {
+      "stage": "startup",
+      "monotonic_wall_time": 5080.502541646,
+      "simulation_time": 0.0
+    },
+    {
+      "stage": "performance",
+      "stage_details": {
+        "window": 1
+      },
+      "monotonic_wall_time": 5083.01224627,
+      "simulation_time": 128.7
+    },
+    {
+      "stage": "performance",
+      "stage_details": {
+        "window": 2
+      },
+      "monotonic_wall_time": 5093.017058255,
+      "simulation_time": 136.5
+    },
+    {
+      "stage": "performance",
+      "stage_details": {
+        "window": 3
+      },
+      "monotonic_wall_time": 5103.023851793,
+      "simulation_time": 144.6
+    },
+    {
+      "stage": "cleanup",
+      "stage_details": {},
+      "monotonic_wall_time": 5113.041886114,
+      "simulation_time": 152.6
+    }
+  ],
+  "median_real_time_factor": 0.7995498444502569,
+  "passed": true,
+  "temporary_entities_removed": true
+}

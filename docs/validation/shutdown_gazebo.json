@@ -1,0 +1,17 @@
+{
+  "case": "repeated_signals_gazebo_moving",
+  "passed": true,
+  "signals": [
+    "SIGINT",
+    "SIGINT",
+    "SIGTERM"
+  ],
+  "initial_wheel_speed": 2.1519368800553345,
+  "final_drive_target": 0.0,
+  "final_wheel_speed": 0.04285598749523874,
+  "wall_stop_seconds": 0.20508740700006456,
+  "post_signal_targets": [
+    2.2222222222222223,
+    0.0
+  ]
+}
