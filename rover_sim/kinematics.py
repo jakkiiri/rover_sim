@@ -26,41 +26,69 @@ def rotation(rpy):
             (-sp, cp*sr, cp*cr))
 
 
+def _xyz(element, key='xyz'):
+    return [float(v) for v in (element.get(key, '0 0 0') if element is not None else '0 0 0').split()]
+
+
 def modules_from_urdf(xml):
-    """Read supported direct-to-base, wheel-centered modules; reject other layouts."""
+    """Read swerve modules whose kingpin hangs below base_link through fixed or
+    prismatic (suspension) joints with zero rotation; reject other layouts.
+
+    The module position is the kingpin axis location in base_link at the
+    nominal (zero) suspension position; wheels must be centred on that axis.
+    """
     root = ET.fromstring(xml)
     joints = {j.attrib['name']: j for j in root.findall('joint')}
     links = {j.attrib['name']: j for j in root.findall('link')}
+    by_child = {j.find('child').get('link'): j for j in joints.values()}
     result = []
     for name in sorted(n for n in joints if n.endswith('_kingpin')):
         j = joints[name]
         drive_name = name[:-len('_kingpin')] + '_wheel_joint'
+        if drive_name not in joints:
+            raise ValueError(f'Missing drive joint {drive_name}')
         d = joints[drive_name]
-        origin = j.find('origin')
-        xyz = list(map(float, origin.get('xyz', '0 0 0').split()))
-        rpy = list(map(float, origin.get('rpy', '0 0 0').split()))
-        wheel_origin = d.find('origin')
-        offset = list(map(float, wheel_origin.get('xyz', '0 0 0').split()))
-        if (j.find('parent').get('link') != 'base_link' or any(abs(v) > 1e-9 for v in rpy + offset)
-                or j.find('axis').get('xyz').split() != ['0', '0', '1']
+        # Walk from the kingpin up to base_link, composing translations only.
+        xyz = _xyz(j.find('origin'))
+        if any(abs(v) > 1e-9 for v in _xyz(j.find('origin'), 'rpy')):
+            raise ValueError('Kingpin origin must not be rotated')
+        parent = j.find('parent').get('link')
+        depth = 0
+        while parent != 'base_link':
+            if parent not in by_child or depth > 4:
+                raise ValueError('Kingpin must hang below base_link through fixed/prismatic joints')
+            up = by_child[parent]
+            if up.get('type') not in ('fixed', 'prismatic') or any(abs(v) > 1e-9 for v in _xyz(up.find('origin'), 'rpy')):
+                raise ValueError('Only unrotated fixed or prismatic (suspension) joints may carry a module')
+            if up.get('type') == 'prismatic' and up.find('axis').get('xyz').split() != ['0', '0', '1']:
+                raise ValueError('Suspension joints must travel vertically')
+            xyz = [a + b for a, b in zip(xyz, _xyz(up.find('origin')))]
+            parent = up.find('parent').get('link')
+            depth += 1
+        offset = _xyz(d.find('origin'))
+        if (any(abs(v) > 1e-9 for v in offset[:2]) or j.find('axis').get('xyz').split() != ['0', '0', '1']
                 or d.find('parent').get('link') != j.find('child').get('link')):
-            raise ValueError('Expected wheel-centered, vertical steering joints directly on base_link')
+            raise ValueError('Expected wheel-centred, vertical steering joints')
         spin = list(map(float, d.find('axis').get('xyz').split()))
-        mat = rotation(list(map(float, wheel_origin.get('rpy', '0 0 0').split())))
+        mat = rotation(_xyz(d.find('origin'), 'rpy'))
         axis = [sum(mat[i][k]*spin[k] for k in range(3)) for i in range(3)]
         # Rolling direction = spin_axis cross +Z. At steering=0 it must be +/-X.
         if abs(axis[0]) > 1e-6 or abs(axis[2]) > 1e-6 or abs(abs(axis[1])-1) > 1e-6:
             raise ValueError('Wheel axis must be transverse at zero steering')
         wheel = links[d.find('child').get('link')]
-        collision = wheel.find('collision')
-        geometry = collision.find('geometry/cylinder')
-        if geometry is None:
-            raise ValueError('Expected a cylindrical wheel collision')
-        co = collision.find('origin')
-        if co is not None and any(abs(float(v)) > 1e-9 for key in ('xyz', 'rpy') for v in co.get(key, '0 0 0').split()):
-            raise ValueError('Wheel collision must be centered and aligned with wheel link')
+        radius = None
+        for element in wheel.findall('collision') + wheel.findall('visual'):
+            cylinder = element.find('geometry/cylinder')
+            sphere = element.find('geometry/sphere')
+            if cylinder is not None:
+                radius = float(cylinder.get('radius'))
+                break
+            if sphere is not None and radius is None:
+                radius = float(sphere.get('radius'))
+        if radius is None:
+            raise ValueError('Expected a cylindrical or spherical wheel geometry')
         limit, dl = j.find('limit'), d.find('limit')
-        module = Module(name, drive_name, xyz[0], xyz[1], float(geometry.get('radius')),
+        module = Module(name, drive_name, xyz[0], xyz[1], radius,
                         axis[1],
                         -math.inf if j.get('type') == 'continuous' else float(limit.get('lower')),
                         math.inf if j.get('type') == 'continuous' else float(limit.get('upper')),

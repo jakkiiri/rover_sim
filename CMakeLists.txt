@@ -8,15 +8,36 @@ find_package(gazebo_ros REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
+find_package(tf2_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 add_library(rover_swerve_actuators SHARED src/swerve_gazebo_plugin.cpp)
 target_compile_features(rover_swerve_actuators PUBLIC cxx_std_17)
-ament_target_dependencies(rover_swerve_actuators gazebo_dev gazebo_ros rclcpp sensor_msgs std_msgs)
+ament_target_dependencies(rover_swerve_actuators gazebo_dev gazebo_ros rclcpp sensor_msgs std_msgs
+  nav_msgs diagnostic_msgs tf2_msgs geometry_msgs)
 install(TARGETS rover_swerve_actuators LIBRARY DESTINATION lib)
 ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS scripts/swerve_controller scripts/validate_swerve.py
   scripts/rover_teleop scripts/validate_teleop.py scripts/validate_hardening.py
-  scripts/validate_shutdown.py scripts/validate_lidar.py DESTINATION lib/${PROJECT_NAME})
+  scripts/validate_shutdown.py scripts/validate_lidar.py
+  scripts/generate_terrain.py scripts/measure_performance.py scripts/validate_terrain.py
+  DESTINATION lib/${PROJECT_NAME})
+
+# Procedural Mars terrain assets are generated at build time (deterministic
+# from the default seed) and installed under share/rover_sim/generated.
+set(ROVER_SIM_TERRAIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+file(GLOB ROVER_SIM_TERRAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/rover_sim/terrain/*.py)
+add_custom_command(
+  OUTPUT ${ROVER_SIM_TERRAIN_DIR}/terrain_manifest.json
+  COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}
+          ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_terrain.py
+          --output-dir ${ROVER_SIM_TERRAIN_DIR} --quiet
+  DEPENDS ${ROVER_SIM_TERRAIN_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_terrain.py
+  COMMENT "Generating Mars terrain assets (seed 7)")
+add_custom_target(rover_sim_terrain ALL DEPENDS ${ROVER_SIM_TERRAIN_DIR}/terrain_manifest.json)
+install(DIRECTORY ${ROVER_SIM_TERRAIN_DIR}/ DESTINATION share/${PROJECT_NAME}/generated)
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
@@ -27,6 +48,8 @@ if(BUILD_TESTING)
   ament_add_pytest_test(swerve_controller_state test/test_controller.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
   ament_add_pytest_test(lidar_description test/test_lidar.py
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
+  ament_add_pytest_test(terrain_generator test/test_terrain.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 

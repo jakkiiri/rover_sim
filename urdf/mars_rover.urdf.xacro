@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<!-- Mars rover: 4 sprung, independently steered and driven swerve modules.
+     Original rover_sim design (no upstream model code). Dimensions in metres,
+     masses in kg. Mechanical limits are documented in docs/mechanics.md. -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="mars_rover">
+  <xacro:arg name="enable_control" default="true"/>
+  <xacro:arg name="actuator_watchdog" default="0.3"/>
+  <xacro:arg name="enable_lidar" default="true"/>
+  <xacro:arg name="lidar_profile" default="lite"/>
+  <xacro:arg name="lidar_gpu" default="false"/>
+  <xacro:arg name="mast_height" default="0.60"/>
+  <xacro:arg name="wheel_collision" default="sphere"/>
+  <xacro:arg name="wheel_stall_torque" default="6.5"/>
+  <xacro:arg name="wheel_no_load_speed" default="10.0"/>
+  <xacro:arg name="wheel_mu" default="0.8"/>
+  <xacro:arg name="body_mass" default="26.0"/>
+  <xacro:arg name="ground_truth_rate" default="50"/>
+  <xacro:arg name="ground_truth_tf" default="false"/>
+  <xacro:arg name="suspension_mode" default="spring"/>
+  <xacro:arg name="strut_inertia_size" default="0.10"/>
+
+  <xacro:include filename="modules/inertia.xacro"/>
+  <xacro:include filename="modules/swerve_module.xacro"/>
+  <xacro:include filename="sensors/imu.urdf.xacro"/>
+  <xacro:include filename="sensors/lidar3d.urdf.xacro"/>
+
+  <!-- Chassis -->
+  <xacro:property name="body_length" value="0.90"/>
+  <xacro:property name="body_width" value="0.60"/>
+  <xacro:property name="body_height" value="0.22"/>
+  <xacro:property name="body_mass" value="$(arg body_mass)"/>
+  <xacro:property name="ground_clearance" value="0.30"/>  <!-- body bottom above ground at rest -->
+  <xacro:property name="panel_mass" value="3.0"/>
+  <xacro:property name="ebox_mass" value="3.0"/>
+  <xacro:property name="mast_height" value="$(arg mast_height)"/>
+  <xacro:property name="mast_mass" value="1.0"/>
+  <xacro:property name="mast_x" value="${body_length/2-0.12}"/>
+  <!-- Modules -->
+  <xacro:property name="module_x" value="0.40"/>
+  <xacro:property name="module_y" value="0.50"/>
+  <xacro:property name="wheel_radius" value="0.20"/>
+  <xacro:property name="wheel_width" value="0.12"/>
+  <xacro:property name="wheel_mass" value="2.5"/>
+  <xacro:property name="grouser_count" value="10"/>
+  <xacro:property name="strut_mass" value="1.0"/>
+  <xacro:property name="axle_mass" value="1.5"/>
+  <xacro:property name="fork_offset" value="0.085"/>
+  <!-- Vertical chain: body bottom -> strut (0.04) -> fork drop (0.06) -> wheel centre
+       so that wheel centre = ground_clearance - 0.10 = 0.20 = wheel radius. -->
+  <xacro:property name="strut_length" value="0.04"/>
+  <xacro:property name="fork_drop" value="${ground_clearance - strut_length - wheel_radius}"/>
+  <xacro:property name="suspension_travel" value="0.10"/>
+  <xacro:property name="suspension_mode" value="$(arg suspension_mode)"/>
+  <xacro:property name="strut_inertia_size" value="$(arg strut_inertia_size)"/>
+  <!-- Sprung mass per module ~8 kg (body+payload 32 kg / 4): k = 1500 N/m gives
+       omega_n = 13.7 rad/s; c = 2*0.5*sqrt(k m) = 110 N s/m (zeta = 0.5).
+       Gazebo spring force = k (reference - q); the negative reference preloads
+       the spring with the Mars weight (8.25*3.71/1500 = 0.0204 m) so q_rest = 0. -->
+  <xacro:property name="suspension_stiffness" value="1500.0"/>
+  <xacro:property name="suspension_damping" value="110.0"/>
+  <xacro:property name="suspension_reference" value="-0.0198"/>
+  <xacro:property name="steering_torque" value="25.0"/>
+  <xacro:property name="steering_rate" value="3.0"/>
+  <xacro:property name="wheel_stall_torque" value="$(arg wheel_stall_torque)"/>
+  <xacro:property name="wheel_no_load_speed" value="$(arg wheel_no_load_speed)"/>
+  <xacro:property name="wheel_collision" value="$(arg wheel_collision)"/>
+  <xacro:property name="wheel_mu" value="$(arg wheel_mu)"/>
+  <xacro:property name="wheel_kp" value="1000000"/>
+  <xacro:property name="wheel_kd" value="100"/>
+  <xacro:property name="wheel_min_depth" value="0.002"/>
+  <xacro:property name="wheel_max_vel" value="1.0"/>
+
+  <!-- Massless ROS root keeps KDL quiet; coincident with base_link. -->
+  <link name="base_root"/>
+  <joint name="base_root_joint" type="fixed">
+    <parent link="base_root"/><child link="base_link"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+  <link name="base_link">
+    <visual>
+      <geometry><box size="${body_length} ${body_width} ${body_height}"/></geometry>
+      <material name="body_white"><color rgba="0.85 0.84 0.80 1"/></material>
+    </visual>
+    <collision>
+      <geometry><box size="${body_length} ${body_width} ${body_height}"/></geometry>
+    </collision>
+    <!-- Solar deck -->
+    <visual>
+      <origin xyz="0 0 ${body_height/2+0.01}"/>
+      <geometry><box size="${body_length+0.10} ${body_width+0.14} 0.02"/></geometry>
+      <material name="solar_blue"><color rgba="0.10 0.14 0.35 1"/></material>
+    </visual>
+    <!-- Electronics box at the rear of the deck -->
+    <visual>
+      <origin xyz="${-body_length/2+0.17} 0 ${body_height/2+0.02+0.075}"/>
+      <geometry><box size="0.30 0.30 0.15"/></geometry>
+      <material name="ebox_gold"><color rgba="0.80 0.65 0.25 1"/></material>
+    </visual>
+    <!-- Instrument mast, front-centre of the deck -->
+    <visual>
+      <origin xyz="${mast_x} 0 ${body_height/2+0.02+mast_height/2}"/>
+      <geometry><cylinder radius="0.03" length="${mast_height}"/></geometry>
+      <material name="mast_grey"><color rgba="0.6 0.6 0.62 1"/></material>
+    </visual>
+    <!-- Combined inertia of body, deck, e-box and mast about the body centre.
+         Payload masses are small and placed by parallel-axis terms below. -->
+    <inertial>
+      <mass value="${body_mass + panel_mass + ebox_mass + mast_mass}"/>
+      <origin xyz="${(ebox_mass*(-body_length/2+0.17) + mast_mass*mast_x)/(body_mass+panel_mass+ebox_mass+mast_mass)} 0 ${(panel_mass*(body_height/2+0.01) + ebox_mass*(body_height/2+0.095) + mast_mass*(body_height/2+0.02+mast_height/2))/(body_mass+panel_mass+ebox_mass+mast_mass)}"/>
+      <inertia ixx="${body_mass*(body_width**2+body_height**2)/12 + panel_mass*((body_width+0.14)**2+0.02**2)/12 + panel_mass*(body_height/2+0.01)**2 + ebox_mass*(0.3**2+0.15**2)/12 + ebox_mass*(body_height/2+0.095)**2 + mast_mass*(3*0.03**2+mast_height**2)/12 + mast_mass*(body_height/2+0.02+mast_height/2)**2}"
+               ixy="0" ixz="0"
+               iyy="${body_mass*(body_length**2+body_height**2)/12 + panel_mass*((body_length+0.10)**2+0.02**2)/12 + panel_mass*(body_height/2+0.01)**2 + ebox_mass*(0.3**2+0.15**2)/12 + ebox_mass*((body_height/2+0.095)**2+(-body_length/2+0.17)**2) + mast_mass*(3*0.03**2+mast_height**2)/12 + mast_mass*((body_height/2+0.02+mast_height/2)**2+mast_x**2)}"
+               iyz="0"
+               izz="${body_mass*(body_length**2+body_width**2)/12 + panel_mass*((body_length+0.10)**2+(body_width+0.14)**2)/12 + ebox_mass*(0.3**2+0.3**2)/12 + ebox_mass*(-body_length/2+0.17)**2 + mast_mass*0.03**2/2 + mast_mass*mast_x**2}"/>
+    </inertial>
+  </link>
+  <gazebo reference="base_link"><material>Gazebo/White</material></gazebo>
+
+  <xacro:swerve_module prefix="front_left" x="${module_x}" y="${module_y}" side="1"/>
+  <xacro:swerve_module prefix="front_right" x="${module_x}" y="${-module_y}" side="-1"/>
+  <xacro:swerve_module prefix="rear_left" x="${-module_x}" y="${module_y}" side="1"/>
+  <xacro:swerve_module prefix="rear_right" x="${-module_x}" y="${-module_y}" side="-1"/>
+
+  <xacro:rover_imu parent="base_link"/>
+  <xacro:if value="$(arg enable_lidar)">
+    <xacro:rover_lidar3d parent="base_link" xyz="${mast_x} 0 ${body_height/2+0.02+mast_height+0.04}"
+                         profile="$(arg lidar_profile)" gpu="$(arg lidar_gpu)"/>
+  </xacro:if>
+
+  <xacro:if value="$(arg enable_control)">
+    <gazebo>
+      <plugin name="swerve_actuators" filename="librover_swerve_actuators.so">
+        <watchdog_timeout>$(arg actuator_watchdog)</watchdog_timeout>
+        <ground_truth_rate>$(arg ground_truth_rate)</ground_truth_rate>
+        <ground_truth_tf>$(arg ground_truth_tf)</ground_truth_tf>
+        <steering_kp>60.0</steering_kp>
+        <steering_kd>3.0</steering_kd>
+        <wheel_kp>3.0</wheel_kp>
+        <wheel_ki>20.0</wheel_ki>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+</robot>

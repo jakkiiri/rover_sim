@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!-- Original inertia helpers for rover_sim (solid primitives about their centroid). -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="inertial_box" params="mass x y z *origin">
+    <inertial>
+      <mass value="${mass}"/>
+      <xacro:insert_block name="origin"/>
+      <inertia ixx="${mass*(y*y+z*z)/12.0}" ixy="0" ixz="0"
+               iyy="${mass*(x*x+z*z)/12.0}" iyz="0"
+               izz="${mass*(x*x+y*y)/12.0}"/>
+    </inertial>
+  </xacro:macro>
+  <!-- Cylinder with its axis along local Z. -->
+  <xacro:macro name="inertial_cylinder" params="mass radius length *origin">
+    <inertial>
+      <mass value="${mass}"/>
+      <xacro:insert_block name="origin"/>
+      <inertia ixx="${mass*(3.0*radius*radius+length*length)/12.0}" ixy="0" ixz="0"
+               iyy="${mass*(3.0*radius*radius+length*length)/12.0}" iyz="0"
+               izz="${mass*radius*radius/2.0}"/>
+    </inertial>
+  </xacro:macro>
+  <xacro:macro name="inertial_sphere" params="mass radius *origin">
+    <inertial>
+      <mass value="${mass}"/>
+      <xacro:insert_block name="origin"/>
+      <inertia ixx="${0.4*mass*radius*radius}" ixy="0" ixz="0"
+               iyy="${0.4*mass*radius*radius}" iyz="0"
+               izz="${0.4*mass*radius*radius}"/>
+    </inertial>
+  </xacro:macro>
+</robot>
