@@ -162,7 +162,7 @@ def setup(context):
         # lite is the only CPU profile that holds RTF >= 0.9.
         lidar_profile = 'dense' if lidar_gpu == 'true' else 'lite'
     channels, vertical_fov = {'high': (32, 45.0), 'dense': (64, 45.0)}.get(lidar_profile, (16, 30.0))
-    print(f'[rover_mars.launch] lidar: {"gpu_ray" if lidar_gpu == "true" else "ray"} profile {lidar_profile}'
+    print(f'[rover_mars.launch] lidar: {"gpu_lidar" if sim == "fortress" else ("gpu_ray" if lidar_gpu == "true" else "ray")} profile {lidar_profile}'
           + ('' if lidar_enabled else ' (disabled)'), flush=True)
     if cfg['lidar_channels']:
         channels = int(cfg['lidar_channels'])
@@ -192,7 +192,9 @@ def setup(context):
         import re
         match = re.search(r'<world name="([^"]+)"', prepared.read_text())
         world_name = match.group(1) if match else prepared.stem
-        bridges = [f'/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock']
+        bridges = ['/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
+                   # native GUI teleop (Teleop plugin in the world's <gui>) -> controller
+                   '/cmd_vel@geometry_msgs/msg/Twist[ignition.msgs.Twist']
         if lidar_enabled:
             bridges += ['/points_raw/points@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked',
                         '/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU']
@@ -205,6 +207,13 @@ def setup(context):
                  arguments=bridges, parameters=[{'use_sim_time': True}],
                  remappings=[('/points_raw/points', '/points_raw'), ('/imu', '/imu/data')]),
         ]
+        if _truthy(cfg['gui']):
+            # Make the GUI camera follow the rover once it exists (native CameraTracking service).
+            from launch.actions import ExecuteProcess, TimerAction
+            sim_actions.append(TimerAction(period=8.0, actions=[ExecuteProcess(
+                cmd=['ign', 'service', '-s', '/gui/follow', '--reqtype', 'ignition.msgs.StringMsg',
+                     '--reptype', 'ignition.msgs.Boolean', '--timeout', '5000', '--req', 'data: "mars_rover"'],
+                output='log')]))
     else:
         gazebo_launch_dir = os.path.join(get_package_share_directory('gazebo_ros'), 'launch')
         spawn_args = ['-entity', 'mars_rover', '-topic', 'robot_description', '-timeout', '120',
@@ -253,7 +262,7 @@ def setup(context):
 
 def generate_launch_description():
     args = [
-        DeclareLaunchArgument('sim', default_value='classic', description='classic (Gazebo 11) | fortress (gz-sim 6 via ros_gz)'),
+        DeclareLaunchArgument('sim', default_value='fortress', description='fortress (gz-sim 6 via ros_gz, default) | classic (Gazebo 11)'),
         DeclareLaunchArgument('world', default_value='mars', description='|'.join(WORLDS)),
         DeclareLaunchArgument('seed', default_value=str(DEFAULT_SEED), description='terrain seed (integer)'),
         DeclareLaunchArgument('resolution', default_value='513', description='heightmap pixels per side (513|1025)'),

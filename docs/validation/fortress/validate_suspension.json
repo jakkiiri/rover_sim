@@ -1,11 +1,11 @@
 {
   "rest": {
-    "base_z": 0.40865114621526183,
+    "base_z": 0.4078430739577207,
     "suspension": {
-      "front_left_suspension": 0.000513066171737914,
-      "front_right_suspension": 0.0005130661717380235,
-      "rear_left_suspension": 0.0021837157381738846,
-      "rear_right_suspension": 0.002183715738174026
+      "front_left_suspension": 0.0012175733937826586,
+      "front_right_suspension": 0.001251076630174274,
+      "rear_left_suspension": 0.002988186409362287,
+      "rear_right_suspension": 0.0029566463529569096
     }
   },
   "bump": {
@@ -14,25 +14,25 @@
     "contact_4_of_4": 1.0,
     "contact_at_least_3": 1.0,
     "min_wheels_in_contact": 4,
-    "max_pitch_deg": 10.562790649146962,
-    "max_roll_deg": 7.832989447950468e-08,
-    "peak_vertical_accel": 4.297241228683596,
-    "rms_vertical_accel": 0.5844245856832873,
-    "settling_time_after_bump_s": 0.17999999999999972,
+    "max_pitch_deg": 10.622281265980458,
+    "max_roll_deg": 0.045349708128104065,
+    "peak_vertical_accel": 4.0148746784854605,
+    "rms_vertical_accel": 0.5817784984790443,
+    "settling_time_after_bump_s": 0.1999999999999993,
     "crossed": true
   },
   "rock_field": {
     "rocks": 24,
     "speed": 0.5,
-    "contact_4_of_4": 0.9874476987447699,
+    "contact_4_of_4": 0.9902370990237099,
     "contact_at_least_3": 1.0,
     "min_wheels_in_contact": 3,
-    "max_pitch_deg": 3.423985972552308,
-    "max_roll_deg": 3.435246368812958,
-    "peak_vertical_accel": 2.117341181346586,
-    "rms_vertical_accel": 0.43211921108819135,
+    "max_pitch_deg": 3.38529092563778,
+    "max_roll_deg": 3.293789179921716,
+    "peak_vertical_accel": 2.1457960041928175,
+    "rms_vertical_accel": 0.46314308353728306,
     "crossed": true,
-    "mean_speed": 0.4909940466730907
+    "mean_speed": 0.4911764528133122
   },
   "passed": true,
   "launch_args": [

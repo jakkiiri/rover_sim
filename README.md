@@ -40,17 +40,23 @@ colcon test-result --verbose
 
 The build runs `scripts/generate_terrain.py` for the default seed and
 installs the heightmap DEM, textures, rock meshes and worlds under
-`share/rover_sim/generated/`. The unit suite has **276 pytest tests** (164 controller, 36 kinematics/odometry, 35 teleop, 22 LiDAR/IMU/RViz, 19 terrain, up from 131 before the overhaul); `colcon test` reports **281** including the five CTest wrappers.
+`share/rover_sim/generated/`. The unit suite has **284 pytest tests** (164 controller, 36 kinematics/odometry, 35 teleop, 22 LiDAR/IMU/RViz, 21 terrain incl. the Fortress worlds, 4 harness, up from 131 before the overhaul); `colcon test` reports **290** including the CTest wrappers.
 
 ## Run
 
 ```bash
 source /opt/ros/humble/setup.bash && source ~/rover_ws/install/setup.bash
-ros2 launch rover_sim rover_mars.launch.py world:=mars rviz:=true      # Gazebo GUI + RViz
+ros2 launch rover_sim rover_mars.launch.py world:=mars                 # Gazebo Fortress GUI with the built-in teleop panel
+ros2 launch rover_sim rover_mars.launch.py world:=mars rviz:=true      # plus RViz
 ros2 launch rover_sim rover_mars.launch.py world:=mars gui:=false      # headless server
+ros2 launch rover_sim rover_mars.launch.py sim:=classic world:=mars    # Gazebo Classic backend
 ```
 
-In a second terminal:
+**Driving.** On Fortress the Gazebo window carries the native *Rover teleop*
+panel (gz-sim's `Teleop` plugin bridged to `/cmd_vel`): tick **Keyboard** and
+hold W/A/S/D or the arrow keys, or use the sliders and buttons; the GUI
+camera follows the rover. The terminal teleop still works on both backends
+from a second terminal:
 
 ```bash
 source /opt/ros/humble/setup.bash && source ~/rover_ws/install/setup.bash
@@ -63,7 +69,7 @@ ros2 topic pub -1 /swerve/set_drive_mode std_msgs/String "{data: crab}"
 
 | Argument | Default | Meaning |
 | --- | --- | --- |
-| `sim` | `classic` | `classic` (Gazebo 11, ODE) or `fortress` (gz-sim 6, DART via `ros_gz`); see `docs/fortress.md` |
+| `sim` | `fortress` | `fortress` (gz-sim 6, DART via `ros_gz`, default) or `classic` (Gazebo 11, ODE); see `docs/fortress.md` |
 | `world` | `mars` | `mars`, `flat`, `step_test`, `slope_test`, `boulder_garden`, `desert` (legacy, classic only) |
 | `seed` | `7` | terrain seed; other seeds are generated once into `~/.cache/rover_sim` |
 | `resolution` | `513` | heightmap pixels per side (`513` or `1025`) |
@@ -71,8 +77,8 @@ ros2 topic pub -1 /swerve/set_drive_mode std_msgs/String "{data: crab}"
 | `gravity` | `3.71` | m/s² (use `9.81` for Earth tests) |
 | `shadows` | `false` | cast shadows (GPU cost) |
 | `gui`, `rviz` | `true`, `false` | Gazebo client, RViz (`rviz/rover_mars.rviz`) |
-| `lidar`, `lidar_profile` | `true`, `auto` | `auto` = `dense` (64×1024) on `gpu_ray`, `lite` (16×450) on the CPU sensor; also `standard` 16×900, `high` 32×1024; all 10 Hz |
-| `lidar_gpu` | `auto` | `auto` = `gpu_ray` on `world:=mars` when a display exists (the CPU ray sensor hangs on the heightmap), CPU `ray` elsewhere unless `lidar_prefer_gpu:=true`; `true`/`false` force it |
+| `lidar`, `lidar_profile` | `true`, `auto` | `auto` = `dense` on a GPU sensor, `lite` on the CPU sensor; all 10 Hz. Fortress (`gpu_lidar`): `lite` 16×1800, `standard` 16×2700, `high` 32×1800, `dense` 64×1800 samples. Classic: `lite` 16×450, `standard` 16×900, `high` 32×1024, `dense` 64×1024 |
+| `lidar_gpu` | `auto` | Fortress always uses `gpu_lidar` (headless EGL rendering). Classic: `auto` = `gpu_ray` on `world:=mars` when a display exists (the CPU ray sensor hangs on the heightmap), CPU `ray` elsewhere unless `lidar_prefer_gpu:=true`; `true`/`false` force it |
 | `lidar_channels`, `lidar_samples`, `lidar_vfov_deg`, `lidar_max_range` | profile values, `100.0` | override the profile's beam layout and range |
 | `scan_2d` | `false` | also publish a planar `/scan` |
 | `drive_mode` | `ackermann` | `ackermann`, `crab`, `point_turn`, `auto` |
@@ -116,7 +122,7 @@ Baseline before the overhaul: RTF 0.998 at rest with the prototype rover and 2-D
 
 ## Gazebo Fortress
 
-`sim:=fortress` runs the same rover and validators on Gazebo Fortress (gz-sim 6, DART) through `ros_gz`; measured side by side in `docs/fortress.md`. Classic remains the default backend (identical step outcomes, higher RTF, more accurate GPU LiDAR ranges on this machine).
+Fortress (gz-sim 6, DART, `ros_gz`) is the default backend; `sim:=classic` keeps Gazebo Classic 11 available. Both are measured side by side in `docs/fortress.md`.
 
 ## Validation scripts
 

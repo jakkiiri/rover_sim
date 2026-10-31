@@ -128,9 +128,9 @@ Next steps, in order (each command launches its own isolated headless sim):
 
 ## Fortress migration (started 2026-10-31, requested by the user)
 
-Decision: dual backend. `sim:=classic` (validated) stays the default until the
-Fortress path passes the same validators; `sim:=fortress` adds Gazebo
-Fortress (ign-gazebo 6.16, DART) through `ros_gz_sim`/`ros_gz_bridge`.
+Decision: dual backend. `sim:=fortress` (Gazebo Fortress, ign-gazebo 6.16,
+DART through `ros_gz_sim`/`ros_gz_bridge`) is the default since 2026-10-31
+(user request); `sim:=classic` keeps the validated Gazebo 11 path.
 Shared: controller, teleop, kinematics, odometry, post-processing, RViz,
 validators (through a backend abstraction in the harness). Backend-specific:
 world SDF, sensor blocks (xacro arg `sim_backend`), actuator plugin (gz-sim
@@ -143,3 +143,8 @@ Fortress, plugin, launch, validators, calibration, side-by-side report.
 
 - [x] F-a terrain feasibility (tiled mesh collision; heightmap formats unusable)  - [x] F-b plugin (gz_system/)  - [x] F-c lidar/imu bridge
 - [x] F1 worlds  - [x] F2 plugin  - [x] F3 launch  - [x] F4 harness backend  - [x] F5 validators on Fortress (all pass except the LiDAR range-σ criterion, documented)  - [x] F6 docs (docs/fortress.md, docs/validation/fortress.md)
+- [x] F7 Fortress default + error fixes (2026-10-31): Bullet collision detector at a 2 ms step (RTF
+  0.98 driving with probes, was 0.64); reliable point-cloud QoS (best-effort subscribers dropped
+  fragmented sweeps: 4.3 Hz received of 10 Hz published); Fortress LiDAR profiles with 1800/2700
+  samples (cube-map resolution) so the 5 cm range-σ criterion is met; native gz-sim `Teleop`
+  panel + `CameraTracking` in the world `<gui>`, bridged `/cmd_vel`; harness default backend.

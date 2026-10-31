@@ -80,12 +80,12 @@
       "yaw_offset_deg": 0.0,
       "speed": 0.8,
       "outcome": "climbed",
-      "max_x": 8.105058060372281,
-      "max_tilt_deg": 5.217606289915759,
-      "min_z_on_step": 0.4530313302436599,
+      "max_x": 8.01708056270689,
+      "max_tilt_deg": 5.254855188856571,
+      "min_z_on_step": 0.4540616355538645,
       "crossing_time_s": 10.123999999999999,
-      "max_pitch_deg": 5.217606289915759,
-      "max_roll_deg": 5.1653003463354435e-09
+      "max_pitch_deg": 5.254855188856571,
+      "max_roll_deg": 0.02155292355017446
     },
     {
       "height": 0.05,
@@ -94,12 +94,12 @@
       "yaw_offset_deg": 6.000000000000001,
       "speed": 0.8,
       "outcome": "climbed",
-      "max_x": 8.074991290286228,
-      "max_tilt_deg": 5.036881138715934,
-      "min_z_on_step": 0.4508741960748539,
-      "crossing_time_s": 10.186,
-      "max_pitch_deg": 5.036881138715934,
-      "max_roll_deg": 1.4055815309999737
+      "max_x": 7.9164227756569465,
+      "max_tilt_deg": 5.065224877990122,
+      "min_z_on_step": 0.45050007582614016,
+      "crossing_time_s": 10.188000000000002,
+      "max_pitch_deg": 5.065224877990122,
+      "max_roll_deg": 1.417850787094934
     },
     {
       "height": 0.05,
@@ -108,12 +108,12 @@
       "yaw_offset_deg": -6.000000000000001,
       "speed": 0.8,
       "outcome": "climbed",
-      "max_x": 8.088489450923744,
-      "max_tilt_deg": 5.036906838085791,
-      "min_z_on_step": 0.4528972398773259,
-      "crossing_time_s": 10.186999999999998,
-      "max_pitch_deg": 5.036906838085791,
-      "max_roll_deg": 1.3967004850651636
+      "max_x": 7.937721808878774,
+      "max_tilt_deg": 5.066694499122159,
+      "min_z_on_step": 0.45139512738543847,
+      "crossing_time_s": 10.189999999999998,
+      "max_pitch_deg": 5.066694499122159,
+      "max_roll_deg": 1.388343420755355
     },
     {
       "height": 0.1,
@@ -122,12 +122,12 @@
       "yaw_offset_deg": 0.0,
       "speed": 0.8,
       "outcome": "climbed",
-      "max_x": 7.97744035214425,
-      "max_tilt_deg": 9.463150997443494,
-      "min_z_on_step": 0.5071608427165323,
-      "crossing_time_s": 10.284999999999997,
-      "max_pitch_deg": 9.463150997443494,
-      "max_roll_deg": 0.0025667054119548143
+      "max_x": 8.20925306216923,
+      "max_tilt_deg": 9.526180272745194,
+      "min_z_on_step": 0.5063447955012567,
+      "crossing_time_s": 10.258000000000003,
+      "max_pitch_deg": 9.526180272745194,
+      "max_roll_deg": 0.0590613468944724
     },
     {
       "height": 0.1,
@@ -136,12 +136,12 @@
       "yaw_offset_deg": 6.000000000000001,
       "speed": 0.8,
       "outcome": "climbed",
-      "max_x": 7.972733747118543,
-      "max_tilt_deg": 9.381111389433318,
-      "min_z_on_step": 0.5063068058879409,
-      "crossing_time_s": 10.301000000000002,
-      "max_pitch_deg": 9.381111389433318,
-      "max_roll_deg": 2.4537995284874934
+      "max_x": 7.837627232239088,
+      "max_tilt_deg": 9.45143998363513,
+      "min_z_on_step": 0.5051558078489875,
+      "crossing_time_s": 10.278000000000006,
+      "max_pitch_deg": 9.45143998363513,
+      "max_roll_deg": 2.5909242341228147
     },
     {
       "height": 0.1,
@@ -150,12 +150,12 @@
       "yaw_offset_deg": -6.000000000000001,
       "speed": 0.8,
       "outcome": "climbed",
-      "max_x": 7.942699761919829,
-      "max_tilt_deg": 9.380199762101206,
-      "min_z_on_step": 0.5070950803587454,
-      "crossing_time_s": 10.302000000000007,
-      "max_pitch_deg": 9.380199762101206,
-      "max_roll_deg": 2.4788476774096484
+      "max_x": 7.841347847815329,
+      "max_tilt_deg": 9.472644361456314,
+      "min_z_on_step": 0.5049099502968829,
+      "crossing_time_s": 10.27000000000001,
+      "max_pitch_deg": 9.472644361456314,
+      "max_roll_deg": 2.5823573614427433
     },
     {
       "height": 0.15,
@@ -164,12 +164,12 @@
       "yaw_offset_deg": 0.0,
       "speed": 0.8,
       "outcome": "climbed",
-      "max_x": 7.925291799912506,
-      "max_tilt_deg": 13.068242796982698,
-      "min_z_on_step": 0.558085568274458,
-      "crossing_time_s": 10.819000000000003,
-      "max_pitch_deg": 13.068242796982698,
-      "max_roll_deg": 0.001531698512616503
+      "max_x": 7.921957639716088,
+      "max_tilt_deg": 13.15420535730408,
+      "min_z_on_step": 0.5569496570005316,
+      "crossing_time_s": 10.677999999999997,
+      "max_pitch_deg": 13.15420535730408,
+      "max_roll_deg": 0.025595596721836766
     },
     {
       "height": 0.15,
@@ -178,12 +178,12 @@
       "yaw_offset_deg": 6.000000000000001,
       "speed": 0.8,
       "outcome": "climbed",
-      "max_x": 8.030321795587769,
-      "max_tilt_deg": 13.071607910021216,
-      "min_z_on_step": 0.5580957421148643,
-      "crossing_time_s": 10.722000000000008,
-      "max_pitch_deg": 13.071607910021216,
-      "max_roll_deg": 1.9694126768793716
+      "max_x": 7.958656943594796,
+      "max_tilt_deg": 13.16708170686382,
+      "min_z_on_step": 0.5566239154750188,
+      "crossing_time_s": 10.629999999999995,
+      "max_pitch_deg": 13.16708170686382,
+      "max_roll_deg": 2.2455966570918853
     },
     {
       "height": 0.15,
@@ -192,12 +192,12 @@
       "yaw_offset_deg": -6.000000000000001,
       "speed": 0.8,
       "outcome": "climbed",
-      "max_x": 8.057544791210166,
-      "max_tilt_deg": 13.072675838829337,
-      "min_z_on_step": 0.5577972563354896,
-      "crossing_time_s": 10.697000000000003,
-      "max_pitch_deg": 13.072675838829337,
-      "max_roll_deg": 1.9738561175340275
+      "max_x": 8.085230441996247,
+      "max_tilt_deg": 13.159478965194552,
+      "min_z_on_step": 0.5564831388230055,
+      "crossing_time_s": 10.641999999999996,
+      "max_pitch_deg": 13.159478965194552,
+      "max_roll_deg": 2.3353469223262477
     },
     {
       "height": 0.2,
@@ -206,12 +206,12 @@
       "yaw_offset_deg": 0.0,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.409967984902115,
-      "max_tilt_deg": 2.7002102250347044,
+      "max_x": 2.4106449247159296,
+      "max_tilt_deg": 2.6810704260743194,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 2.7002102250347044,
-      "max_roll_deg": 0.03290603931483049
+      "max_pitch_deg": 2.6810704260743194,
+      "max_roll_deg": 0.014336763744890624
     },
     {
       "height": 0.2,
@@ -220,12 +220,12 @@
       "yaw_offset_deg": 6.000000000000001,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.401893925827578,
-      "max_tilt_deg": 1.8281896710520682,
+      "max_x": 2.4030790911681135,
+      "max_tilt_deg": 2.0228436780278667,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 1.8281896710520682,
-      "max_roll_deg": 1.066568145007894
+      "max_pitch_deg": 2.0228436780278667,
+      "max_roll_deg": 0.9963378013776937
     },
     {
       "height": 0.2,
@@ -234,12 +234,12 @@
       "yaw_offset_deg": -6.000000000000001,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.401909406416167,
-      "max_tilt_deg": 1.8290199162480931,
+      "max_x": 2.4027895472013268,
+      "max_tilt_deg": 2.022186198875074,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 1.8290199162480931,
-      "max_roll_deg": 1.0665109660533476
+      "max_pitch_deg": 2.022186198875074,
+      "max_roll_deg": 0.950976892238571
     },
     {
       "height": 0.25,
@@ -248,12 +248,12 @@
       "yaw_offset_deg": 0.0,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.410091303644485,
-      "max_tilt_deg": 2.720518521383426,
+      "max_x": 2.410019156932192,
+      "max_tilt_deg": 2.7667791019819203,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 2.720518521383426,
-      "max_roll_deg": 0.03286877636997365
+      "max_pitch_deg": 2.7667791019819203,
+      "max_roll_deg": 0.019363235908569434
     },
     {
       "height": 0.25,
@@ -262,12 +262,12 @@
       "yaw_offset_deg": 6.000000000000001,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.4018116810831165,
-      "max_tilt_deg": 1.8314904651790824,
+      "max_x": 2.40180897010881,
+      "max_tilt_deg": 1.9741264059875914,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 1.8314904651790824,
-      "max_roll_deg": 1.0741007776651004
+      "max_pitch_deg": 1.9741264059875914,
+      "max_roll_deg": 1.149613749356628
     },
     {
       "height": 0.25,
@@ -276,12 +276,12 @@
       "yaw_offset_deg": -6.000000000000001,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.401882030619071,
-      "max_tilt_deg": 1.8285103071471822,
+      "max_x": 2.402494617103323,
+      "max_tilt_deg": 1.9898643129837985,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 1.8285103071471822,
-      "max_roll_deg": 1.0718508306554562
+      "max_pitch_deg": 1.9898643129837985,
+      "max_roll_deg": 1.1417453757953977
     },
     {
       "height": 0.3,
@@ -290,12 +290,12 @@
       "yaw_offset_deg": 0.0,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.4096187904219395,
-      "max_tilt_deg": 2.6993662369070694,
+      "max_x": 2.4105243531581757,
+      "max_tilt_deg": 2.765401599494572,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 2.6993662369070694,
-      "max_roll_deg": 0.03322498718612356
+      "max_pitch_deg": 2.765401599494572,
+      "max_roll_deg": 0.02056356498938262
     },
     {
       "height": 0.3,
@@ -304,12 +304,12 @@
       "yaw_offset_deg": 6.000000000000001,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.40198223674814,
-      "max_tilt_deg": 1.8357702956720283,
+      "max_x": 2.401622568875657,
+      "max_tilt_deg": 1.9811407660918174,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 1.8357702956720283,
-      "max_roll_deg": 1.0770783760701435
+      "max_pitch_deg": 1.9811407660918174,
+      "max_roll_deg": 1.1099854832662888
     },
     {
       "height": 0.3,
@@ -318,12 +318,12 @@
       "yaw_offset_deg": -6.000000000000001,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.401874692364575,
-      "max_tilt_deg": 1.8258902498473928,
+      "max_x": 2.401854021153271,
+      "max_tilt_deg": 1.993043627180964,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 1.8258902498473928,
-      "max_roll_deg": 1.074589850220944
+      "max_pitch_deg": 1.993043627180964,
+      "max_roll_deg": 1.163615716517651
     },
     {
       "height": 0.4,
@@ -332,12 +332,12 @@
       "yaw_offset_deg": 0.0,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.409599139839546,
-      "max_tilt_deg": 2.7032346611742133,
+      "max_x": 2.4102154759973757,
+      "max_tilt_deg": 2.770648039934256,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 2.7032346611742133,
-      "max_roll_deg": 0.03311700323974392
+      "max_pitch_deg": 2.770648039934256,
+      "max_roll_deg": 0.024761343766765264
     },
     {
       "height": 0.4,
@@ -346,12 +346,12 @@
       "yaw_offset_deg": 6.000000000000001,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.4017437314478665,
-      "max_tilt_deg": 1.8254646137548345,
+      "max_x": 2.4019512412352553,
+      "max_tilt_deg": 1.994716726677291,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 1.8254646137548345,
-      "max_roll_deg": 1.0823280053662232
+      "max_pitch_deg": 1.994716726677291,
+      "max_roll_deg": 1.1363132399461395
     },
     {
       "height": 0.4,
@@ -360,12 +360,12 @@
       "yaw_offset_deg": -6.000000000000001,
       "speed": 0.8,
       "outcome": "blocked",
-      "max_x": 2.401652712286321,
-      "max_tilt_deg": 1.8187801503921563,
+      "max_x": 2.4024229745279078,
+      "max_tilt_deg": 2.0023552059680236,
       "min_z_on_step": null,
       "crossing_time_s": null,
-      "max_pitch_deg": 1.8187801503921563,
-      "max_roll_deg": 1.0850824887736465
+      "max_pitch_deg": 2.0023552059680236,
+      "max_roll_deg": 1.2225781590947946
     }
   ],
   "launch_args": [

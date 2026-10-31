@@ -25,6 +25,9 @@ from rover_sim.validation import metrics  # noqa: E402
 from rover_sim.validation.harness import EntityControl, Observer, SimulationLaunch, write_json  # noqa: E402
 
 PROFILES = {'lite': (16, 450, 30.0), 'standard': (16, 900, 30.0), 'high': (32, 1024, 45.0), 'dense': (64, 1024, 45.0)}
+# Fortress (ogre2 gpu_lidar): range accuracy follows the horizontal sample count
+# (cube-map resolution), so its profiles carry more samples per revolution.
+FORTRESS_PROFILES = {'lite': (16, 1800, 30.0), 'standard': (16, 2700, 30.0), 'high': (32, 1800, 45.0), 'dense': (64, 1800, 45.0)}
 BOX = dict(x=6.0, size=1.0)      # 1 m cube centred 6 m ahead of base_link, near face at x = 5.5
 LIDAR_X = 0.33                   # mast position ahead of base_link (body_length/2 - 0.12)
 REST_HEIGHT = 0.41
@@ -100,11 +103,13 @@ def main():
     parser.add_argument('--arg', action='append', default=[], help='extra launch arguments (e.g. sim:=fortress)')
     args = parser.parse_args()
     from sensor_msgs.msg import PointCloud2
-    from rclpy.qos import qos_profile_sensor_data
+    from rover_sim.lidar_postprocess import CLOUD_QOS
+    backend = 'classic' if 'sim:=classic' in args.arg else 'fortress'     # the launch default is fortress
+    profiles = PROFILES if backend == 'classic' else FORTRESS_PROFILES
     results = []
     for gpu in args.gpu:
         for profile in args.profiles:
-            channels, samples, vfov = PROFILES[profile]
+            channels, samples, vfov = profiles[profile]
             log = args.log_dir / f'lidar_{profile}_gpu{gpu}.log' if args.log_dir else None
             launch_args = ['gui:=false', 'world:=flat', f'lidar_profile:={profile}', f'lidar_gpu:={gpu}'] + args.arg
             record = dict(profile=profile, gpu=gpu, channels=channels, samples=samples, vertical_fov_deg=vfov)
@@ -121,8 +126,8 @@ def main():
                     with lock:
                         processed.append((time.monotonic(), msg))
 
-                observer.node.create_subscription(PointCloud2, '/points_raw', on_raw, qos_profile_sensor_data)
-                observer.node.create_subscription(PointCloud2, '/points', on_processed, qos_profile_sensor_data)
+                observer.node.create_subscription(PointCloud2, '/points_raw', on_raw, CLOUD_QOS)
+                observer.node.create_subscription(PointCloud2, '/points', on_processed, CLOUD_QOS)
                 try:
                     observer.wait_for(lambda: observer.latest_truth() is not None, timeout=150, what='rover', launch=launch)
                     control = EntityControl(observer, launch=launch)
@@ -172,7 +177,7 @@ def main():
                     record['postprocess_cpu_cores'] = statistics.mean(
                         sum(v for k, v in w['cpu_cores_by_pid'].items() if int(k) not in pids and v is not None) for w in windows)
                     r, p = record['raw'], record['processed']
-                    if gpu == 'true' and 'sim:=fortress' not in args.arg:
+                    if gpu == 'true' and backend == 'classic':
                         # Classic gpu_ray: the raw cloud carries the one-step label error;
                         # the processed cloud is the corrected sensor output.
                         r = p

@@ -35,7 +35,7 @@ class SimulationLaunch:
         self.command = ['ros2', 'launch', package, launch_file, *launch_args]
         self.launch_args = list(launch_args)
         args = dict(a.split(':=', 1) for a in launch_args if ':=' in a)
-        self.backend = args.get('sim', 'classic').lower()
+        self.backend = args.get('sim', 'fortress').lower()   # matches the launch default
         world = args.get('world', 'mars')
         self.world_name = f"mars_{args.get('rock_density', 'medium')}" if world == 'mars' else world
         # gz-transport partitions by IGN_PARTITION; isolate like GAZEBO_MASTER_URI.

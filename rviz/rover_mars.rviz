@@ -47,7 +47,7 @@ Visualization Manager:
         Value: /points
         Depth: 5
         History Policy: Keep Last
-        Reliability Policy: Best Effort
+        Reliability Policy: Reliable
         Durability Policy: Volatile
         Filter size: 10
       Style: Boxes
@@ -68,7 +68,7 @@ Visualization Manager:
         Value: /points_raw
         Depth: 5
         History Policy: Keep Last
-        Reliability Policy: Best Effort
+        Reliability Policy: Reliable
         Durability Policy: Volatile
       Style: Points
       Size (Pixels): 2
@@ -84,7 +84,7 @@ Visualization Manager:
         Value: /scan
         Depth: 5
         History Policy: Keep Last
-        Reliability Policy: Best Effort
+        Reliability Policy: Reliable
         Durability Policy: Volatile
       Style: Flat Squares
       Size (m): 0.05
@@ -142,7 +142,7 @@ Visualization Manager:
         Value: /imu/data
         Depth: 5
         History Policy: Keep Last
-        Reliability Policy: Best Effort
+        Reliability Policy: Reliable
         Durability Policy: Volatile
   Enabled: true
   Global Options:

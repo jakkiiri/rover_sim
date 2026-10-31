@@ -214,7 +214,7 @@ def test_rviz_uses_odom_frame_and_visible_accumulating_cloud(rviz):
     assert len(clouds) == 1
     cloud = clouds[0]
     assert cloud['Topic']['Value'] == '/points'
-    assert cloud['Topic']['Reliability Policy'] == 'Best Effort'
+    assert cloud['Topic']['Reliability Policy'] == 'Reliable'   # large clouds fragment; best-effort drops sweeps
     assert cloud['Style'] in ('Boxes', 'Spheres')
     assert 0.04 <= cloud['Size (m)'] <= 0.06
     assert 2 <= cloud['Decay Time'] <= 5

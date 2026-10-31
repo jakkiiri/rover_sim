@@ -5,13 +5,13 @@ from rover_sim.validation import metrics
 
 def test_launch_backend_and_world_name_from_arguments():
     env = isolated_environment(domain=77, port=11577)
-    classic = SimulationLaunch('rover_mars.launch.py', ['gui:=false', 'world:=mars', 'rock_density:=high'], env=dict(env))
+    classic = SimulationLaunch('rover_mars.launch.py', ['gui:=false', 'sim:=classic', 'world:=mars', 'rock_density:=high'], env=dict(env))
     assert classic.backend == 'classic' and classic.world_name == 'mars_high'
     fortress = SimulationLaunch('rover_mars.launch.py', ['sim:=fortress', 'world:=step_test'], env=dict(env))
     assert fortress.backend == 'fortress' and fortress.world_name == 'step_test'
     assert fortress.env['IGN_PARTITION'] == 'rover_sim_77'
     default = SimulationLaunch('rover_mars.launch.py', [], env=dict(env))
-    assert default.world_name == 'mars_medium'
+    assert default.backend == 'fortress' and default.world_name == 'mars_medium'   # the launch default
 
 
 def test_real_time_factor_and_cpu_math():

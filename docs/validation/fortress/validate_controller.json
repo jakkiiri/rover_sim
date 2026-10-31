@@ -5,38 +5,38 @@
       "case": "circle_path",
       "passed": true,
       "radius": 1.0,
-      "cross_track_rms": 0.0017158742814782062,
-      "cross_track_max": 0.002969914554248554,
+      "cross_track_rms": 0.0019867337446360556,
+      "cross_track_max": 0.0034010009383340645,
       "laps": 1,
-      "samples": 631
+      "samples": 630
     },
     {
       "case": "figure_eight_path",
       "passed": true,
       "loop_a": {
-        "rms": 0.0017522694234386467,
-        "max": 0.003026541565928964
+        "rms": 0.001974128609402311,
+        "max": 0.003379278824889864
       },
       "loop_b": {
-        "rms": 0.0011860267511343214,
-        "max": 0.0019684527875816205
+        "rms": 0.0010047701412765054,
+        "max": 0.0016869406629547168
       }
     },
     {
       "case": "odometry_drift",
       "passed": true,
       "segment": "figure_eight",
-      "distance_travelled": 14.329124857553381,
-      "position_error_m": 0.011094260290931355,
-      "drift_percent": 0.07742454896038667,
-      "yaw_error_deg": 0.08027800360012086
+      "distance_travelled": 14.312559160983676,
+      "position_error_m": 0.016802383867787336,
+      "drift_percent": 0.11739608324967468,
+      "yaw_error_deg": 0.3568639543439815
     },
     {
       "case": "drive_modes",
       "passed": true,
       "crab_body_displacement": [
-        0.009189653496263134,
-        1.0792900955831874
+        0.009931610659782056,
+        1.0818876987577575
       ],
       "point_turn_yaw_change": null,
       "point_turn_ok": true,
@@ -47,21 +47,21 @@
       "passed": true,
       "diagnostics_received": 30,
       "stall_warnings": 0,
-      "slip_warnings": 7,
-      "first_warning_after_s": 1.3790974539997478
+      "slip_warnings": 9,
+      "first_warning_after_s": 1.3414517330002127
     },
     {
       "case": "command_timeout_stops_rover",
       "passed": true,
-      "speed_before": 0.49619205628217283,
-      "stop_after_s": 0.9519999999999982
+      "speed_before": 0.4959969905698157,
+      "stop_after_s": 0.7400000000000091
     },
     {
       "case": "reset_handshake",
       "passed": true,
-      "epoch_before": 7009127395707,
-      "epoch_after": 7009127395708,
-      "speed_after_fresh_command": 0.5102500422425023,
+      "epoch_before": 9586541517102,
+      "epoch_after": 9586541517103,
+      "speed_after_fresh_command": 0.5138597994760996,
       "resume_after_s": 0.0
     }
   ],

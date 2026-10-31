@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
-<!-- 3-D spinning LiDAR (VLP-16-like) on the instrument mast for Gazebo Classic.
+<!-- 3-D spinning LiDAR (VLP-16-like) on the instrument mast, Gazebo Classic and Fortress.
 
-     Profiles (xacro arg lidar_profile):
-       lite     16 channels x 450 samples, 10 Hz   (default; measured cheapest)
-       standard 16 channels x 900 samples, 10 Hz
-       high     32 channels x 1024 samples, 10 Hz  (GPU recommended)
-       dense    64 channels x 1024 samples, 10 Hz  (GPU only; near-continuous coverage)
+     Profiles (xacro arg lidar_profile), channels x samples per revolution, 10 Hz:
+                 Classic (ray/gpu_ray)        Fortress (gpu_lidar)
+       lite      16 x 450  (cheapest)         16 x 1800
+       standard  16 x 900                     16 x 2700
+       high      32 x 1024 (GPU recommended)  32 x 1800
+       dense     64 x 1024 (GPU only)         64 x 1800  (launch default on Fortress)
      gpu="true" uses the gpu_ray sensor (needs a display/OpenGL), otherwise
      the CPU ray sensor. Both use libgazebo_ros_ray_sensor.so publishing
      sensor_msgs/PointCloud2 on /points_raw; rover_sim's lidar_postprocess
@@ -13,7 +14,9 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:macro name="rover_lidar3d" params="parent xyz profile gpu channels:='' samples:='' vfov_deg:='' max_range:=100.0 backend:='classic'">
     <xacro:property name="lidar_channels" value="${int(channels) if str(channels) else (64 if profile == 'dense' else (32 if profile == 'high' else 16))}"/>
-    <xacro:property name="lidar_samples" value="${int(samples) if str(samples) else (1024 if profile in ('high', 'dense') else (900 if profile == 'standard' else 450))}"/>
+    <!-- Fortress's ogre2 gpu_lidar range accuracy follows the horizontal sample count
+         (cube-map resolution; docs/fortress.md), so its profiles carry more samples. -->
+    <xacro:property name="lidar_samples" value="${int(samples) if str(samples) else ((2700 if profile == 'standard' else 1800) if backend == 'fortress' else (1024 if profile in ('high', 'dense') else (900 if profile == 'standard' else 450)))}"/>
     <xacro:property name="lidar_vfov" value="${radians(float(vfov_deg)) if str(vfov_deg) else (radians(45.0) if profile in ('high', 'dense') else radians(30.0))}"/>
     <xacro:property name="lidar_type" value="${'gpu_ray' if str(gpu).lower() in ('true', '1') else 'ray'}"/>
     <link name="lidar_link">

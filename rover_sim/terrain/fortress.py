@@ -29,11 +29,91 @@ GZ_SYSTEMS = '''    <plugin filename="ignition-gazebo-physics-system" name="igni
 '''
 
 
-def physics_block(step=0.001):
-    return f'''    <physics name="{int(step*1000)}ms" type="dart">
+GUI_BLOCK = """    <gui fullscreen="0">
+      <plugin filename="MinimalScene" name="3D View">
+        <ignition-gui><title>3D View</title><property type="bool" key="showTitleBar">false</property>
+          <property type="string" key="state">docked</property></ignition-gui>
+        <engine>ogre2</engine><scene>scene</scene>
+        <ambient_light>0.5 0.45 0.4</ambient_light><background_color>0.80 0.60 0.44</background_color>
+        <camera_pose>CAMERA_POSE</camera_pose>
+      </plugin>
+      <plugin filename="EntityContextMenuPlugin" name="Entity context menu">
+        <ignition-gui><property key="state" type="string">floating</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="showTitleBar" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="GzSceneManager" name="Scene Manager">
+        <ignition-gui><property key="resizable" type="bool">false</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="InteractiveViewControl" name="Interactive view control">
+        <ignition-gui><property key="resizable" type="bool">false</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="CameraTracking" name="Camera Tracking">
+        <ignition-gui><property key="resizable" type="bool">false</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="MarkerManager" name="Marker manager">
+        <ignition-gui><property key="resizable" type="bool">false</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="SelectEntities" name="Select Entities">
+        <ignition-gui><property key="resizable" type="bool">false</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="VisualizationCapabilities" name="Visualization Capabilities">
+        <ignition-gui><property key="resizable" type="bool">false</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="WorldControl" name="World control">
+        <ignition-gui><title>World control</title><property type="bool" key="showTitleBar">false</property>
+          <property type="bool" key="resizable">false</property><property type="double" key="height">72</property>
+          <property type="double" key="width">121</property><property type="double" key="z">1</property>
+          <property type="string" key="state">floating</property>
+          <anchors target="3D View"><line own="left" target="left"/><line own="bottom" target="bottom"/></anchors></ignition-gui>
+        <play_pause>true</play_pause><step>true</step><start_paused>false</start_paused>
+      </plugin>
+      <plugin filename="WorldStats" name="World stats">
+        <ignition-gui><title>World stats</title><property type="bool" key="showTitleBar">false</property>
+          <property type="bool" key="resizable">false</property><property type="double" key="height">110</property>
+          <property type="double" key="width">290</property><property type="double" key="z">1</property>
+          <property type="string" key="state">floating</property>
+          <anchors target="3D View"><line own="right" target="right"/><line own="bottom" target="bottom"/></anchors></ignition-gui>
+        <sim_time>true</sim_time><real_time>true</real_time><real_time_factor>true</real_time_factor><iterations>true</iterations>
+      </plugin>
+      <!-- Native teleoperation: gz-sim's Teleop panel publishes ignition.msgs.Twist on /cmd_vel,
+           bridged to the controller. Tick "Keyboard" and hold W/A/S/D or the arrow keys. -->
+      <plugin filename="Teleop" name="Teleop">
+        <ignition-gui><title>Rover teleop</title><property type="string" key="state">docked</property></ignition-gui>
+        <topic>/cmd_vel</topic>
+      </plugin>
+    </gui>
+"""
+
+
+def gui_block(camera_pose):
+    return GUI_BLOCK.replace('CAMERA_POSE', camera_pose)
+
+
+# Measured on the Mars world (docs/fortress.md): DART with the Bullet collision
+# detector at a 2 ms step holds RTF 0.98 while driving with 12 dynamic probes
+# (ODE detector at 1 ms: 0.64), with identical rest height and traverse.
+PHYSICS_STEP = 0.002
+PHYSICS_COLLISION_DETECTOR = 'bullet'
+
+
+def physics_block(step=PHYSICS_STEP, detector=PHYSICS_COLLISION_DETECTOR):
+    return f'''    <physics name="{step*1000:g}ms" type="dart">
       <max_step_size>{step}</max_step_size>
       <real_time_factor>1.0</real_time_factor>
       <real_time_update_rate>{int(round(1.0/step))}</real_time_update_rate>
+      <dart><collision_detector>{detector}</collision_detector></dart>
     </physics>
 '''
 
@@ -126,7 +206,7 @@ def mars_world(name, tiles, rocks_sdf, boulders_sdf, gravity=MARS_GRAVITY, shado
     text = (f'<?xml version="1.0"?>\n<!-- Generated by rover_sim/scripts/generate_terrain.py (Gazebo Fortress); do not edit. -->\n'
             f'<sdf version="1.8">\n  <world name="{name}">\n'
             f'    <gravity>0 0 {-gravity}</gravity>\n' + physics_block() + GZ_SYSTEMS + scene_block(shadows)
-            + f'    <gui><camera name="user_camera"><pose>{camera_pose}</pose></camera></gui>\n'
+            + gui_block(camera_pose)
             + terrain_models(tiles) + rocks_sdf + '\n' + boulders_sdf + '\n  </world>\n</sdf>\n')
     return text
 
@@ -144,7 +224,7 @@ def flat_world(name, models, gravity=MARS_GRAVITY, shadows=False, camera_pose='-
     return (f'<?xml version="1.0"?>\n<!-- Generated by rover_sim/scripts/generate_terrain.py (Gazebo Fortress); do not edit. -->\n'
             f'<sdf version="1.8">\n  <world name="{name}">\n'
             f'    <gravity>0 0 {-gravity}</gravity>\n' + physics_block() + GZ_SYSTEMS + scene_block(shadows, mars=False)
-            + f'    <gui><camera name="user_camera"><pose>{camera_pose}</pose></camera></gui>\n'
+            + gui_block(camera_pose)
             + ground_plane(size) + ''.join(models) + '  </world>\n</sdf>\n')
 
 

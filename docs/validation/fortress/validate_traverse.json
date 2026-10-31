@@ -156,172 +156,164 @@
   "reached": [
     {
       "index": 0,
-      "sim_time": 5.337999999999999
+      "sim_time": 5.48
     },
     {
       "index": 1,
-      "sim_time": 12.131
+      "sim_time": 12.06
     },
     {
       "index": 2,
-      "sim_time": 17.695999999999998
+      "sim_time": 17.614
     },
     {
       "index": 3,
-      "sim_time": 24.119999999999997
+      "sim_time": 24.098
     },
     {
       "index": 4,
-      "sim_time": 29.867000000000004
+      "sim_time": 29.919999999999998
     },
     {
       "index": 5,
-      "sim_time": 36.004000000000005
+      "sim_time": 35.884
     },
     {
       "index": 6,
-      "sim_time": 42.224000000000004
+      "sim_time": 42.260000000000005
     },
     {
       "index": 7,
-      "sim_time": 47.793
+      "sim_time": 47.976
     },
     {
       "index": 8,
-      "sim_time": 52.504000000000005
+      "sim_time": 52.641999999999996
     },
     {
       "index": 9,
-      "sim_time": 57.809000000000005
+      "sim_time": 57.738
     },
     {
       "index": 10,
-      "sim_time": 64.002
+      "sim_time": 64.13600000000001
     },
     {
       "index": 11,
-      "sim_time": 65.684
+      "sim_time": 65.59
     },
     {
       "index": 12,
-      "sim_time": 71.21
+      "sim_time": 71.25800000000001
     },
     {
       "index": 13,
-      "sim_time": 77.854
+      "sim_time": 77.924
     },
     {
       "index": 14,
-      "sim_time": 84.71
+      "sim_time": 84.64
     },
     {
       "index": 15,
-      "sim_time": 91.574
+      "sim_time": 91.51400000000001
     },
     {
       "index": 16,
-      "sim_time": 96.72099999999999
+      "sim_time": 96.558
     },
     {
       "index": 17,
-      "sim_time": 103.15599999999999
+      "sim_time": 103.10000000000001
     },
     {
       "index": 18,
-      "sim_time": 104.43199999999999
+      "sim_time": 104.56
     },
     {
       "index": 19,
-      "sim_time": 108.67399999999999
+      "sim_time": 108.934
     },
     {
       "index": 20,
-      "sim_time": 115.24199999999999
+      "sim_time": 115.49000000000001
     },
     {
       "index": 21,
-      "sim_time": 120.61
+      "sim_time": 120.934
     },
     {
       "index": 22,
-      "sim_time": 125.487
+      "sim_time": 125.91600000000001
     },
     {
       "index": 23,
-      "sim_time": 131.465
+      "sim_time": 131.718
     },
     {
       "index": 24,
-      "sim_time": 138.05599999999998
+      "sim_time": 138.404
     },
     {
       "index": 25,
-      "sim_time": 144.708
+      "sim_time": 145.06
     },
     {
       "index": 26,
-      "sim_time": 151.352
+      "sim_time": 151.618
     },
     {
       "index": 27,
-      "sim_time": 156.952
+      "sim_time": 157.226
     },
     {
       "index": 28,
-      "sim_time": 163.619
+      "sim_time": 163.94
     },
     {
       "index": 29,
-      "sim_time": 168.527
+      "sim_time": 168.778
     },
     {
       "index": 30,
-      "sim_time": 173.436
+      "sim_time": 173.708
     },
     {
       "index": 31,
-      "sim_time": 178.107
+      "sim_time": 178.392
     },
     {
       "index": 32,
-      "sim_time": 181.704
+      "sim_time": 182.06
     },
     {
       "index": 33,
-      "sim_time": 188.28199999999998
+      "sim_time": 188.69799999999998
     },
     {
       "index": 34,
-      "sim_time": 194.529
+      "sim_time": 194.88199999999998
     },
     {
       "index": 35,
-      "sim_time": 194.529
+      "sim_time": 194.88199999999998
     }
   ],
-  "sim_seconds": 195.541,
-  "wall_seconds": 201.6908809079996,
-  "path_length_m": 111.03942496215456,
-  "mean_speed_m_s": 0.5678575079505298,
-  "max_tilt_deg": 20.093781122991516,
+  "sim_seconds": 195.89999999999998,
+  "wall_seconds": 197.95280824600013,
+  "path_length_m": 111.1486078787816,
+  "mean_speed_m_s": 0.5673742107135356,
+  "max_tilt_deg": 20.12844777087578,
   "stuck_events": 0,
-  "real_time_factor": 0.9694872263005168,
-  "gzserver_cpu_cores": 1.5093394338381607,
+  "real_time_factor": 0.9896268754252202,
+  "gzserver_cpu_cores": 1.1327952454270425,
   "gzserver_rss_mb": {
-    "204818": 826.19921875
+    "230067": 830.69921875
   },
-  "odometry_drift_m": 2.860877844807422,
-  "odometry_drift_percent": 2.576452323832271,
-  "odometry_yaw_error_deg": 7.675666196417374,
-  "min_z": 2.4904199252856745,
-  "max_z": 5.189699221811731,
-  "snapshots": [
-    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_00.png",
-    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_01.png",
-    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_02.png",
-    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_03.png",
-    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_04.png",
-    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_05.png"
-  ],
+  "odometry_drift_m": 3.1814055613867582,
+  "odometry_drift_percent": 2.8622990625815046,
+  "odometry_yaw_error_deg": 8.596870343008206,
+  "min_z": 2.4898139697573924,
+  "max_z": 5.18995896657397,
   "passed": true
 }

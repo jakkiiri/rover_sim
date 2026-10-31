@@ -247,6 +247,10 @@ def test_fortress_world_uses_tiled_mesh_collision_with_normals(tmp_path, small_t
     world = fz.mars_world('mars_medium', tiles, '<model name="rocks_0_0"/>', '<model name="boulder_10cm"/>')
     assert '<sdf version="1.8">' in world and 'ignition::gazebo::systems::Physics' in world
     assert 'ignition-physics-dartsim-plugin' in world and '<render_engine>ogre2</render_engine>' in world
+    assert '<collision_detector>bullet</collision_detector>' in world and '<max_step_size>0.002</max_step_size>' in world
+    # native GUI teleoperation: gz-sim's Teleop panel publishing on the bridged /cmd_vel
+    assert '<plugin filename="Teleop"' in world and '<topic>/cmd_vel</topic>' in world
+    assert '<plugin filename="CameraTracking"' in world
     assert world.count('<collision name="terrain_tile_') == 16 and 'meshes/terrain_visual.obj' in world
     assert '<heightmap>' not in world and '<gravity>0 0 -3.71</gravity>' in world
     assert fz.step_test_world().count('<model name="step_') == 7 and fz.slope_test_world().count('<model name="ramp_') == 16

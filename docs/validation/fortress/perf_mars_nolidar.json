@@ -2,39 +2,39 @@
   "launch": "rover_mars.launch.py",
   "launch_args": [
     "gui:=false",
-    "sim:=fortress",
     "world:=mars",
-    "lidar:=false"
+    "lidar:=false",
+    "gui:=false"
   ],
   "windows": [
     {
-      "wall_seconds": 10.00909724900066,
-      "real_time_factor": 0.9796505072306648,
-      "clock_samples": 9806,
+      "wall_seconds": 10.010094734001541,
+      "real_time_factor": 0.985368039817773,
+      "clock_samples": 4933,
       "cpu_cores_by_pid": {
-        "201317": 0.8891910807329406
+        "235852": 0.6293646731035053
       },
       "memory_mb_by_pid": {
-        "201317": 651.99609375
+        "235852": 649.1484375
       },
       "window": 1
     },
     {
-      "wall_seconds": 10.00914272999944,
-      "real_time_factor": 0.9835137944156155,
-      "clock_samples": 9844,
+      "wall_seconds": 10.010175740000705,
+      "real_time_factor": 0.9827319239988025,
+      "clock_samples": 4918,
       "cpu_cores_by_pid": {
-        "201317": 0.8861897806107615
+        "235852": 0.6773107861540423
       },
       "memory_mb_by_pid": {
-        "201317": 651.99609375
+        "235852": 649.1484375
       },
       "window": 2
     }
   ],
   "gzserver_pids": [
-    201317
+    235852
   ],
-  "median_real_time_factor": 0.9815821508231402,
-  "mean_gzserver_cpu_cores": 0.887690430671851
+  "median_real_time_factor": 0.9840499819082877,
+  "mean_gzserver_cpu_cores": 0.6533377296287738
 }

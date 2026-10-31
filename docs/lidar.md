@@ -113,6 +113,35 @@ RTF at any profile on this Intel iGPU; even `dense` (64 beams, 0.71° spacing,
 0.998 on the Mars world (gzserver 0.76 cores, post-processing
 0.73 cores), with the same geometry (σ 2.6 cm, box face within 1 mm, 0 self-hits).
 
+### Fortress (`gpu_lidar`, ogre2)
+
+The gz-sim GPU lidar renders a cube map whose resolution follows the
+horizontal sample count and looks ranges up from it, so its range noise on
+grazing beams scales with 1/samples (450 samples: σ 19 cm on the steep beams;
+1800: 2.6 cm on the −15° beam, 7.7 cm at −7°). The Fortress profiles
+therefore carry more samples per revolution than the Classic ones. Measured
+2026-10-31 (headless EGL, flat world, Bullet/2 ms physics,
+`docs/validation/fortress/lidar3d.json`):
+
+| Profile (Fortress) | channels × samples | points per sweep | rate | steep-beam σ | box face bias / σ | median RTF | server cores | post-processing cores |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `lite` | 16 × 1800 | 14400 | 10.0 Hz | 4.8 cm | 0.0 / 2.0 cm | 0.988 | 0.52 | 0.87 |
+| `standard` | 16 × 2700 | 21600 | 10.0 Hz | 3.1 cm | 0.2 / 2.0 cm | 0.987 | 0.62 | 1.01 |
+| `high` | 32 × 1800 | 28534 | 10.0 Hz | 3.4 cm | 0.4 / 2.0 cm | 0.989 | 0.58 | 1.01 |
+| `dense` (launch default) | 64 × 1800 | 55800 | 10.0 Hz | 3.5 cm | 1.0 / 2.0 cm | 0.991 | 0.45 | 1.20 |
+
+All four pass the validator (beam layout exact, 0 self-hits, bias ≤ 3 mm).
+The post-processor's cost grows with the point count (1.2 cores at 55 800
+points); it runs in its own process and does not touch the RTF.
+
+**Point-cloud QoS is reliable** on both backends (`lidar_postprocess`, the
+validator and the RViz config). Sweeps of 230–900 kB are fragmented on the
+wire and a best-effort subscriber drops the whole sweep when one fragment is
+lost: measured on Fortress, a best-effort subscriber received 4.3 Hz of the
+10.0 Hz published (`dense`, 1800 samples) and 8.1 Hz (`lite`), a reliable one
+10.0 Hz with no gaps. The earlier "7.6 Hz dense" Fortress figure was this
+drop, not the sensor.
+
 On the **Mars heightmap world** (rover at rest, medium rocks) the GPU sensor
 measured RTF 0.998 / 0.999 / 0.999 (lite / standard / high) with gzserver at
 0.55 / 0.57 / 0.56 cores, against 0.999 / 0.32 without a LiDAR; while
