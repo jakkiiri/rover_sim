@@ -24,7 +24,7 @@ from rover_sim.lidar_postprocess import cloud_to_array  # noqa: E402
 from rover_sim.validation import metrics  # noqa: E402
 from rover_sim.validation.harness import EntityControl, Observer, SimulationLaunch, write_json  # noqa: E402
 
-PROFILES = {'lite': (16, 450, 30.0), 'standard': (16, 900, 30.0), 'high': (32, 1024, 45.0)}
+PROFILES = {'lite': (16, 450, 30.0), 'standard': (16, 900, 30.0), 'high': (32, 1024, 45.0), 'dense': (64, 1024, 45.0)}
 BOX = dict(x=6.0, size=1.0)      # 1 m cube centred 6 m ahead of base_link, near face at x = 5.5
 LIDAR_X = 0.33                   # mast position ahead of base_link (body_length/2 - 0.12)
 REST_HEIGHT = 0.41
@@ -176,7 +176,7 @@ def main():
                         # processed cloud is the corrected sensor output.
                         r = p
                     record['passed'] = bool(9.0 <= rate_sim <= 11.0
-                                            and r['vertical_channels_with_returns'] >= channels // 2
+                                            and r['vertical_channels_with_returns'] >= channels // 2 - 1   # the 0 deg beam has no ground return
                                             and abs(r['lowest_beam_deg'] + vfov / 2) < 0.2
                                             and abs(r['beam_spacing_deg'] - r['expected_spacing_deg']) < 0.1
                                             and r['points_per_sweep_mean'] <= channels * samples

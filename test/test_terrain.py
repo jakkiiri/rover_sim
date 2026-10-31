@@ -8,6 +8,7 @@ import pytest
 from PIL import Image
 
 from rover_sim.terrain import heightmap as hm
+from rover_sim.terrain import mesh_visual as mv
 from rover_sim.terrain import rocks as rk
 from rover_sim.terrain import scatter as sc
 from rover_sim.terrain import world as wd
@@ -206,3 +207,28 @@ def test_pipeline_writes_manifest_worlds_and_hashes(tmp_path):
     assert 'Golombek' in manifest['rock_size_law']['reference']
     world = (tmp_path / 'worlds' / 'mars_medium.world').read_text()
     assert 'model://mars_terrain/heightmap.tif' in world and '<size>' not in world.split('<heightmap>')[1].split('</heightmap>')[0]
+
+
+def test_terrain_mesh_visual_and_albedo(tmp_path, small_terrain):
+    height = small_terrain['height']
+    size = small_terrain['params'].size
+    vertices, faces = mv.write_terrain_mesh(tmp_path / 'terrain_visual.obj', height, size, step=4)
+    n = (height.shape[0] + 3) // 4
+    assert vertices == n * n and faces == 2 * (n - 1) ** 2
+    text = (tmp_path / 'terrain_visual.obj').read_text()
+    assert text.count('\nv ') == vertices and text.count('\nvt ') == vertices and text.count('\nf ') == faces
+    assert 'mtllib terrain_visual.mtl' in text and (tmp_path / 'terrain_visual.mtl').read_text().strip().endswith('map_Kd terrain_albedo.png')
+    first = [float(v) for v in text.split('\nv ')[1].split('\n')[0].split()]
+    assert first[:2] == pytest.approx([-size / 2, size / 2]) and first[2] == pytest.approx(height[0, 0], abs=1e-3)
+    weights = mv.bake_albedo(tmp_path / 'terrain_albedo.png', height, small_terrain['slope_deg'], seed=3, resolution=128)
+    assert sum(weights.values()) == pytest.approx(1.0, abs=0.02) and weights['sand'] > 0.2
+    image = Image.open(tmp_path / 'terrain_albedo.png')
+    assert image.size == (128, 128) and image.mode == 'RGB'
+    assert np.array(image).mean() > 60           # not a black texture
+
+
+def test_world_uses_mesh_visual_and_heightfield_collision():
+    text = wd.terrain_model(4.0, (3.0, 8.0))
+    assert 'meshes/terrain_visual.obj' in text and text.count('<heightmap>') == 1   # collision only
+    legacy = wd.terrain_model(4.0, (3.0, 8.0), visual='heightmap')
+    assert legacy.count('<heightmap>') == 2 and '<blend>' in legacy

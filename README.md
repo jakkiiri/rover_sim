@@ -70,7 +70,7 @@ ros2 topic pub -1 /swerve/set_drive_mode std_msgs/String "{data: crab}"
 | `gravity` | `3.71` | m/s² (use `9.81` for Earth tests) |
 | `shadows` | `false` | cast shadows (GPU cost) |
 | `gui`, `rviz` | `true`, `false` | Gazebo client, RViz (`rviz/rover_mars.rviz`) |
-| `lidar`, `lidar_profile` | `true`, `lite` | `lite` 16×450, `standard` 16×900, `high` 32×1024 at 10 Hz |
+| `lidar`, `lidar_profile` | `true`, `auto` | `auto` = `dense` (64×1024) on `gpu_ray`, `lite` (16×450) on the CPU sensor; also `standard` 16×900, `high` 32×1024; all 10 Hz |
 | `lidar_gpu` | `auto` | `auto` = `gpu_ray` on `world:=mars` when a display exists (the CPU ray sensor hangs on the heightmap), CPU `ray` elsewhere unless `lidar_prefer_gpu:=true`; `true`/`false` force it |
 | `lidar_channels`, `lidar_samples`, `lidar_vfov_deg`, `lidar_max_range` | profile values, `100.0` | override the profile's beam layout and range |
 | `scan_2d` | `false` | also publish a planar `/scan` |
@@ -99,6 +99,7 @@ Every number below is from a recorded validator run (`docs/validation/mars_*.jso
 
 | Area | Measured |
 | --- | --- |
+| Terrain visual | Gazebo's heightmap shader fails on this Mesa driver (terrain renders black, `docs/validation/terrain_render_heightmap_shader_failure.png`); the textured mesh visual renders correctly (`terrain_render_mesh.png`) |
 | Terrain (`validate_terrain`) | deterministic (46 files, identical hashes); 15 m relief, mean slope 15.9°, 70 % below 20°, 6.3 % above 35°; pad drift 0.26 mm/10 s; DEM probe error median 7.8 mm; RTF 0.998 at rest, gzserver 0.56 cores |
 | Step climb (`validate_step_climb`, 0.8 m/s, 8 N m, 3 approach angles) | 5 / 10 / 15 cm climbed 9/9; 20 / 25 / 30 / 40 cm blocked 12/12, 0 tunnelled, 0 flipped (30 cm never passes). At 0.5 m/s the limit is 10 cm. |
 | Slopes (`validate_slope`, μ = 0.65) | climbs 5–20° at 0.40 m/s, 25° at 0.21 m/s; 30 / 35 / 40° stall at the ramp foot without sliding or flipping; parking brake holds 5–25° with ≤ 9 mm drift in 5 s |
@@ -107,7 +108,7 @@ Every number below is from a recorded validator run (`docs/validation/mars_*.jso
 | Odometry vs ground truth | 0.13 % of distance (1.9 cm over 14 m), yaw error 0.24° (gyro yaw) |
 | Hardening / teleop / shutdown | 10/10, 10/10, 2/2 |
 | LiDAR CPU `ray` (flat world, at rest) | lite RTF 0.944 (gzserver 0.62 + post-processing 0.41 cores), standard 0.892, high 0.728; range σ 2.0 cm, box face within 1 mm, 0 self-hits. **Unusable on the heightmap world: gzserver hangs.** |
-| LiDAR `gpu_ray` (Intel iGPU, headless, corrected labels) | lite / standard / high all pass geometry (σ 2.9 cm, box face within 1 mm, 0 self-hits); RTF 0.999 at every profile on the flat and Mars worlds (gzserver 0.55–0.57 cores). Default on `world:=mars`. |
+| LiDAR `gpu_ray` (Intel iGPU, headless, corrected labels) | lite / standard / high all pass geometry (σ 2.9 cm, box face within 1 mm, 0 self-hits); RTF 0.999 at every profile on the flat and Mars worlds (gzserver 0.55–0.57 cores). Default on `world:=mars`; `dense` 64×1024 also RTF 0.998 on Mars. |
 | Traverse (`validate_traverse`, Mars world, GPU lite LiDAR) | planned 119 m loop: 36/36 waypoints, 111 m in 197 s (mean 0.57 m/s), max tilt 19.8°, 0 stuck events, **RTF 0.999 while driving** (gzserver 0.55 cores), odometry drift 0.60 % / 1.1° |
 
 Baseline before the overhaul: RTF 0.998 at rest with the prototype rover and 2-D scan, 131 unit tests.

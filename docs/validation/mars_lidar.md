@@ -30,6 +30,8 @@ dropout, and carries `ring` and `time`.
 | `standard` | 6812 | -15.0° / 2.00° | +1.7 mm / 2.9 cm | +0.6 mm | 0 | 0.999 | 0.48 + 0.32 | 0.999 (0.57 cores) |
 | `high` | 15373 | -22.5° / 1.50° | +3.6 mm / 2.6 cm | -1.1 mm | 0 | 0.999 | 0.48 + 0.45 | 0.999 (0.56 cores) |
 
+`dense` (64 × 1024, GPU, 2026-10-31, [mars_lidar_gpu_dense.json](mars_lidar_gpu_dense.json)): 30450 points/sweep, lowest beam -22.5°, spacing 0.70°, ground σ 2.6 cm, box face -0.0 mm, 0 self-hits, RTF 0.998 flat / 0.998 Mars (0.76 cores), post-processing 0.73 cores. Passes (the validator's channel count allows for the 0° beam having no ground return).
+
 Before the correction the same sensor reported 0.7–45 m ground range bias
 (points labelled one beam step too low; measured 0.99–1.00 steps on 16- and
 32-channel layouts). The CPU `ray` sensor hangs gzserver on the heightmap

@@ -70,12 +70,23 @@ the generator is deterministic so these numbers are reproducible.)
 
 ## Mars look
 
-Procedural tileable albedo + normal textures for fine sand (butterscotch),
-gravel (rust) and basalt (dark) are blended by **height only**: Gazebo Classic's
-heightmap material supports `<blend><min_height><fade_dist>` and nothing
-else, so there is no slope-dependent blending. Blend heights are the 35th and
-80th height percentiles. Lighting: one directional sun at 37° elevation,
-butterscotch ambient and background, linear dust haze from 40 m to 260 m, no
+**Visual mesh (default since 2026-10-31).** Gazebo Classic's heightmap
+material shader does not compile on this machine's Mesa driver (the Ogre
+log fills with `clamp(error, float, float)` type-mismatch errors) and the
+terrain renders black regardless of shadows, normal maps or blends (measured
+with a headless camera: mean RGB 13/8/6). The generator therefore also writes
+`meshes/terrain_visual.obj` (the DEM decimated 2:1 → 257² vertices, 131 072
+triangles, smooth normals, UVs) with a 2048² albedo baked over the whole
+terrain by **slope and height** (sand in low flat ground, gravel on flanks,
+basalt on steep and high ground, plus detail noise and slope shading), and
+the world uses that mesh as the visual while the collision stays on the exact
+heightfield. Rendered mean RGB with the mesh: 135/76/40. The heightmap visual
+remains available with `generate_terrain.py --terrain-visual heightmap`
+(tileable sand/gravel/basalt albedo + normal maps blended by height only, the
+only blending Gazebo's heightmap material offers).
+
+Lighting: one directional sun at 37° elevation, butterscotch ambient
+(0.55/0.46/0.40) and background, linear dust haze from 40 m to 260 m, no
 sky/clouds. Shadows are off by default (`shadows:=true` to enable).
 
 Gravity is **3.71 m/s²** in every generated world (`gravity:=9.81` to run
@@ -158,7 +169,7 @@ compares the hashes.
 
 Limitations: ODE terrain is rigid; sinkage, bulldozing and slip-sinkage of
 Martian regolith are not modelled and are only approximated by contact
-friction/stiffness. Texture blending is height-only. Rock density is far
+friction/stiffness. The baked albedo has ~6 cm texels (no close-up detail texture). Rock density is far
 below real Mars for performance. Rocks smaller than 10 cm have no collision.
 The heightmap resolution (0.23 m per pixel at 513 px) limits micro-relief to
 wavelengths above about 0.5 m.

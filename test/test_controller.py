@@ -651,3 +651,23 @@ def test_gravity_compensation_on_a_slope(state):
         state.on_imu(0., pitch, 0., t, (-g * math.sin(pitch), 0., g * math.cos(pitch)))
     assert abs(state.velocity_correction[0]) < 1e-6 and abs(state.velocity_correction[1]) < 1e-6
     assert state.gravity_estimate == pytest.approx(g)
+
+
+def test_odometry_is_published_with_the_feedback_stamp(state):
+    from sensor_msgs.msg import JointState
+    published = []
+    fake = SimpleNamespace(_closing=False, state=state, odom_frame='odom', base_frame='base_link', publish_tf=True,
+                           odom_pub=SimpleNamespace(publish=published.append), tf_pub=SimpleNamespace(publish=lambda m: None),
+                           get_clock=lambda: SimpleNamespace(now=lambda: controller.rclpy.time.Time(seconds=5.0)))
+    fake.publish_odometry = lambda now: SwerveController.publish_odometry(fake, now)
+    msg = JointState()
+    msg.header.stamp.sec, msg.header.stamp.nanosec = 4, 940000000
+    msg.name = [m.steering for m in state.modules] + [m.drive for m in state.modules]
+    msg.position = [0.0] * 8
+    msg.velocity = [0.0] * 8
+    SwerveController.on_state(fake, msg)
+    assert published and published[-1].header.stamp.sec == 4 and published[-1].header.stamp.nanosec == 940000000
+    SwerveController.update(SimpleNamespace(_closing=False, state=state, get_parameter=lambda n: SimpleNamespace(value=state.parameters[n]),
+                                            get_clock=lambda: SimpleNamespace(now=lambda: controller.rclpy.time.Time(seconds=5.0)),
+                                            publish_targets=lambda a, s: None))
+    assert len(published) == 1          # the wall tick no longer publishes odometry

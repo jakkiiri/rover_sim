@@ -138,10 +138,16 @@ class SwerveController(Node):
         if not 0 <= msg.header.stamp.nanosec < 1000000000:
             self.state.invalidate_feedback()
             return
-        self.state.on_feedback(msg.name, msg.position,
-                               msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9,
-                               self.get_clock().now().nanoseconds / 1e9,
-                               msg.velocity, msg.effort)
+        accepted = self.state.on_feedback(msg.name, msg.position,
+                                          msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9,
+                                          self.get_clock().now().nanoseconds / 1e9,
+                                          msg.velocity, msg.effort)
+        # Odometry is integrated on feedback, so publish it with the feedback's
+        # precise simulation stamp. The node clock only advances with /clock
+        # (10 Hz by default), which would give runs of identical stamps and
+        # make RViz jump between poses.
+        if accepted and self.state.initialized:
+            self.publish_odometry(rclpy.time.Time.from_msg(msg.header.stamp))
 
     def on_imu(self, msg):
         if self._closing:
@@ -163,7 +169,6 @@ class SwerveController(Node):
             return
         angles, speeds = targets
         self.publish_targets(angles, speeds)
-        self.publish_odometry(now)
 
     def publish_targets(self, angles, speeds):
         if self._closing:

@@ -13,7 +13,7 @@ from rover_sim.lidar_postprocess import cloud_to_array, make_cloud, make_scan, p
 
 PACKAGE = Path(__file__).resolve().parents[1]
 ROBOT = str(PACKAGE / 'urdf' / 'mars_rover.urdf.xacro')
-PROFILES = {'lite': (16, 450, 30.0), 'standard': (16, 900, 30.0), 'high': (32, 1024, 45.0)}
+PROFILES = {'lite': (16, 450, 30.0), 'standard': (16, 900, 30.0), 'high': (32, 1024, 45.0), 'dense': (64, 1024, 45.0)}
 
 
 def expand(**mappings):

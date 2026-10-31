@@ -7,6 +7,7 @@ import time
 import numpy as np
 
 from rover_sim.terrain import heightmap as hm
+from rover_sim.terrain import mesh_visual as mv
 from rover_sim.terrain import rocks as rk
 from rover_sim.terrain import scatter as sc
 from rover_sim.terrain import textures as tx
@@ -28,7 +29,7 @@ def sha256(path):
 
 def generate_all(output_dir, seed=DEFAULT_SEED, resolution=513, size=120.0, relief=15.0,
                  rock_counts=None, texture_size=1024, sampling=2, rock_library_size=14,
-                 log=print, extra_params=None):
+                 log=print, extra_params=None, terrain_visual='mesh', mesh_step=2, albedo_size=2048):
     """Generate heightmap, textures, rocks, worlds and manifest under ``output_dir``."""
     started = time.time()
     output_dir = Path(output_dir)
@@ -63,6 +64,13 @@ def generate_all(output_dir, seed=DEFAULT_SEED, resolution=513, size=120.0, reli
     log(f'[terrain] rock library ({rock_library_size} meshes)')
     library = rk.build_rock_library(model_dir / 'meshes', seed, rock_library_size)
 
+    mesh_info = None
+    if terrain_visual == 'mesh':
+        log(f'[terrain] mesh visual (grid step {mesh_step}, {albedo_size}px slope-blended albedo)')
+        vertices, faces = mv.write_terrain_mesh(model_dir / 'meshes' / 'terrain_visual.obj', height, size, mesh_step)
+        weights = mv.bake_albedo(model_dir / 'meshes' / 'terrain_albedo.png', height, terrain['slope_deg'], seed, albedo_size)
+        mesh_info = dict(vertices=vertices, faces=faces, albedo_px=albedo_size, material_fractions=weights)
+
     boulders = sc.labeled_boulders(terrain, library)
     boulders_sdf = sc.boulder_models(boulders, library, wd.MODEL_URI)
     low_blend = float(np.percentile(height, 35))
@@ -72,7 +80,7 @@ def generate_all(output_dir, seed=DEFAULT_SEED, resolution=513, size=120.0, reli
         instances = sc.place_rocks(terrain, library, requested, seed)
         rocks_sdf = sc.chunk_models(instances, library, wd.MODEL_URI, size)
         text = wd.mars_world(f'mars_{density}', terrain['pad_level'], (low_blend, high_blend),
-                             rocks_sdf, boulders_sdf, sampling=sampling)
+                             rocks_sdf, boulders_sdf, sampling=sampling, visual=terrain_visual)
         (worlds_dir / f'mars_{density}.world').write_text(text)
         diameters = np.array([i['diameter'] for i in instances])
         rocks_summary[density] = dict(
@@ -105,7 +113,7 @@ def generate_all(output_dir, seed=DEFAULT_SEED, resolution=513, size=120.0, reli
         rock_size_law=dict(form='N(>D) = N0 * D^-b', exponent=2.1, d_min=0.08, d_max=1.2,
                            reference='Golombek & Rapp 1997 (JGR 102, 4117); Golombek et al. 2003 (JGR 108, 8086)'),
         rocks=rocks_summary, boulders=boulders, texture_blend=[low_blend, high_blend],
-        rock_library=library, model_uri=wd.MODEL_URI,
+        rock_library=library, model_uri=wd.MODEL_URI, terrain_visual=terrain_visual, mesh_visual=mesh_info,
         files={str(p.relative_to(output_dir)): sha256(p) for p in files},
         generation_seconds=time.time() - started)
     (output_dir / 'terrain_manifest.json').write_text(json.dumps(manifest, indent=1) + '\n')

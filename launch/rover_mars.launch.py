@@ -119,8 +119,8 @@ def setup(context):
                                                 if os.environ.get('GAZEBO_MODEL_PATH') else '')
 
     lidar_profile = cfg['lidar_profile']
-    if lidar_profile not in ('lite', 'standard', 'high'):
-        raise ValueError('lidar_profile must be lite, standard or high')
+    if lidar_profile not in ('auto', 'lite', 'standard', 'high', 'dense'):
+        raise ValueError('lidar_profile must be auto, lite, standard, high or dense')
     lidar_gpu = cfg['lidar_gpu'].lower()
     lidar_enabled = _truthy(cfg['lidar'])
     heightmap_world = cfg['world'] == 'mars'
@@ -142,7 +142,13 @@ def setup(context):
     elif lidar_gpu == 'false' and heightmap_world and lidar_enabled:
         print('[rover_mars.launch] WARNING: the CPU ray sensor is known to hang on the heightmap world; '
               'use lidar_gpu:=true or lidar:=false', flush=True)
-    channels, vertical_fov = (32, 45.0) if lidar_profile == 'high' else (16, 30.0)
+    if lidar_profile == 'auto':
+        # dense is free on the GPU sensor (measured RTF 0.998 on the Mars world);
+        # lite is the only CPU profile that holds RTF >= 0.9.
+        lidar_profile = 'dense' if lidar_gpu == 'true' else 'lite'
+    channels, vertical_fov = {'high': (32, 45.0), 'dense': (64, 45.0)}.get(lidar_profile, (16, 30.0))
+    print(f'[rover_mars.launch] lidar: {"gpu_ray" if lidar_gpu == "true" else "ray"} profile {lidar_profile}'
+          + ('' if lidar_enabled else ' (disabled)'), flush=True)
     if cfg['lidar_channels']:
         channels = int(cfg['lidar_channels'])
     if cfg['lidar_vfov_deg']:
@@ -217,7 +223,7 @@ def generate_launch_description():
         DeclareLaunchArgument('gui', default_value='true', description='open the Gazebo client'),
         DeclareLaunchArgument('rviz', default_value='false', description='open RViz'),
         DeclareLaunchArgument('lidar', default_value='true', description='enable the LiDAR'),
-        DeclareLaunchArgument('lidar_profile', default_value='lite', description='lite|standard|high'),
+        DeclareLaunchArgument('lidar_profile', default_value='auto', description='auto|lite|standard|high|dense (auto: dense on gpu_ray, lite on the CPU sensor)'),
         DeclareLaunchArgument('lidar_gpu', default_value='auto', description='auto|true|false (gpu_ray needs OpenGL)'),
         DeclareLaunchArgument('lidar_prefer_gpu', default_value='false', description='let auto choose gpu_ray with a display'),
         DeclareLaunchArgument('lidar_channels', default_value='', description='override the profile channel count'),

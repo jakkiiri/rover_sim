@@ -87,7 +87,11 @@ update with a reason.
 
 `WheelOdometry` integrates the least-squares twist with the midpoint rule;
 with `odometry_use_imu` the gyro yaw rate replaces the wheel yaw estimate.
-Published on `/odom` and as `odom → base_link` TF (`publish_odom_tf`). The
+Published on `/odom` and as `odom → base_link` TF (`publish_odom_tf`) **on
+every accepted `/joint_states` message, stamped with that message's
+simulation time** (50 Hz, 20 ms apart). Stamping with the node clock instead
+gave runs of identical stamps because `/clock` arrives at 10 Hz, and RViz
+then jumped between poses (the "jitter" fixed on 2026-10-31). The
 plugin's `/ground_truth/odom` is only for validation; measured drift is in
 `docs/validation/mars_controller.md`.
 

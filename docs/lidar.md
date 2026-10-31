@@ -14,9 +14,19 @@ is used.
 
 | Profile (`lidar_profile:=`) | Channels | Samples/rev | Vertical FOV | Rays/s |
 | --- | --- | --- | --- | --- |
-| `lite` (default) | 16 | 450 | ±15° | 72 000 |
+| `lite` (CPU default) | 16 | 450 | ±15° | 72 000 |
 | `standard` | 16 | 900 | ±15° | 144 000 |
 | `high` | 32 | 1024 | ±22.5° | 327 680 |
+| `dense` (GPU default) | 64 | 1024 | ±22.5° | 655 360 |
+
+The rings a spinning LiDAR draws on the ground are real sensor behaviour
+(a VLP-16 has 16 beams 2° apart); they look coarse on hills because the
+elevation steps project to metres of ground spacing. Two things make the
+map read as continuous: RViz's 3 s decay accumulates successive sweeps while
+the rover moves, and the `dense` profile (64 beams, 0.71° spacing) narrows
+the rings four-fold at no RTF cost on the GPU sensor (measured below).
+Interpolating between beams in software was deliberately not done: it would
+invent returns the sensor never made.
 
 `lidar_gpu:=auto|true|false` selects `gpu_ray`. Two measured facts decide
 the default (details and numbers under **Measured cost per profile**):
@@ -92,21 +102,25 @@ baseline without any LiDAR is RTF 0.998 / 0.56 cores (Phase A).
 | `lite` (`gpu_ray`, corrected labels) | 16 × 450 | 3402 | 0.999 | 0.51 | 0.27 | yes |
 | `standard` (`gpu_ray`, corrected labels) | 16 × 900 | 6812 | 0.999 | 0.48 | 0.32 | yes |
 | `high` (`gpu_ray`, corrected labels) | 32 × 1024 | 15373 | 0.999 | 0.48 | 0.45 | yes |
+| `dense` (`gpu_ray`, corrected labels) | 64 × 1024 | 30450 | 0.998 | 0.62 | 0.73 | yes |
 
 Only `lite` of the CPU profiles keeps the real-time factor above 0.9;
 `standard` sits at the budget (0.886–0.900 across runs) and `high` costs a
 quarter of real time, because the CPU ray sensor's cost lands in the physics
 loop even though gzserver uses well under one core. The GPU sensor costs no
-RTF at any profile on this Intel iGPU.
+RTF at any profile on this Intel iGPU; even `dense` (64 beams, 0.71° spacing,
+30450 points per sweep) measured RTF 0.998 on the flat world and
+0.998 on the Mars world (gzserver 0.76 cores, post-processing
+0.73 cores), with the same geometry (σ 2.6 cm, box face within 1 mm, 0 self-hits).
 
 On the **Mars heightmap world** (rover at rest, medium rocks) the GPU sensor
 measured RTF 0.998 / 0.999 / 0.999 (lite / standard / high) with gzserver at
 0.55 / 0.57 / 0.56 cores, against 0.999 / 0.32 without a LiDAR; while
 driving the 111 m traverse the RTF stayed at 0.999
 (`docs/validation/mars_traverse.md`). The CPU sensor never produced a
-simulation clock there. The default profile stays `lite` (16 × 450) so the
-CPU fallback on the flat and test worlds also holds the budget;
-`standard`/`high` are free on the GPU.
+simulation clock there. `lidar_profile:=auto` (default) therefore resolves to `dense` whenever the
+GPU sensor is used and to `lite` on the CPU sensor, the only CPU profile
+that holds the budget.
 
 GPU geometry after the one-step label correction (`/points`): lowest beam
 −15° (−22.5° for `high`), spacing exactly as configured, ground range bias
