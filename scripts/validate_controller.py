@@ -43,7 +43,6 @@ def main():
     from diagnostic_msgs.msg import DiagnosticArray
     from nav_msgs.msg import Odometry
     from std_msgs.msg import String, UInt64
-    from std_srvs.srv import Empty
     from rclpy.qos import DurabilityPolicy, QoSProfile
     launch_args = ['gui:=false', 'lidar:=false', 'world:=flat'] + args.arg
     results = []
@@ -71,7 +70,7 @@ def main():
         try:
             observer.wait_for(lambda: observer.latest_truth() is not None and observer.latest_joints() is not None
                               and bool(odom) and bool(epochs), timeout=150, what='rover', launch=launch)
-            control = EntityControl(observer)
+            control = EntityControl(observer, launch=launch)
             observer.run_sim(2.0)
 
             def reset_pose(x=0.0, y=0.0, yaw=0.0):
@@ -203,13 +202,10 @@ def main():
             node.create_timer(0.02, observer._publish, clock=Clock(clock_type=ClockType.STEADY_TIME))
 
             # --- reset handshake: /reset_world -> new epoch, no motion until a fresh command -----
-            reset_client = node.create_client(Empty, '/reset_world')
-            observer.wait_for(reset_client.service_is_ready, timeout=10, what='/reset_world')
             observer.command = (0.5, 0.0, 0.0)
             observer.run_sim(2.0)
             epoch_before = epochs[-1][1]
-            future = reset_client.call_async(Empty.Request())
-            observer.wait_for(future.done, timeout=10, what='reset')
+            control.reset_world()
             observer.wait_for(lambda: epochs[-1][1] != epoch_before, timeout=10, what='new epoch')
             # The command keeps streaming; the new reader discards queued samples
             # and a fresh command restores motion. The reset drops the model from

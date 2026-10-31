@@ -1,0 +1,405 @@
+{
+  "passed": false,
+  "profiles": [
+    {
+      "profile": "lite",
+      "gpu": "false",
+      "channels": 16,
+      "samples": 450,
+      "vertical_fov_deg": 30.0,
+      "sensor_height_m": 1.1781457848506809,
+      "ground_hit_distance_at_min_elevation_m": 4.396899927785853,
+      "publish_rate_sim_hz": 10.000000000000004,
+      "raw_fields": [
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "ring"
+      ],
+      "processed_fields": [
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "ring",
+        "time"
+      ],
+      "frame_id": "lidar_link",
+      "raw": {
+        "points_per_sweep_mean": 3600.0,
+        "points_per_sweep_min": 3600,
+        "points_per_sweep_max": 3600,
+        "vertical_channels_with_returns": 8,
+        "lowest_beam_deg": -15.0,
+        "beam_spacing_deg": 2.0,
+        "expected_spacing_deg": 2.0,
+        "ground_returns": 59640,
+        "ground_range_bias_m": 0.03825595524382872,
+        "steep_ground_sigma_m": 0.19491673535853418,
+        "steep_ground_bias_m": 0.004964037169109281,
+        "box_returns": 1200,
+        "box_range_bias_m": 0.0003686943964954422,
+        "box_range_sigma_m": 0.019892703548491132,
+        "self_hits_total": 0,
+        "self_hits_per_sweep": 0.0
+      },
+      "processed": {
+        "points_per_sweep_mean": 3416.85,
+        "points_per_sweep_min": 3398,
+        "points_per_sweep_max": 3438,
+        "vertical_channels_with_returns": 8,
+        "lowest_beam_deg": -15.0,
+        "beam_spacing_deg": 2.0,
+        "expected_spacing_deg": 2.0,
+        "ground_returns": 57274,
+        "ground_range_bias_m": 0.037451200009167594,
+        "steep_ground_sigma_m": 0.19503123257541827,
+        "steep_ground_bias_m": 0.004740701175080833,
+        "box_returns": 1165,
+        "box_range_bias_m": 0.0010119237540760482,
+        "box_range_sigma_m": 0.022374967726123084,
+        "self_hits_total": 0,
+        "self_hits_per_sweep": 0.0
+      },
+      "windows": [
+        {
+          "wall_seconds": 10.009739489999447,
+          "real_time_factor": 0.9811618685726938,
+          "clock_samples": 9819,
+          "cpu_cores_by_pid": {
+            "205870": 0.5814337132164787,
+            "205874": 0.5774376052218638,
+            "205878": 0.3906195564736137
+          },
+          "memory_mb_by_pid": {
+            "205870": 267.65234375,
+            "205874": 59.6875,
+            "205878": 57.52734375
+          },
+          "window": 1
+        },
+        {
+          "wall_seconds": 10.010066621999613,
+          "real_time_factor": 0.9805710434905862,
+          "clock_samples": 9824,
+          "cpu_cores_by_pid": {
+            "205870": 0.5844116948375918,
+            "205874": 0.5774187343865436,
+            "205878": 0.40059673441004146
+          },
+          "memory_mb_by_pid": {
+            "205870": 267.65234375,
+            "205874": 59.75390625,
+            "205878": 57.9921875
+          },
+          "window": 2
+        }
+      ],
+      "median_real_time_factor": 0.98086645603164,
+      "gzserver_cpu_cores": 0.5829227040270353,
+      "postprocess_cpu_cores": 0.9730363152460313,
+      "passed": false
+    },
+    {
+      "profile": "standard",
+      "gpu": "false",
+      "channels": 16,
+      "samples": 900,
+      "vertical_fov_deg": 30.0,
+      "sensor_height_m": 1.1781457848506809,
+      "ground_hit_distance_at_min_elevation_m": 4.396899927785853,
+      "publish_rate_sim_hz": 9.999999999999998,
+      "raw_fields": [
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "ring"
+      ],
+      "processed_fields": [
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "ring",
+        "time"
+      ],
+      "frame_id": "lidar_link",
+      "raw": {
+        "points_per_sweep_mean": 7200.0,
+        "points_per_sweep_min": 7200,
+        "points_per_sweep_max": 7200,
+        "vertical_channels_with_returns": 8,
+        "lowest_beam_deg": -15.0,
+        "beam_spacing_deg": 2.0,
+        "expected_spacing_deg": 2.0,
+        "ground_returns": 119000,
+        "ground_range_bias_m": 0.02550203718633132,
+        "steep_ground_sigma_m": 0.09363660435219401,
+        "steep_ground_bias_m": 0.006647362460853557,
+        "box_returns": 2400,
+        "box_range_bias_m": 0.00024837553974307647,
+        "box_range_sigma_m": 0.020125078844432032,
+        "self_hits_total": 0,
+        "self_hits_per_sweep": 0.0
+      },
+      "processed": {
+        "points_per_sweep_mean": 6813.7,
+        "points_per_sweep_min": 6787,
+        "points_per_sweep_max": 6857,
+        "vertical_channels_with_returns": 8,
+        "lowest_beam_deg": -15.0,
+        "beam_spacing_deg": 2.0,
+        "expected_spacing_deg": 2.0,
+        "ground_returns": 114272,
+        "ground_range_bias_m": 0.0246965003407949,
+        "steep_ground_sigma_m": 0.09424007854105194,
+        "steep_ground_bias_m": 0.006593129553065346,
+        "box_returns": 2310,
+        "box_range_bias_m": 3.476810484755996e-05,
+        "box_range_sigma_m": 0.022939541233552647,
+        "self_hits_total": 0,
+        "self_hits_per_sweep": 0.0
+      },
+      "windows": [
+        {
+          "wall_seconds": 10.011662658000205,
+          "real_time_factor": 0.9816721421624582,
+          "clock_samples": 9832,
+          "cpu_cores_by_pid": {
+            "206528": 0.5993010556748504,
+            "206531": 0.5633429923343592,
+            "206535": 0.42150840915797805
+          },
+          "memory_mb_by_pid": {
+            "206528": 268.69921875,
+            "206531": 59.90234375,
+            "206535": 59.28125
+          },
+          "window": 1
+        },
+        {
+          "wall_seconds": 10.010141842999474,
+          "real_time_factor": 0.9832011871674223,
+          "clock_samples": 9842,
+          "cpu_cores_by_pid": {
+            "206528": 0.5824093296017748,
+            "206531": 0.5604316190507646,
+            "206535": 0.4295643425879301
+          },
+          "memory_mb_by_pid": {
+            "206528": 268.69921875,
+            "206531": 59.95703125,
+            "206535": 58.3125
+          },
+          "window": 2
+        }
+      ],
+      "median_real_time_factor": 0.9824366646649403,
+      "gzserver_cpu_cores": 0.5908551926383125,
+      "postprocess_cpu_cores": 0.987423681565516,
+      "passed": false
+    },
+    {
+      "profile": "high",
+      "gpu": "false",
+      "channels": 32,
+      "samples": 1024,
+      "vertical_fov_deg": 45.0,
+      "sensor_height_m": 1.1781457848506809,
+      "ground_hit_distance_at_min_elevation_m": 2.8442955322392085,
+      "publish_rate_sim_hz": 9.5,
+      "raw_fields": [
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "ring"
+      ],
+      "processed_fields": [
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "ring",
+        "time"
+      ],
+      "frame_id": "lidar_link",
+      "raw": {
+        "points_per_sweep_mean": 15694.0,
+        "points_per_sweep_min": 15694,
+        "points_per_sweep_max": 15694,
+        "vertical_channels_with_returns": 16,
+        "lowest_beam_deg": -22.5,
+        "beam_spacing_deg": 1.4999999999999996,
+        "expected_spacing_deg": 1.4516129032258065,
+        "ground_returns": 294858,
+        "ground_range_bias_m": 0.012443547912119548,
+        "steep_ground_sigma_m": 0.05910906131206231,
+        "steep_ground_bias_m": 0.0012720881521219275,
+        "box_returns": 3444,
+        "box_range_bias_m": -0.00010483158755947568,
+        "box_range_sigma_m": 0.020133684527225745,
+        "self_hits_total": 0,
+        "self_hits_per_sweep": 0.0
+      },
+      "processed": {
+        "points_per_sweep_mean": 15054.45,
+        "points_per_sweep_min": 15022,
+        "points_per_sweep_max": 15084,
+        "vertical_channels_with_returns": 16,
+        "lowest_beam_deg": -22.5,
+        "beam_spacing_deg": 1.4999999999999996,
+        "expected_spacing_deg": 1.4516129032258065,
+        "ground_returns": 283783,
+        "ground_range_bias_m": 0.011191326602311515,
+        "steep_ground_sigma_m": 0.06002751711636215,
+        "steep_ground_bias_m": 0.0012858856936854015,
+        "box_returns": 3380,
+        "box_range_bias_m": -0.00015957214447498996,
+        "box_range_sigma_m": 0.02341118769966747,
+        "self_hits_total": 0,
+        "self_hits_per_sweep": 0.0
+      },
+      "windows": [
+        {
+          "wall_seconds": 10.009886904999803,
+          "real_time_factor": 0.9810261510540429,
+          "clock_samples": 9810,
+          "cpu_cores_by_pid": {
+            "206990": 0.6133935436306631,
+            "206994": 0.5554508310401445,
+            "206998": 0.5204854010286246
+          },
+          "memory_mb_by_pid": {
+            "206990": 270.8828125,
+            "206994": 60.0703125,
+            "206998": 60.0625
+          },
+          "window": 1
+        },
+        {
+          "wall_seconds": 10.009533237999676,
+          "real_time_factor": 0.9836745414819836,
+          "clock_samples": 9847,
+          "cpu_cores_by_pid": {
+            "206990": 0.5564695043775206,
+            "206994": 0.5165076010110919,
+            "206998": 0.4825399831496275
+          },
+          "memory_mb_by_pid": {
+            "206990": 270.8828125,
+            "206994": 60.125,
+            "206998": 60.0703125
+          },
+          "window": 2
+        }
+      ],
+      "median_real_time_factor": 0.9823503462680132,
+      "gzserver_cpu_cores": 0.5849315240040919,
+      "postprocess_cpu_cores": 1.0374919081147442,
+      "passed": false
+    },
+    {
+      "profile": "dense",
+      "gpu": "false",
+      "channels": 64,
+      "samples": 1024,
+      "vertical_fov_deg": 45.0,
+      "sensor_height_m": 1.1781457848506809,
+      "ground_hit_distance_at_min_elevation_m": 2.8442955322392085,
+      "publish_rate_sim_hz": 7.6,
+      "raw_fields": [
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "ring"
+      ],
+      "processed_fields": [
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "ring",
+        "time"
+      ],
+      "frame_id": "lidar_link",
+      "raw": {
+        "points_per_sweep_mean": 31744.0,
+        "points_per_sweep_min": 31744,
+        "points_per_sweep_max": 31744,
+        "vertical_channels_with_returns": 31,
+        "lowest_beam_deg": -22.5,
+        "beam_spacing_deg": 0.6999999999999998,
+        "expected_spacing_deg": 0.7142857142857143,
+        "ground_returns": 569280,
+        "ground_range_bias_m": 0.009148262289559995,
+        "steep_ground_sigma_m": 0.06020914824462682,
+        "steep_ground_bias_m": 0.002005723877943993,
+        "box_returns": 7286,
+        "box_range_bias_m": 0.0008216609129096808,
+        "box_range_sigma_m": 0.01986720055561472,
+        "self_hits_total": 0,
+        "self_hits_per_sweep": 0.0
+      },
+      "processed": {
+        "points_per_sweep_mean": 30456.1,
+        "points_per_sweep_min": 30385,
+        "points_per_sweep_max": 30508,
+        "vertical_channels_with_returns": 31,
+        "lowest_beam_deg": -22.5,
+        "beam_spacing_deg": 0.6999999999999998,
+        "expected_spacing_deg": 0.7142857142857143,
+        "ground_returns": 549252,
+        "ground_range_bias_m": 0.008521698551783008,
+        "steep_ground_sigma_m": 0.061142140324264196,
+        "steep_ground_bias_m": 0.001995648763772297,
+        "box_returns": 7099,
+        "box_range_bias_m": 0.0008388167442526711,
+        "box_range_sigma_m": 0.02313776373076573,
+        "self_hits_total": 0,
+        "self_hits_per_sweep": 0.0
+      },
+      "windows": [
+        {
+          "wall_seconds": 10.009931305000464,
+          "real_time_factor": 0.9845849642468821,
+          "clock_samples": 9841,
+          "cpu_cores_by_pid": {
+            "207324": 0.586417610784965,
+            "207328": 0.4895138488664956,
+            "207332": 0.5564473751400776
+          },
+          "memory_mb_by_pid": {
+            "207324": 275.265625,
+            "207328": 60.03515625,
+            "207332": 62.765625
+          },
+          "window": 1
+        },
+        {
+          "wall_seconds": 10.009664016999523,
+          "real_time_factor": 0.9850127585243419,
+          "clock_samples": 9830,
+          "cpu_cores_by_pid": {
+            "207324": 0.5594593375451423,
+            "207328": 0.4665491261313954,
+            "207332": 0.6024178223923586
+          },
+          "memory_mb_by_pid": {
+            "207324": 275.265625,
+            "207328": 60.08203125,
+            "207332": 62.77734375
+          },
+          "window": 2
+        }
+      ],
+      "median_real_time_factor": 0.984798861385612,
+      "gzserver_cpu_cores": 0.5729384741650536,
+      "postprocess_cpu_cores": 1.0574640862651636,
+      "passed": false
+    }
+  ]
+}

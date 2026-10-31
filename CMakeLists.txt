@@ -18,6 +18,26 @@ target_compile_features(rover_swerve_actuators PUBLIC cxx_std_17)
 ament_target_dependencies(rover_swerve_actuators gazebo_dev gazebo_ros rclcpp sensor_msgs std_msgs
   nav_msgs diagnostic_msgs tf2_msgs geometry_msgs)
 install(TARGETS rover_swerve_actuators LIBRARY DESTINATION lib)
+
+# Optional Gazebo Fortress backend (gz-sim 6). Built as a separate CMake
+# sub-project: finding gazebo_dev and ignition-gazebo6 in one project makes
+# both import the JsonCpp target and CMake aborts.
+find_path(ROVER_SIM_IGN_GAZEBO6_CMAKE NAMES ignition-gazebo6-config.cmake
+  PATHS /usr/lib/x86_64-linux-gnu/cmake/ignition-gazebo6 /usr/lib/cmake/ignition-gazebo6 /usr/share/cmake/ignition-gazebo6
+  NO_DEFAULT_PATH)
+if(ROVER_SIM_IGN_GAZEBO6_CMAKE)
+  include(ExternalProject)
+  ExternalProject_Add(rover_swerve_gz_system_project
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gz_system
+    BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gz_system
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
+               -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/gz_system/install
+    BUILD_ALWAYS TRUE)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gz_system/install/lib/librover_swerve_gz_system.so DESTINATION lib)
+  message(STATUS "rover_sim: building the Gazebo Fortress system plugin (gz_system/)")
+else()
+  message(STATUS "rover_sim: Gazebo Fortress (ignition-gazebo6) not found; Classic only")
+endif()
 ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS scripts/swerve_controller
   scripts/rover_teleop scripts/validate_teleop.py scripts/validate_hardening.py
@@ -53,6 +73,8 @@ if(BUILD_TESTING)
   ament_add_pytest_test(lidar_description test/test_lidar.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
   ament_add_pytest_test(terrain_generator test/test_terrain.py
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
+  ament_add_pytest_test(validation_harness test/test_harness.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 

@@ -41,7 +41,7 @@ def main():
                 observer.wait_for(lambda: observer.latest_truth() is not None, timeout=90,
                                   what='/ground_truth/odom', launch=launch)
             time.sleep(args.settle)
-            pids = launch.pids('gzserver')
+            pids = launch.server_pids()
             result['gzserver_pids'] = pids
             for index in range(args.windows):
                 record = observer.measure(args.duration, pids)

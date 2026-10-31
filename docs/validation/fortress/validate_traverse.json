@@ -1,0 +1,327 @@
+{
+  "launch_args": [
+    "gui:=false",
+    "world:=mars",
+    "sim:=fortress"
+  ],
+  "waypoints": [
+    [
+      -2.34375,
+      2.34375
+    ],
+    [
+      -5.15625,
+      5.15625
+    ],
+    [
+      -7.96875,
+      7.03125
+    ],
+    [
+      -10.78125,
+      9.84375
+    ],
+    [
+      -12.65625,
+      12.65625
+    ],
+    [
+      -12.65625,
+      16.40625
+    ],
+    [
+      -12.65625,
+      20.15625
+    ],
+    [
+      -14.53125,
+      22.96875
+    ],
+    [
+      -15.46875,
+      25.78125
+    ],
+    [
+      -16.40625,
+      28.59375
+    ],
+    [
+      -16.40625,
+      32.34375
+    ],
+    [
+      -16.40625,
+      33.28125
+    ],
+    [
+      -19.21875,
+      30.46875
+    ],
+    [
+      -22.03125,
+      27.65625
+    ],
+    [
+      -24.84375,
+      24.84375
+    ],
+    [
+      -27.65625,
+      22.03125
+    ],
+    [
+      -28.59375,
+      19.21875
+    ],
+    [
+      -31.40625,
+      16.40625
+    ],
+    [
+      -31.40625,
+      15.46875
+    ],
+    [
+      -28.59375,
+      17.34375
+    ],
+    [
+      -24.84375,
+      16.40625
+    ],
+    [
+      -22.03125,
+      14.53125
+    ],
+    [
+      -19.21875,
+      13.59375
+    ],
+    [
+      -16.40625,
+      11.71875
+    ],
+    [
+      -13.59375,
+      8.90625
+    ],
+    [
+      -10.78125,
+      6.09375
+    ],
+    [
+      -7.96875,
+      3.28125
+    ],
+    [
+      -6.09375,
+      0.46875
+    ],
+    [
+      -3.28125,
+      -2.34375
+    ],
+    [
+      -2.34375,
+      -5.15625
+    ],
+    [
+      -1.40625,
+      -7.96875
+    ],
+    [
+      -1.40625,
+      -10.78125
+    ],
+    [
+      -0.46875,
+      -7.96875
+    ],
+    [
+      0.46875,
+      -4.21875
+    ],
+    [
+      0.46875,
+      -0.46875
+    ],
+    [
+      0.46875,
+      -0.46875
+    ]
+  ],
+  "speed": 0.6,
+  "success": true,
+  "waypoints_reached": 36,
+  "reached": [
+    {
+      "index": 0,
+      "sim_time": 5.337999999999999
+    },
+    {
+      "index": 1,
+      "sim_time": 12.131
+    },
+    {
+      "index": 2,
+      "sim_time": 17.695999999999998
+    },
+    {
+      "index": 3,
+      "sim_time": 24.119999999999997
+    },
+    {
+      "index": 4,
+      "sim_time": 29.867000000000004
+    },
+    {
+      "index": 5,
+      "sim_time": 36.004000000000005
+    },
+    {
+      "index": 6,
+      "sim_time": 42.224000000000004
+    },
+    {
+      "index": 7,
+      "sim_time": 47.793
+    },
+    {
+      "index": 8,
+      "sim_time": 52.504000000000005
+    },
+    {
+      "index": 9,
+      "sim_time": 57.809000000000005
+    },
+    {
+      "index": 10,
+      "sim_time": 64.002
+    },
+    {
+      "index": 11,
+      "sim_time": 65.684
+    },
+    {
+      "index": 12,
+      "sim_time": 71.21
+    },
+    {
+      "index": 13,
+      "sim_time": 77.854
+    },
+    {
+      "index": 14,
+      "sim_time": 84.71
+    },
+    {
+      "index": 15,
+      "sim_time": 91.574
+    },
+    {
+      "index": 16,
+      "sim_time": 96.72099999999999
+    },
+    {
+      "index": 17,
+      "sim_time": 103.15599999999999
+    },
+    {
+      "index": 18,
+      "sim_time": 104.43199999999999
+    },
+    {
+      "index": 19,
+      "sim_time": 108.67399999999999
+    },
+    {
+      "index": 20,
+      "sim_time": 115.24199999999999
+    },
+    {
+      "index": 21,
+      "sim_time": 120.61
+    },
+    {
+      "index": 22,
+      "sim_time": 125.487
+    },
+    {
+      "index": 23,
+      "sim_time": 131.465
+    },
+    {
+      "index": 24,
+      "sim_time": 138.05599999999998
+    },
+    {
+      "index": 25,
+      "sim_time": 144.708
+    },
+    {
+      "index": 26,
+      "sim_time": 151.352
+    },
+    {
+      "index": 27,
+      "sim_time": 156.952
+    },
+    {
+      "index": 28,
+      "sim_time": 163.619
+    },
+    {
+      "index": 29,
+      "sim_time": 168.527
+    },
+    {
+      "index": 30,
+      "sim_time": 173.436
+    },
+    {
+      "index": 31,
+      "sim_time": 178.107
+    },
+    {
+      "index": 32,
+      "sim_time": 181.704
+    },
+    {
+      "index": 33,
+      "sim_time": 188.28199999999998
+    },
+    {
+      "index": 34,
+      "sim_time": 194.529
+    },
+    {
+      "index": 35,
+      "sim_time": 194.529
+    }
+  ],
+  "sim_seconds": 195.541,
+  "wall_seconds": 201.6908809079996,
+  "path_length_m": 111.03942496215456,
+  "mean_speed_m_s": 0.5678575079505298,
+  "max_tilt_deg": 20.093781122991516,
+  "stuck_events": 0,
+  "real_time_factor": 0.9694872263005168,
+  "gzserver_cpu_cores": 1.5093394338381607,
+  "gzserver_rss_mb": {
+    "204818": 826.19921875
+  },
+  "odometry_drift_m": 2.860877844807422,
+  "odometry_drift_percent": 2.576452323832271,
+  "odometry_yaw_error_deg": 7.675666196417374,
+  "min_z": 2.4904199252856745,
+  "max_z": 5.189699221811731,
+  "snapshots": [
+    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_00.png",
+    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_01.png",
+    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_02.png",
+    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_03.png",
+    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_04.png",
+    "/tmp/claude-1000/-home-jakkii-rover-ws-src-rover-sim/da87b2de-1f55-4d19-a640-e4c82804013d/scratchpad/fortress/val/snapshots/traverse_05.png"
+  ],
+  "passed": true
+}

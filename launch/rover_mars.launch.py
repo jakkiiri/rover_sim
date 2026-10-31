@@ -53,7 +53,12 @@ def _terrain_directory(share, seed, resolution, regenerate, override):
     return target
 
 
-def _world_file(share, terrain_dir, world, density):
+def _world_file(share, terrain_dir, world, density, sim='classic'):
+    if sim == 'fortress':
+        if world == 'desert':
+            raise ValueError('the legacy desert world exists only for sim:=classic')
+        name = f'mars_{density}' if world == 'mars' else world
+        return terrain_dir / 'worlds' / 'fortress' / f'{name}.sdf'
     if world == 'mars':
         return terrain_dir / 'worlds' / f'mars_{density}.world'
     if world == 'desert':
@@ -89,7 +94,7 @@ def _spawn_height(terrain_dir, world, x, y):
 def setup(context):
     share = get_package_share_directory('rover_sim')
     cfg = {name: LaunchConfiguration(name).perform(context) for name in (
-        'world', 'seed', 'rock_density', 'gravity', 'shadows', 'gui', 'rviz', 'lidar', 'lidar_profile',
+        'sim', 'world', 'seed', 'rock_density', 'gravity', 'shadows', 'gui', 'rviz', 'lidar', 'lidar_profile',
         'lidar_gpu', 'scan_2d', 'drive_mode', 'actuator_watchdog', 'terrain_dir', 'regenerate',
         'resolution', 'x', 'y', 'z', 'roll', 'pitch', 'yaw', 'wheel_collision', 'wheel_stall_torque', 'lidar_prefer_gpu',
         'lidar_channels', 'lidar_samples', 'lidar_vfov_deg', 'lidar_max_range',
@@ -109,14 +114,22 @@ def setup(context):
     resolution = int(cfg['resolution'])
 
     terrain_dir = _terrain_directory(share, seed, resolution, _truthy(cfg['regenerate']), cfg['terrain_dir'])
-    world_path = _world_file(share, terrain_dir, cfg['world'], cfg['rock_density'])
+    sim = cfg['sim'].lower()
+    if sim not in ('classic', 'fortress'):
+        raise ValueError('sim must be classic or fortress')
+    world_path = _world_file(share, terrain_dir, cfg['world'], cfg['rock_density'], sim)
     if not world_path.exists():
         raise FileNotFoundError(f'world file missing: {world_path}')
     prepared = _prepared_world(share, world_path, gravity, _truthy(cfg['shadows']))
-    # Gazebo resolves model://mars_terrain/... through GAZEBO_MODEL_PATH.
+    # Gazebo resolves model://mars_terrain/... through GAZEBO_MODEL_PATH (Classic)
+    # or IGN_GAZEBO_RESOURCE_PATH (Fortress); the Fortress system plugin is found
+    # through IGN_GAZEBO_SYSTEM_PLUGIN_PATH.
     models = str(terrain_dir / 'models')
-    os.environ['GAZEBO_MODEL_PATH'] = models + (':' + os.environ['GAZEBO_MODEL_PATH']
-                                                if os.environ.get('GAZEBO_MODEL_PATH') else '')
+    for variable in ('GAZEBO_MODEL_PATH', 'IGN_GAZEBO_RESOURCE_PATH'):
+        os.environ[variable] = models + (':' + os.environ[variable] if os.environ.get(variable) else '')
+    lib_dir = os.path.normpath(os.path.join(share, '..', '..', 'lib'))
+    os.environ['IGN_GAZEBO_SYSTEM_PLUGIN_PATH'] = lib_dir + (':' + os.environ['IGN_GAZEBO_SYSTEM_PLUGIN_PATH']
+                                                            if os.environ.get('IGN_GAZEBO_SYSTEM_PLUGIN_PATH') else '')
 
     lidar_profile = cfg['lidar_profile']
     if lidar_profile not in ('auto', 'lite', 'standard', 'high', 'dense'):
@@ -124,7 +137,9 @@ def setup(context):
     lidar_gpu = cfg['lidar_gpu'].lower()
     lidar_enabled = _truthy(cfg['lidar'])
     heightmap_world = cfg['world'] == 'mars'
-    if lidar_gpu == 'auto':
+    if sim == 'fortress':
+        lidar_gpu = 'true'          # gz-sim has only the GPU lidar (exact beam labels)
+    elif lidar_gpu == 'auto':
         # The CPU ray sensor hangs gzserver on the heightmap world (measured,
         # docs/lidar.md), so the Mars world needs gpu_ray, which needs an
         # OpenGL context (a display). Flat/test worlds use the exact CPU sensor
@@ -158,11 +173,12 @@ def setup(context):
 
     x, y = float(cfg['x']), float(cfg['y'])
     z = _spawn_height(terrain_dir, cfg['world'], x, y) + REST_HEIGHT + 0.02 if cfg['z'] == 'auto' else float(cfg['z'])
-    print(f'[rover_mars.launch] world={prepared} spawn=({x:.2f}, {y:.2f}, {z:.3f}) gravity={gravity}', flush=True)
+    print(f'[rover_mars.launch] sim={sim} world={prepared} spawn=({x:.2f}, {y:.2f}, {z:.3f}) gravity={gravity}', flush=True)
 
     description = xacro.process_file(
         os.path.join(share, 'urdf', cfg['robot']),
         mappings={'actuator_watchdog': str(watchdog), 'enable_lidar': 'true' if lidar_enabled else 'false',
+                  'sim_backend': sim,
                   'lidar_profile': lidar_profile, 'lidar_gpu': lidar_gpu, 'lidar_channels': cfg['lidar_channels'],
                   'lidar_samples': cfg['lidar_samples'], 'lidar_vfov_deg': cfg['lidar_vfov_deg'],
                   'lidar_max_range': cfg['lidar_max_range'],
@@ -170,20 +186,42 @@ def setup(context):
                   'wheel_no_load_speed': cfg['wheel_no_load_speed'], 'wheel_mu': cfg['wheel_mu'],
                   'mast_height': cfg['mast_height'], 'ground_truth_tf': cfg['ground_truth_tf'],
                   'suspension_mode': cfg['suspension_mode'], 'strut_inertia_size': cfg['strut_inertia_size']}).toxml()
-    gazebo_launch_dir = os.path.join(get_package_share_directory('gazebo_ros'), 'launch')
-    spawn_args = ['-entity', 'mars_rover', '-topic', 'robot_description', '-timeout', '120',
-                  '-x', str(x), '-y', str(y), '-z', str(z),
-                  '-R', cfg['roll'], '-P', cfg['pitch'], '-Y', cfg['yaw']]
-    actions = [
-        IncludeLaunchDescription(PythonLaunchDescriptionSource(os.path.join(gazebo_launch_dir, 'gzserver.launch.py')),
-                                 launch_arguments={'world': str(prepared), 'verbose': 'false'}.items()),
+    if sim == 'fortress':
+        gz_launch = os.path.join(get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')
+        gz_args = f'-r -s --headless-rendering {prepared}' if not _truthy(cfg['gui']) else f'-r {prepared}'
+        import re
+        match = re.search(r'<world name="([^"]+)"', prepared.read_text())
+        world_name = match.group(1) if match else prepared.stem
+        bridges = [f'/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock']
+        if lidar_enabled:
+            bridges += ['/points_raw/points@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked',
+                        '/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU']
+        sim_actions = [
+            IncludeLaunchDescription(PythonLaunchDescriptionSource(gz_launch), launch_arguments={'gz_args': gz_args}.items()),
+            Node(package='ros_gz_sim', executable='create', output='screen',
+                 arguments=['-world', world_name, '-topic', 'robot_description', '-name', 'mars_rover',
+                            '-x', str(x), '-y', str(y), '-z', str(z), '-R', cfg['roll'], '-P', cfg['pitch'], '-Y', cfg['yaw']]),
+            Node(package='ros_gz_bridge', executable='parameter_bridge', name='gz_bridge', output='screen',
+                 arguments=bridges, parameters=[{'use_sim_time': True}],
+                 remappings=[('/points_raw/points', '/points_raw'), ('/imu', '/imu/data')]),
+        ]
+    else:
+        gazebo_launch_dir = os.path.join(get_package_share_directory('gazebo_ros'), 'launch')
+        spawn_args = ['-entity', 'mars_rover', '-topic', 'robot_description', '-timeout', '120',
+                      '-x', str(x), '-y', str(y), '-z', str(z),
+                      '-R', cfg['roll'], '-P', cfg['pitch'], '-Y', cfg['yaw']]
+        sim_actions = [
+            IncludeLaunchDescription(PythonLaunchDescriptionSource(os.path.join(gazebo_launch_dir, 'gzserver.launch.py')),
+                                     launch_arguments={'world': str(prepared), 'verbose': 'false'}.items()),
+            Node(package='gazebo_ros', executable='spawn_entity.py', arguments=spawn_args, output='screen'),
+        ]
+    actions = sim_actions + [
         Node(package='rover_sim', executable='swerve_controller',
              parameters=[os.path.join(share, 'config', 'swerve.yaml'),
                          {'robot_description': description, 'use_sim_time': True,
                           'drive_mode': cfg['drive_mode']}], output='screen'),
         Node(package='robot_state_publisher', executable='robot_state_publisher',
              parameters=[{'robot_description': description, 'use_sim_time': True}], output='screen'),
-        Node(package='gazebo_ros', executable='spawn_entity.py', arguments=spawn_args, output='screen'),
     ]
     if lidar_enabled:
         scan_from_postprocess = False
@@ -201,8 +239,9 @@ def setup(context):
         actions.append(Node(package='rover_sim', executable='lidar_postprocess', name='lidar_postprocess',
                             parameters=[{'use_sim_time': True, 'channels': channels, 'vertical_fov_deg': vertical_fov,
                                          'publish_scan': scan_from_postprocess, 'seed': seed,
-                                         'vertical_shift_steps': 1.0 if lidar_gpu == 'true' else 0.0}], output='screen'))
-    if _truthy(cfg['gui']):
+                                         'vertical_shift_steps': 1.0 if (lidar_gpu == 'true' and sim == 'classic') else 0.0}],
+                            output='screen'))
+    if _truthy(cfg['gui']) and sim == 'classic':
         actions.append(IncludeLaunchDescription(
             PythonLaunchDescriptionSource(os.path.join(gazebo_launch_dir, 'gzclient.launch.py'))))
     if _truthy(cfg['rviz']):
@@ -214,6 +253,7 @@ def setup(context):
 
 def generate_launch_description():
     args = [
+        DeclareLaunchArgument('sim', default_value='classic', description='classic (Gazebo 11) | fortress (gz-sim 6 via ros_gz)'),
         DeclareLaunchArgument('world', default_value='mars', description='|'.join(WORLDS)),
         DeclareLaunchArgument('seed', default_value=str(DEFAULT_SEED), description='terrain seed (integer)'),
         DeclareLaunchArgument('resolution', default_value='513', description='heightmap pixels per side (513|1025)'),

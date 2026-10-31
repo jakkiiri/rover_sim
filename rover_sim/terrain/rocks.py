@@ -140,7 +140,10 @@ def build_rock_library(directory, seed, count=14):
         visual = directory / f'rock_{index:02d}.obj'
         collision = directory / f'rock_{index:02d}_hull.obj'
         write_obj(visual, vertices, faces, normals, name=f'rock_{index:02d}')
-        write_obj(collision, hull_vertices, hull_faces, name=f'rock_{index:02d}_hull')
+        # Collision hulls carry normals too: DART (Gazebo Fortress) rejects
+        # collision meshes whose normal count differs from the vertex count.
+        write_obj(collision, hull_vertices, hull_faces, vertex_normals(hull_vertices, hull_faces),
+                  name=f'rock_{index:02d}_hull')
         library.append(dict(index=index, style=style, visual=visual.name, collision=collision.name,
                             faces=int(len(faces)), hull_faces=int(len(hull_faces)),
                             extent=[float(v) for v in np.ptp(vertices, axis=0)],

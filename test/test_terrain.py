@@ -9,6 +9,7 @@ from PIL import Image
 
 from rover_sim.terrain import heightmap as hm
 from rover_sim.terrain import mesh_visual as mv
+from rover_sim.terrain import fortress as fz
 from rover_sim.terrain import rocks as rk
 from rover_sim.terrain import scatter as sc
 from rover_sim.terrain import world as wd
@@ -149,6 +150,8 @@ def test_rock_placement_respects_pad_slopes_and_surface(small_terrain, tmp_path)
         extent = inst['scale'][2] * (rock['z_max'] - rock['z_min'])
         assert lowest == pytest.approx(ground - inst['burial'] * extent)
         assert 0.10 <= inst['burial'] <= 0.35
+    hull = (tmp_path / library[0]['collision']).read_text()
+    assert hull.count('\nvn ') == hull.count('\nv ') and '//' in hull      # normals for DART
     sdf = sc.chunk_models(instances, library, 'model://x', params.size)
     assert sdf.count('<model name="rocks_') <= 36
     assert sdf.count('<visual') == len(instances)
@@ -232,3 +235,29 @@ def test_world_uses_mesh_visual_and_heightfield_collision():
     assert 'meshes/terrain_visual.obj' in text and text.count('<heightmap>') == 1   # collision only
     legacy = wd.terrain_model(4.0, (3.0, 8.0), visual='heightmap')
     assert legacy.count('<heightmap>') == 2 and '<blend>' in legacy
+
+
+def test_fortress_world_uses_tiled_mesh_collision_with_normals(tmp_path, small_terrain):
+    height = small_terrain['height']
+    size = small_terrain['params'].size
+    tiles = fz.write_collision_tiles(tmp_path, height, size, tiles_per_side=4, step=2)
+    assert len(tiles) == 16
+    text = (tmp_path / 'terrain_tile_0_0.obj').read_text()
+    assert text.count('\nvn ') == text.count('\nv ') and text.count('\nf ') == tiles[0][3]
+    world = fz.mars_world('mars_medium', tiles, '<model name="rocks_0_0"/>', '<model name="boulder_10cm"/>')
+    assert '<sdf version="1.8">' in world and 'ignition::gazebo::systems::Physics' in world
+    assert 'ignition-physics-dartsim-plugin' in world and '<render_engine>ogre2</render_engine>' in world
+    assert world.count('<collision name="terrain_tile_') == 16 and 'meshes/terrain_visual.obj' in world
+    assert '<heightmap>' not in world and '<gravity>0 0 -3.71</gravity>' in world
+    assert fz.step_test_world().count('<model name="step_') == 7 and fz.slope_test_world().count('<model name="ramp_') == 16
+    assert '<plane>' in fz.flat_world('flat', [])
+
+
+def test_pipeline_writes_fortress_worlds(tmp_path):
+    generate_all(tmp_path, seed=4, resolution=65, texture_size=32, rock_counts=dict(low=20, medium=40, high=60),
+                 log=lambda *a: None, albedo_size=64)
+    for name in ('mars_low', 'mars_medium', 'mars_high', 'step_test', 'slope_test', 'boulder_garden', 'flat'):
+        assert (tmp_path / 'worlds' / 'fortress' / f'{name}.sdf').exists()
+    assert len(list((tmp_path / 'models' / 'mars_terrain' / 'meshes' / 'collision').glob('*.obj'))) == 36
+    manifest = load_manifest(tmp_path)
+    assert manifest['fortress']['tiles'] == 36 and manifest['fortress']['total_faces'] > 0

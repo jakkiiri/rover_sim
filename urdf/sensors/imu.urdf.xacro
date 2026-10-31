@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!-- Chassis IMU (gazebo_ros_imu_sensor) publishing /imu/data with noise and bias. -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="rover_imu" params="parent xyz:='0 0 0'">
+  <xacro:macro name="rover_imu" params="parent xyz:='0 0 0' backend:='classic'">
     <link name="imu_link">
       <inertial>
         <mass value="0.02"/>
@@ -29,11 +29,18 @@
             <z><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev><bias_mean>0.01</bias_mean><bias_stddev>0.002</bias_stddev></noise></z>
           </linear_acceleration>
         </imu>
-        <plugin name="imu_ros" filename="libgazebo_ros_imu_sensor.so">
-          <ros><remapping>~/out:=/imu/data</remapping></ros>
-          <frame_name>imu_link</frame_name>
-          <initial_orientation_as_reference>false</initial_orientation_as_reference>
-        </plugin>
+        <xacro:if value="${backend == 'classic'}">
+          <plugin name="imu_ros" filename="libgazebo_ros_imu_sensor.so">
+            <ros><remapping>~/out:=/imu/data</remapping></ros>
+            <frame_name>imu_link</frame_name>
+            <initial_orientation_as_reference>false</initial_orientation_as_reference>
+          </plugin>
+        </xacro:if>
+        <xacro:if value="${backend == 'fortress'}">
+          <!-- gz-sim Imu system publishes on this gz topic; ros_gz_bridge maps it to /imu/data -->
+          <topic>imu</topic>
+          <ignition_frame_id>imu_link</ignition_frame_id>
+        </xacro:if>
       </sensor>
     </gazebo>
   </xacro:macro>

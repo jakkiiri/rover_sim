@@ -67,7 +67,7 @@ def main():
         try:
             observer.wait_for(lambda: observer.latest_truth() is not None and observer.latest_joints() is not None,
                               timeout=150, what='rover', launch=launch)
-            control = EntityControl(observer)
+            control = EntityControl(observer, launch=launch)
             observer.run_sim(3.0)
             rest_z = observer.latest_truth()[4]
             rest_joints = observer.latest_joints()

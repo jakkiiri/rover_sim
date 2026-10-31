@@ -67,7 +67,7 @@ def main():
         try:
             observer.wait_for(lambda: observer.latest_truth() is not None and observer.latest_joints() is not None,
                               timeout=150, what='rover', launch=launch)
-            control = EntityControl(observer)
+            control = EntityControl(observer, launch=launch)
             observer.run_sim(2.0)
             for height, lane in step_lanes():
                 if args.heights and not any(abs(height - h) < 1e-6 for h in args.heights):

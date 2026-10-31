@@ -1,0 +1,270 @@
+{
+  "terrain_dir": "/home/jakkii/rover_ws/install/rover_sim/share/rover_sim/generated",
+  "seed": 7,
+  "checks": [
+    {
+      "case": "determinism",
+      "passed": true,
+      "files_compared": 92,
+      "differing_files": [],
+      "seed": 7
+    },
+    {
+      "case": "manifest",
+      "passed": true,
+      "slope_stats": {
+        "max_slope_deg": 60.619499073931955,
+        "mean_slope_deg": 15.863204448455061,
+        "median_slope_deg": 13.72899703742593,
+        "percent_above_10_deg": 64.53191675311302,
+        "percent_above_15_deg": 45.578316595039695,
+        "percent_above_20_deg": 30.264202850639705,
+        "percent_above_25_deg": 19.415660659120185,
+        "percent_above_30_deg": 11.305662901025576,
+        "percent_above_35_deg": 6.287214679540523,
+        "percent_below_20_deg": 69.7357971493603,
+        "pad_max_slope_deg": 0.46858756253769795,
+        "relief_m": 14.999999999999998,
+        "roughness_rms_m": 0.031701669063270495
+      },
+      "rocks": {
+        "low": 295,
+        "medium": 691,
+        "high": 1480
+      },
+      "seed": 7,
+      "resolution": 513
+    },
+    {
+      "case": "world_loads",
+      "passed": true,
+      "load_wall_seconds": 3.2115749659997164,
+      "world_file": "/home/jakkii/rover_ws/install/rover_sim/share/rover_sim/generated/worlds/mars_medium.world"
+    },
+    {
+      "case": "spawn_pad_stable",
+      "passed": true,
+      "drift_m": 0.0,
+      "tilt_deg": 0.11960889400910953,
+      "z_change_m": 0.0,
+      "base_height_above_sampled_ground": 0.4087274583054139,
+      "pose": [
+        -0.0007857684600010818,
+        -3.793215004802907e-18,
+        4.49665098506933,
+        9.518986392194521e-18,
+        -0.0020875690151278816,
+        -4.164256474093197e-20
+      ]
+    },
+    {
+      "case": "real_time_factor",
+      "passed": true,
+      "median_real_time_factor": 0.9704264858344809,
+      "gzserver_cpu_cores": 0.8900894659800714,
+      "windows": [
+        {
+          "wall_seconds": 10.01022969099995,
+          "real_time_factor": 0.9704264858344809,
+          "clock_samples": 9714,
+          "cpu_cores_by_pid": {
+            "207666": 0.8900894659800714
+          },
+          "memory_mb_by_pid": {
+            "207666": 652.7421875
+          }
+        }
+      ],
+      "rock_density": "medium",
+      "resolution": 513,
+      "sampling": 2,
+      "note": "rover at rest, before probes"
+    },
+    {
+      "case": "height_probes",
+      "passed": true,
+      "median_abs_error_m": 0.007372059606593595,
+      "fraction_within_5cm": 1.0,
+      "probes": [
+        {
+          "x": 51.088652406339065,
+          "y": -39.73207548813949,
+          "predicted_ground": 7.2376232385719685,
+          "landed": [
+            51.11847496823696,
+            -39.49096586461384,
+            7.307909141956848
+          ],
+          "predicted_at_landing": 7.197027517801999,
+          "error_m": 0.010881624154849057
+        },
+        {
+          "x": 14.950633248380115,
+          "y": -47.45612183204418,
+          "predicted_ground": 11.021793199414638,
+          "landed": [
+            14.95259069732754,
+            -47.19288081484476,
+            11.04003884622024
+          ],
+          "predicted_at_landing": 10.938324734538917,
+          "error_m": 0.0017141116813235158
+        },
+        {
+          "x": 52.26104322863219,
+          "y": -38.362354022709276,
+          "predicted_ground": 7.15405581447566,
+          "landed": [
+            52.24477048401946,
+            -38.36626042135419,
+            7.2631142281428795
+          ],
+          "predicted_at_landing": 7.152199932574996,
+          "error_m": 0.010914295567883592
+        },
+        {
+          "x": 2.0492437413899722,
+          "y": 20.99962334736017,
+          "predicted_ground": 1.9733217667243659,
+          "landed": [
+            2.055245204287638,
+            21.00650568225187,
+            2.075749619429851
+          ],
+          "predicted_at_landing": 1.9724258450727659,
+          "error_m": 0.0033237743570850853
+        },
+        {
+          "x": -50.18813872670124,
+          "y": -26.351907802338605,
+          "predicted_ground": 2.32771389380603,
+          "landed": [
+            -50.4299417875761,
+            -26.361875203595197,
+            2.3877319466913276
+          ],
+          "predicted_at_landing": 2.2829418706396956,
+          "error_m": 0.004790076051631953
+        },
+        {
+          "x": -45.93469862210671,
+          "y": -54.50456511791464,
+          "predicted_ground": 1.9474017545743507,
+          "landed": [
+            -45.93499151672575,
+            -54.25328124777317,
+            1.9614841614412997
+          ],
+          "predicted_at_landing": 1.8596529501041672,
+          "error_m": 0.0018312113371323768
+        },
+        {
+          "x": -11.992701173539636,
+          "y": 52.82255765219955,
+          "predicted_ground": 1.2066892929183475,
+          "landed": [
+            -11.986063933556913,
+            52.815655211078955,
+            1.317115291639076
+          ],
+          "predicted_at_landing": 1.2051951905749707,
+          "error_m": 0.011920101064105237
+        },
+        {
+          "x": -33.47316328508039,
+          "y": -19.393664625748514,
+          "predicted_ground": 9.877918788476663,
+          "landed": [
+            -33.45910457118653,
+            -19.461713968938746,
+            9.96848057784601
+          ],
+          "predicted_at_landing": 9.861108518239417,
+          "error_m": 0.007372059606593595
+        },
+        {
+          "x": 42.31173395211748,
+          "y": -27.629739424012378,
+          "predicted_ground": 9.124211507729957,
+          "landed": [
+            42.402689202544494,
+            -27.662374551162813,
+            9.219877553822343
+          ],
+          "predicted_at_landing": 9.10566236887462,
+          "error_m": 0.014215184947723003
+        },
+        {
+          "x": 4.314090545733514,
+          "y": 20.162276890111073,
+          "predicted_ground": 2.1695899283053754,
+          "landed": [
+            4.312493810975696,
+            20.16494699618605,
+            2.267710742910137
+          ],
+          "predicted_at_landing": 2.169709357938901,
+          "error_m": -0.0019986150287638615
+        },
+        {
+          "x": 28.745632293862954,
+          "y": -37.91632164844791,
+          "predicted_ground": 7.703450777069246,
+          "landed": [
+            28.754140070242595,
+            -37.92370733768502,
+            7.810177842512872
+          ],
+          "predicted_at_landing": 7.703248138806789,
+          "error_m": 0.006929703706084034
+        },
+        {
+          "x": 40.30322753626629,
+          "y": -43.53925311148298,
+          "predicted_ground": 6.154065382127495,
+          "landed": [
+            40.305593677004765,
+            -43.53680661956098,
+            6.267421117766883
+          ],
+          "predicted_at_landing": 6.153921951660875,
+          "error_m": 0.013499166106008431
+        }
+      ]
+    },
+    {
+      "case": "real_time_factor_with_probes",
+      "passed": true,
+      "median_real_time_factor": 0.6863326650629304,
+      "gzserver_cpu_cores": 1.0454860660011251,
+      "windows": [
+        {
+          "wall_seconds": 10.010244189000332,
+          "real_time_factor": 0.6813278993924511,
+          "clock_samples": 6821,
+          "cpu_cores_by_pid": {
+            "207666": 1.039934671267953
+          },
+          "memory_mb_by_pid": {
+            "207666": 694.62890625
+          },
+          "window": 1
+        },
+        {
+          "wall_seconds": 10.009157991999928,
+          "real_time_factor": 0.6913374307334097,
+          "clock_samples": 6919,
+          "cpu_cores_by_pid": {
+            "207666": 1.0510374607342974
+          },
+          "memory_mb_by_pid": {
+            "207666": 694.62890625
+          },
+          "window": 2
+        }
+      ],
+      "note": "12 dynamic probe boxes present (informational)"
+    }
+  ],
+  "passed": true
+}

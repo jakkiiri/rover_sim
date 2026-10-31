@@ -125,3 +125,21 @@ Next steps, in order (each command launches its own isolated headless sim):
    one headless smoke run (`ros2 launch rover_sim rover_mars.launch.py gui:=false`), record in `docs/validation/`.
 7. Final commit; write the short report (per-phase changes, measured table, test counts
    274→276 unit tests, commands, unmet targets: 15 cm step needs ≥ 0.8 m/s; CPU LiDAR unusable on terrain).
+
+## Fortress migration (started 2026-10-31, requested by the user)
+
+Decision: dual backend. `sim:=classic` (validated) stays the default until the
+Fortress path passes the same validators; `sim:=fortress` adds Gazebo
+Fortress (ign-gazebo 6.16, DART) through `ros_gz_sim`/`ros_gz_bridge`.
+Shared: controller, teleop, kinematics, odometry, post-processing, RViz,
+validators (through a backend abstraction in the harness). Backend-specific:
+world SDF, sensor blocks (xacro arg `sim_backend`), actuator plugin (gz-sim
+System with an embedded rclcpp node), teleport/reset helpers.
+
+Feasibility checks first: (a) heightmap 16-bit PNG / GeoTIFF DEM accuracy and
+ogre2 rendering in Fortress, DART cost; (b) System plugin build/load; (c)
+`gpu_lidar` fields and rate through the bridge. Then: world generation for
+Fortress, plugin, launch, validators, calibration, side-by-side report.
+
+- [x] F-a terrain feasibility (tiled mesh collision; heightmap formats unusable)  - [x] F-b plugin (gz_system/)  - [x] F-c lidar/imu bridge
+- [x] F1 worlds  - [x] F2 plugin  - [x] F3 launch  - [x] F4 harness backend  - [x] F5 validators on Fortress (all pass except the LiDAR range-σ criterion, documented)  - [x] F6 docs (docs/fortress.md, docs/validation/fortress.md)

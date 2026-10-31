@@ -12,6 +12,7 @@ from rover_sim.terrain import rocks as rk
 from rover_sim.terrain import scatter as sc
 from rover_sim.terrain import textures as tx
 from rover_sim.terrain import world as wd
+from rover_sim.terrain import fortress as fz
 
 GENERATOR_VERSION = 1
 DEFAULT_SEED = 7
@@ -29,7 +30,8 @@ def sha256(path):
 
 def generate_all(output_dir, seed=DEFAULT_SEED, resolution=513, size=120.0, relief=15.0,
                  rock_counts=None, texture_size=1024, sampling=2, rock_library_size=14,
-                 log=print, extra_params=None, terrain_visual='mesh', mesh_step=2, albedo_size=2048):
+                 log=print, extra_params=None, terrain_visual='mesh', mesh_step=2, albedo_size=2048,
+                 fortress_worlds=True):
     """Generate heightmap, textures, rocks, worlds and manifest under ``output_dir``."""
     started = time.time()
     output_dir = Path(output_dir)
@@ -97,10 +99,27 @@ def generate_all(output_dir, seed=DEFAULT_SEED, resolution=513, size=120.0, reli
     # Flat boulder garden uses the same specs on z = 0 ground.
     flat_terrain = dict(terrain, height=np.zeros_like(height))
     flat_boulders = sc.labeled_boulders(flat_terrain, library)
-    (worlds_dir / 'boulder_garden.world').write_text(
-        wd.boulder_garden_world(sc.boulder_models(flat_boulders, library, wd.MODEL_URI)))
+    flat_boulders_sdf = sc.boulder_models(flat_boulders, library, wd.MODEL_URI)
+    (worlds_dir / 'boulder_garden.world').write_text(wd.boulder_garden_world(flat_boulders_sdf))
     (worlds_dir / 'step_test.world').write_text(wd.step_test_world())
     (worlds_dir / 'slope_test.world').write_text(wd.slope_test_world())
+
+    # Gazebo Fortress worlds: tiled mesh collision, same rocks/boulders/visual.
+    fortress_info = None
+    if fortress_worlds:
+        log('[terrain] Fortress worlds (tiled mesh collision)')
+        tiles = fz.write_collision_tiles(model_dir / 'meshes' / 'collision', height, size)
+        fortress_dir = worlds_dir / 'fortress'
+        fortress_dir.mkdir(exist_ok=True)
+        for density, requested in rock_counts.items():
+            instances = sc.place_rocks(terrain, library, requested, seed)
+            rocks_sdf = sc.chunk_models(instances, library, wd.MODEL_URI, size)
+            (fortress_dir / f'mars_{density}.sdf').write_text(fz.mars_world(f'mars_{density}', tiles, rocks_sdf, boulders_sdf))
+        (fortress_dir / 'boulder_garden.sdf').write_text(fz.boulder_garden_world(flat_boulders_sdf))
+        (fortress_dir / 'step_test.sdf').write_text(fz.step_test_world())
+        (fortress_dir / 'slope_test.sdf').write_text(fz.slope_test_world())
+        (fortress_dir / 'flat.sdf').write_text(fz.flat_world('flat', [], camera_pose='-8 -8 5 0 0.4 0.78', size=200.0))
+        fortress_info = dict(tiles=len(tiles), faces_per_tile=tiles[0][3], total_faces=sum(t[3] for t in tiles))
 
     files = sorted(p for p in output_dir.rglob('*') if p.is_file() and p.name != 'terrain_manifest.json')
     manifest = dict(
@@ -114,6 +133,7 @@ def generate_all(output_dir, seed=DEFAULT_SEED, resolution=513, size=120.0, reli
                            reference='Golombek & Rapp 1997 (JGR 102, 4117); Golombek et al. 2003 (JGR 108, 8086)'),
         rocks=rocks_summary, boulders=boulders, texture_blend=[low_blend, high_blend],
         rock_library=library, model_uri=wd.MODEL_URI, terrain_visual=terrain_visual, mesh_visual=mesh_info,
+        fortress=fortress_info,
         files={str(p.relative_to(output_dir)): sha256(p) for p in files},
         generation_seconds=time.time() - started)
     (output_dir / 'terrain_manifest.json').write_text(json.dumps(manifest, indent=1) + '\n')

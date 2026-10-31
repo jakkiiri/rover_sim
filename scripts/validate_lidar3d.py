@@ -97,6 +97,7 @@ def main():
     parser.add_argument('--duration', type=float, default=10.0, help='wall seconds per performance window')
     parser.add_argument('--windows', type=int, default=2)
     parser.add_argument('--log-dir', type=Path)
+    parser.add_argument('--arg', action='append', default=[], help='extra launch arguments (e.g. sim:=fortress)')
     args = parser.parse_args()
     from sensor_msgs.msg import PointCloud2
     from rclpy.qos import qos_profile_sensor_data
@@ -105,7 +106,7 @@ def main():
         for profile in args.profiles:
             channels, samples, vfov = PROFILES[profile]
             log = args.log_dir / f'lidar_{profile}_gpu{gpu}.log' if args.log_dir else None
-            launch_args = ['gui:=false', 'world:=flat', f'lidar_profile:={profile}', f'lidar_gpu:={gpu}']
+            launch_args = ['gui:=false', 'world:=flat', f'lidar_profile:={profile}', f'lidar_gpu:={gpu}'] + args.arg
             record = dict(profile=profile, gpu=gpu, channels=channels, samples=samples, vertical_fov_deg=vfov)
             with SimulationLaunch('rover_mars.launch.py', launch_args, log_path=log) as launch:
                 observer = Observer(f'lidar3d_validation_{profile}')
@@ -124,7 +125,7 @@ def main():
                 observer.node.create_subscription(PointCloud2, '/points', on_processed, qos_profile_sensor_data)
                 try:
                     observer.wait_for(lambda: observer.latest_truth() is not None, timeout=150, what='rover', launch=launch)
-                    control = EntityControl(observer)
+                    control = EntityControl(observer, launch=launch)
                     control.spawn_box('lidar_test_box', BOX['x'], 0.0, BOX['size'] / 2, BOX['size'], BOX['size'], BOX['size'])
                     try:
                         observer.wait_for(lambda: len(raw) >= 3 and len(processed) >= 3, timeout=60,
@@ -156,7 +157,7 @@ def main():
                     record['raw'] = analyse([cloud_to_array(m) for m in raw_msgs], channels, vfov, sensor_height, 0.5)
                     record['processed'] = analyse([cloud_to_array(m) for m in proc_msgs], channels, vfov, sensor_height, 0.5)
                     control.remove('lidar_test_box')
-                    pids = launch.pids('gzserver')
+                    pids = launch.server_pids()
                     post = [pid for pid in metrics.find_processes('lidar_postprocess')] + \
                         [pid for pid in metrics.find_processes('python3') if pid in launch.pids('python3')]
                     windows = []
@@ -171,9 +172,9 @@ def main():
                     record['postprocess_cpu_cores'] = statistics.mean(
                         sum(v for k, v in w['cpu_cores_by_pid'].items() if int(k) not in pids and v is not None) for w in windows)
                     r, p = record['raw'], record['processed']
-                    if gpu == 'true':
-                        # The raw gpu_ray cloud carries the one-step label error; the
-                        # processed cloud is the corrected sensor output.
+                    if gpu == 'true' and 'sim:=fortress' not in args.arg:
+                        # Classic gpu_ray: the raw cloud carries the one-step label error;
+                        # the processed cloud is the corrected sensor output.
                         r = p
                     record['passed'] = bool(9.0 <= rate_sim <= 11.0
                                             and r['vertical_channels_with_returns'] >= channels // 2 - 1   # the 0 deg beam has no ground return

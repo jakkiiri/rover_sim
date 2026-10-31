@@ -1,0 +1,40 @@
+{
+  "launch": "rover_mars.launch.py",
+  "launch_args": [
+    "gui:=false",
+    "sim:=fortress",
+    "world:=mars",
+    "lidar:=false"
+  ],
+  "windows": [
+    {
+      "wall_seconds": 10.00909724900066,
+      "real_time_factor": 0.9796505072306648,
+      "clock_samples": 9806,
+      "cpu_cores_by_pid": {
+        "201317": 0.8891910807329406
+      },
+      "memory_mb_by_pid": {
+        "201317": 651.99609375
+      },
+      "window": 1
+    },
+    {
+      "wall_seconds": 10.00914272999944,
+      "real_time_factor": 0.9835137944156155,
+      "clock_samples": 9844,
+      "cpu_cores_by_pid": {
+        "201317": 0.8861897806107615
+      },
+      "memory_mb_by_pid": {
+        "201317": 651.99609375
+      },
+      "window": 2
+    }
+  ],
+  "gzserver_pids": [
+    201317
+  ],
+  "median_real_time_factor": 0.9815821508231402,
+  "mean_gzserver_cpu_cores": 0.887690430671851
+}

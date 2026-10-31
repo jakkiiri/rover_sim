@@ -11,7 +11,7 @@
      sensor_msgs/PointCloud2 on /points_raw; rover_sim's lidar_postprocess
      node adds ring/time fields, dropout and range-dependent noise on /points. -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="rover_lidar3d" params="parent xyz profile gpu channels:='' samples:='' vfov_deg:='' max_range:=100.0">
+  <xacro:macro name="rover_lidar3d" params="parent xyz profile gpu channels:='' samples:='' vfov_deg:='' max_range:=100.0 backend:='classic'">
     <xacro:property name="lidar_channels" value="${int(channels) if str(channels) else (64 if profile == 'dense' else (32 if profile == 'high' else 16))}"/>
     <xacro:property name="lidar_samples" value="${int(samples) if str(samples) else (1024 if profile in ('high', 'dense') else (900 if profile == 'standard' else 450))}"/>
     <xacro:property name="lidar_vfov" value="${radians(float(vfov_deg)) if str(vfov_deg) else (radians(45.0) if profile in ('high', 'dense') else radians(30.0))}"/>
@@ -39,11 +39,31 @@
     </joint>
     <gazebo reference="lidar_link">
       <material>Gazebo/Black</material>
-      <sensor name="lidar3d" type="${lidar_type}">
+      <sensor name="lidar3d" type="${'gpu_lidar' if backend == 'fortress' else lidar_type}">
         <pose>0 0 0 0 0 0</pose>
         <always_on>true</always_on>
         <update_rate>10</update_rate>
         <visualize>false</visualize>
+        <xacro:if value="${backend == 'fortress'}">
+          <!-- gz-sim gpu_lidar: exact beam labels, so no extra beam/shift is needed -->
+          <topic>points_raw</topic>
+          <ignition_frame_id>lidar_link</ignition_frame_id>
+          <lidar>
+            <scan>
+              <horizontal>
+                <samples>${lidar_samples}</samples><resolution>1</resolution>
+                <min_angle>${-pi}</min_angle><max_angle>${pi}</max_angle>
+              </horizontal>
+              <vertical>
+                <samples>${lidar_channels}</samples><resolution>1</resolution>
+                <min_angle>${-lidar_vfov/2 if lidar_channels > 1 else 0.0}</min_angle><max_angle>${lidar_vfov/2 if lidar_channels > 1 else 0.0}</max_angle>
+              </vertical>
+            </scan>
+            <range><min>0.5</min><max>${max_range}</max><resolution>0.002</resolution></range>
+            <noise><type>gaussian</type><mean>0.0</mean><stddev>0.02</stddev></noise>
+          </lidar>
+        </xacro:if>
+        <xacro:if value="${backend == 'classic'}">
         <ray>
           <scan>
             <horizontal>
@@ -67,6 +87,7 @@
           <output_type>sensor_msgs/PointCloud2</output_type>
           <frame_name>lidar_link</frame_name>
         </plugin>
+        </xacro:if>
       </sensor>
     </gazebo>
   </xacro:macro>

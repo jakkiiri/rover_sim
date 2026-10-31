@@ -1,4 +1,4 @@
-# rover_sim — Mars rover simulation (ROS 2 Humble, Gazebo Classic 11)
+# rover_sim — Mars rover simulation (ROS 2 Humble, Gazebo Classic 11 / Gazebo Fortress)
 
 A 53 kg four-module swerve rover with passive sprung suspension on a
 procedurally generated 120 × 120 m Martian heightmap with rocks, boulders
@@ -12,7 +12,7 @@ below; every number there comes from a validator run recorded under
 
 ## Requirements
 
-Ubuntu 22.04, ROS 2 Humble, Gazebo Classic 11.x (`gazebo_ros_pkgs`), colcon,
+Ubuntu 22.04, ROS 2 Humble, Gazebo Classic 11.x (`gazebo_ros_pkgs`) and/or Gazebo Fortress (`ros-humble-ros-gz`, `ignition-fortress`; optional, detected at build time), colcon,
 Python 3.10 with numpy, scipy and Pillow (`rosdep` installs them). No
 Gazebo Sim / Ignition. Optional: `ros-humble-pointcloud-to-laserscan` for
 the 2-D `/scan` (a built-in fallback exists), `ros-humble-joy` for the
@@ -63,7 +63,8 @@ ros2 topic pub -1 /swerve/set_drive_mode std_msgs/String "{data: crab}"
 
 | Argument | Default | Meaning |
 | --- | --- | --- |
-| `world` | `mars` | `mars`, `flat`, `step_test`, `slope_test`, `boulder_garden`, `desert` (legacy) |
+| `sim` | `classic` | `classic` (Gazebo 11, ODE) or `fortress` (gz-sim 6, DART via `ros_gz`); see `docs/fortress.md` |
+| `world` | `mars` | `mars`, `flat`, `step_test`, `slope_test`, `boulder_garden`, `desert` (legacy, classic only) |
 | `seed` | `7` | terrain seed; other seeds are generated once into `~/.cache/rover_sim` |
 | `resolution` | `513` | heightmap pixels per side (`513` or `1025`) |
 | `rock_density` | `medium` | `low` (≈300 rocks), `medium` (≈700), `high` (≈1500) |
@@ -112,6 +113,10 @@ Every number below is from a recorded validator run (`docs/validation/mars_*.jso
 | Traverse (`validate_traverse`, Mars world, GPU lite LiDAR) | planned 119 m loop: 36/36 waypoints, 111 m in 197 s (mean 0.57 m/s), max tilt 19.8°, 0 stuck events, **RTF 0.999 while driving** (gzserver 0.55 cores), odometry drift 0.60 % / 1.1° |
 
 Baseline before the overhaul: RTF 0.998 at rest with the prototype rover and 2-D scan, 131 unit tests.
+
+## Gazebo Fortress
+
+`sim:=fortress` runs the same rover and validators on Gazebo Fortress (gz-sim 6, DART) through `ros_gz`; measured side by side in `docs/fortress.md`. Classic remains the default backend (identical step outcomes, higher RTF, more accurate GPU LiDAR ranges on this machine).
 
 ## Validation scripts
 

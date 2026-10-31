@@ -33,6 +33,13 @@ class SimulationLaunch:
     def __init__(self, launch_file, launch_args=(), env=None, log_path=None, package='rover_sim'):
         self.env = env if env is not None else isolated_environment()
         self.command = ['ros2', 'launch', package, launch_file, *launch_args]
+        self.launch_args = list(launch_args)
+        args = dict(a.split(':=', 1) for a in launch_args if ':=' in a)
+        self.backend = args.get('sim', 'classic').lower()
+        world = args.get('world', 'mars')
+        self.world_name = f"mars_{args.get('rock_density', 'medium')}" if world == 'mars' else world
+        # gz-transport partitions by IGN_PARTITION; isolate like GAZEBO_MASTER_URI.
+        self.env.setdefault('IGN_PARTITION', 'rover_sim_' + self.env['ROS_DOMAIN_ID'])
         self.log_path = log_path
         self.process = None
         self.log = None
@@ -40,6 +47,7 @@ class SimulationLaunch:
     def __enter__(self):
         os.environ['ROS_DOMAIN_ID'] = self.env['ROS_DOMAIN_ID']
         os.environ['GAZEBO_MASTER_URI'] = self.env['GAZEBO_MASTER_URI']
+        os.environ['IGN_PARTITION'] = self.env['IGN_PARTITION']
         self.log = open(self.log_path, 'w') if self.log_path else subprocess.DEVNULL
         self.process = subprocess.Popen(self.command, env=self.env, stdout=self.log,
                                         stderr=subprocess.STDOUT, start_new_session=True)
@@ -47,6 +55,24 @@ class SimulationLaunch:
 
     def alive(self):
         return self.process is not None and self.process.poll() is None
+
+    def server_pids(self):
+        """The physics server process(es): gzserver (Classic) or the ruby-hosted ign gazebo (Fortress)."""
+        if self.backend == 'fortress':
+            wanted = ('IGN_PARTITION=' + self.env['IGN_PARTITION']).encode()
+            found = []
+            for pid in metrics.find_processes('ruby'):
+                try:
+                    with open(f'/proc/{pid}/cmdline', 'rb') as handle:
+                        cmdline = handle.read()
+                    with open(f'/proc/{pid}/environ', 'rb') as handle:
+                        env = handle.read().split(b'\0')
+                except OSError:
+                    continue
+                if b'gazebo' in cmdline and wanted in env:
+                    found.append(pid)
+            return found
+        return self.pids('gzserver')
 
     def pids(self, name):
         """PIDs of ``name`` (e.g. gzserver) whose GAZEBO_MASTER_URI matches ours."""
@@ -74,12 +100,11 @@ class SimulationLaunch:
                     self.process.wait(timeout=5)
                 except (ProcessLookupError, subprocess.TimeoutExpired):
                     pass
-        for name in ('gzserver', 'gzclient'):
-            for pid in self.pids(name):
-                try:
-                    os.kill(pid, signal.SIGKILL)
-                except ProcessLookupError:
-                    pass
+        for pid in self.pids('gzserver') + self.pids('gzclient') + (self.server_pids() if self.backend == 'fortress' else []):
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
         if self.log not in (None, subprocess.DEVNULL):
             self.log.close()
         return False
@@ -241,11 +266,25 @@ def write_json(path, data):
 
 
 class EntityControl:
-    """Teleport and query models through the gazebo_ros_state services."""
+    """Teleport, spawn, remove and query models.
 
-    def __init__(self, observer, timeout=30.0):
-        from gazebo_msgs.srv import GetEntityState, SetEntityState, SpawnEntity, DeleteEntity
+    Classic: gazebo_ros_state / factory services. Fortress: gz-transport
+    services (``/world/<name>/set_pose``, ``create``, ``remove``) through the
+    ``ign`` CLI, and poses from the ground-truth stream or the dynamic pose
+    topic.
+    """
+
+    def __init__(self, observer, timeout=30.0, launch=None):
         self.observer = observer
+        self.launch = launch
+        self.backend = launch.backend if launch is not None else 'classic'
+        if self.backend == 'fortress':
+            self.world = launch.world_name
+            self.env = dict(os.environ, IGN_PARTITION=launch.env['IGN_PARTITION'])
+            observer.wait_for(lambda: self._gz('service', '-l', timeout=10).find(f'/world/{self.world}/set_pose') >= 0,
+                              timeout=timeout, what='gz world services')
+            return
+        from gazebo_msgs.srv import GetEntityState, SetEntityState, SpawnEntity, DeleteEntity
         node = observer.node
         self.get = node.create_client(GetEntityState, '/gazebo/get_entity_state')
         self.set = node.create_client(SetEntityState, '/gazebo/set_entity_state')
@@ -260,26 +299,50 @@ class EntityControl:
         self.observer.wait_for(future.done, timeout=timeout, what='gazebo service reply')
         return future.result()
 
+    def _gz(self, *args, timeout=20):
+        import subprocess
+        return subprocess.run(['ign', *args], capture_output=True, text=True, timeout=timeout, env=self.env).stdout
+
+    def _gz_service(self, service, reqtype, reptype, request, timeout=20):
+        out = self._gz('service', '-s', f'/world/{self.world}/{service}', '--reqtype', reqtype, '--reptype', reptype,
+                       '--timeout', str(int(timeout * 1000)), '--req', request, timeout=timeout + 5)
+        if 'data: true' not in out:
+            raise RuntimeError(f'gz service {service} failed: {out.strip()[:200]}')
+
     def pose(self, name):
+        if self.backend == 'fortress':
+            import re
+            out = self._gz('topic', '-e', '-t', f'/world/{self.world}/pose/info', '-n', '1')
+            match = re.search(r'pose \{\s*name: "%s"[\s\S]*?position \{\s*x: ([-\d.e+]+)\s*y: ([-\d.e+]+)\s*z: ([-\d.e+]+)\s*\}'
+                              r'\s*orientation \{\s*x: ([-\d.e+]+)\s*y: ([-\d.e+]+)\s*z: ([-\d.e+]+)\s*w: ([-\d.e+]+)' % re.escape(name), out)
+            if match is None:
+                raise RuntimeError(f'no pose for {name} on the dynamic pose topic')
+            x, y, z, qx, qy, qz, qw = (float(match.group(i)) for i in range(1, 8))
+            return (x, y, z, *quaternion_to_euler(qx, qy, qz, qw))
         from gazebo_msgs.srv import GetEntityState
         state = self._call(self.get, GetEntityState.Request(name=name, reference_frame='world')).state
         p, q = state.pose.position, state.pose.orientation
         return (p.x, p.y, p.z, *quaternion_to_euler(q.x, q.y, q.z, q.w))
 
     def teleport(self, name, x, y, z, roll=0.0, pitch=0.0, yaw=0.0):
+        cr, sr = math.cos(roll / 2), math.sin(roll / 2)
+        cp, sp = math.cos(pitch / 2), math.sin(pitch / 2)
+        cy, sy = math.cos(yaw / 2), math.sin(yaw / 2)
+        qw, qx, qy, qz = (cr * cp * cy + sr * sp * sy, sr * cp * cy - cr * sp * sy,
+                          cr * sp * cy + sr * cp * sy, cr * cp * sy - sr * sp * cy)
+        if self.backend == 'fortress':
+            self._gz_service('set_pose', 'ignition.msgs.Pose', 'ignition.msgs.Boolean',
+                             f'name: "{name}", position: {{x: {x}, y: {y}, z: {z}}}, '
+                             f'orientation: {{x: {qx}, y: {qy}, z: {qz}, w: {qw}}}')
+            return
         from gazebo_msgs.msg import EntityState
         from gazebo_msgs.srv import SetEntityState
         state = EntityState()
         state.name = name
         state.reference_frame = 'world'
         state.pose.position.x, state.pose.position.y, state.pose.position.z = float(x), float(y), float(z)
-        cr, sr = math.cos(roll / 2), math.sin(roll / 2)
-        cp, sp = math.cos(pitch / 2), math.sin(pitch / 2)
-        cy, sy = math.cos(yaw / 2), math.sin(yaw / 2)
-        state.pose.orientation.w = cr * cp * cy + sr * sp * sy
-        state.pose.orientation.x = sr * cp * cy - cr * sp * sy
-        state.pose.orientation.y = cr * sp * cy + sr * cp * sy
-        state.pose.orientation.z = cr * cp * sy - sr * sp * cy
+        state.pose.orientation.w, state.pose.orientation.x = qw, qx
+        state.pose.orientation.y, state.pose.orientation.z = qy, qz
         result = self._call(self.set, SetEntityState.Request(state=state))
         if not result.success:
             raise RuntimeError(f'set_entity_state failed for {name}')
@@ -296,6 +359,11 @@ class EntityControl:
                f'<surface><friction><ode><mu>{mu}</mu><mu2>{mu}</mu2></ode></friction></surface></collision>'
                f'<visual name="v"><geometry><box><size>{sx} {sy} {sz}</size></box></geometry>'
                f'<material><ambient>{colour} 1</ambient><diffuse>{colour} 1</diffuse></material></visual></link></model></sdf>')
+        if self.backend == 'fortress':
+            escaped = sdf.replace('"', '\\"')
+            self._gz_service('create', 'ignition.msgs.EntityFactory', 'ignition.msgs.Boolean',
+                             f'sdf: "{escaped}", name: "{name}", pose: {{position: {{x: {x}, y: {y}, z: {z}}}}}')
+            return
         request = SpawnEntity.Request(name=name, xml=sdf, reference_frame='world')
         request.initial_pose.position.x, request.initial_pose.position.y, request.initial_pose.position.z = float(x), float(y), float(z)
         request.initial_pose.orientation.w = 1.0
@@ -304,8 +372,21 @@ class EntityControl:
             raise RuntimeError(f'spawn failed for {name}: {result.status_message}')
 
     def remove(self, name):
+        if self.backend == 'fortress':
+            self._gz_service('remove', 'ignition.msgs.Entity', 'ignition.msgs.Boolean', f'name: "{name}", type: MODEL')
+            return
         from gazebo_msgs.srv import DeleteEntity
         self._call(self.delete, DeleteEntity.Request(name=name))
+
+    def reset_world(self):
+        """Reset model poses (Classic /reset_world, Fortress world control)."""
+        if self.backend == 'fortress':
+            self._gz_service('control', 'ignition.msgs.WorldControl', 'ignition.msgs.Boolean', 'reset: {all: true}')
+            return
+        from std_srvs.srv import Empty
+        client = self.observer.node.create_client(Empty, '/reset_world')
+        self.observer.wait_for(client.service_is_ready, timeout=10, what='/reset_world')
+        self._call(client, Empty.Request())
 
 
 def truth_since(observer, sim_start):

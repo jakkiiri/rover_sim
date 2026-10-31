@@ -4,6 +4,7 @@
      masses in kg. Mechanical limits are documented in docs/mechanics.md. -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="mars_rover">
   <xacro:arg name="enable_control" default="true"/>
+  <xacro:arg name="sim_backend" default="classic"/>
   <xacro:arg name="actuator_watchdog" default="0.3"/>
   <xacro:arg name="enable_lidar" default="true"/>
   <xacro:arg name="lidar_profile" default="lite"/>
@@ -73,6 +74,7 @@
   <xacro:property name="wheel_kd" value="100"/>
   <xacro:property name="wheel_min_depth" value="0.002"/>
   <xacro:property name="wheel_max_vel" value="1.0"/>
+  <xacro:property name="sim_backend" value="$(arg sim_backend)"/>
 
   <!-- Massless ROS root keeps KDL quiet; coincident with base_link. -->
   <link name="base_root"/>
@@ -126,24 +128,43 @@
   <xacro:swerve_module prefix="rear_left" x="${-module_x}" y="${module_y}" side="1"/>
   <xacro:swerve_module prefix="rear_right" x="${-module_x}" y="${-module_y}" side="-1"/>
 
-  <xacro:rover_imu parent="base_link"/>
+  <xacro:rover_imu parent="base_link" backend="${sim_backend}"/>
   <xacro:if value="$(arg enable_lidar)">
     <xacro:rover_lidar3d parent="base_link" xyz="${mast_x} 0 ${body_height/2+0.02+mast_height+0.04}"
                          profile="$(arg lidar_profile)" gpu="$(arg lidar_gpu)" channels="$(arg lidar_channels)"
-                         samples="$(arg lidar_samples)" vfov_deg="$(arg lidar_vfov_deg)" max_range="$(arg lidar_max_range)"/>
+                         samples="$(arg lidar_samples)" vfov_deg="$(arg lidar_vfov_deg)" max_range="$(arg lidar_max_range)"
+                         backend="${sim_backend}"/>
   </xacro:if>
 
   <xacro:if value="$(arg enable_control)">
-    <gazebo>
-      <plugin name="swerve_actuators" filename="librover_swerve_actuators.so">
-        <watchdog_timeout>$(arg actuator_watchdog)</watchdog_timeout>
-        <ground_truth_rate>$(arg ground_truth_rate)</ground_truth_rate>
-        <ground_truth_tf>$(arg ground_truth_tf)</ground_truth_tf>
-        <steering_kp>60.0</steering_kp>
-        <steering_kd>3.0</steering_kd>
-        <wheel_kp>3.0</wheel_kp>
-        <wheel_ki>20.0</wheel_ki>
-      </plugin>
-    </gazebo>
+    <xacro:if value="${sim_backend == 'classic'}">
+      <gazebo>
+        <plugin name="swerve_actuators" filename="librover_swerve_actuators.so">
+          <watchdog_timeout>$(arg actuator_watchdog)</watchdog_timeout>
+          <ground_truth_rate>$(arg ground_truth_rate)</ground_truth_rate>
+          <ground_truth_tf>$(arg ground_truth_tf)</ground_truth_tf>
+          <steering_kp>60.0</steering_kp>
+          <steering_kd>3.0</steering_kd>
+          <wheel_kp>3.0</wheel_kp>
+          <wheel_ki>20.0</wheel_ki>
+        </plugin>
+      </gazebo>
+    </xacro:if>
+    <xacro:if value="${sim_backend == 'fortress'}">
+      <gazebo>
+        <plugin filename="librover_swerve_gz_system.so" name="rover_sim::SwerveGzSystem">
+          <watchdog_timeout>$(arg actuator_watchdog)</watchdog_timeout>
+          <ground_truth_rate>$(arg ground_truth_rate)</ground_truth_rate>
+          <ground_truth_tf>$(arg ground_truth_tf)</ground_truth_tf>
+          <steering_kp>60.0</steering_kp>
+          <steering_kd>3.0</steering_kd>
+          <wheel_kp>3.0</wheel_kp>
+          <wheel_ki>20.0</wheel_ki>
+          <hold_kp>40.0</hold_kp>
+          <hold_kd>6.0</hold_kd>
+          <wheel_radius>${wheel_radius}</wheel_radius>
+        </plugin>
+      </gazebo>
+    </xacro:if>
   </xacro:if>
 </robot>

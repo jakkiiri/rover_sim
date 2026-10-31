@@ -207,7 +207,7 @@ def main():
             observer.wait_for(lambda: observer.latest_truth() is not None and observer.latest_joints() is not None
                               and bool(odom), timeout=200, what='rover', launch=launch)
             observer.run_sim(3.0, timeout_factor=60.0)
-            pids = launch.pids('gzserver')
+            pids = launch.server_pids()
             sampler = metrics.CpuSampler(pids)
             wall_start = time.monotonic()
             start = observer.sim_time()
