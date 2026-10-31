@@ -1,0 +1,27 @@
+{
+  "launch": "rover_mars.launch.py",
+  "launch_args": [
+    "gui:=false",
+    "world:=mars",
+    "lidar_profile:=standard"
+  ],
+  "windows": [
+    {
+      "wall_seconds": 10.010084967000012,
+      "real_time_factor": 0.9985931461675427,
+      "clock_samples": 100,
+      "cpu_cores_by_pid": {
+        "14258": 0.5734217061016874
+      },
+      "memory_mb_by_pid": {
+        "14258": 860.80078125
+      },
+      "window": 1
+    }
+  ],
+  "gzserver_pids": [
+    14258
+  ],
+  "median_real_time_factor": 0.9985931461675427,
+  "mean_gzserver_cpu_cores": 0.5734217061016874
+}

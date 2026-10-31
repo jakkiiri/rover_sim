@@ -89,22 +89,32 @@ baseline without any LiDAR is RTF 0.998 / 0.56 cores (Phase A).
 | `lite` (CPU `ray`) | 16 × 450 | 3600 | 0.946 | 0.66 | 0.43 | yes |
 | `standard` (CPU `ray`) | 16 × 900 | 7200 | 0.900 | 0.68 | 0.44 | yes |
 | `high` (CPU `ray`) | 32 × 1024 | 16114 | 0.723 | 0.80 | 0.42 | no |
-| `lite` (`gpu_ray`, Intel iGPU, headless with DISPLAY) | 16 × 450 | 3150 | 0.998 | 0.83 | 0.42 | yes, but ranges wrong (see below) |
+| `lite` (`gpu_ray`, corrected labels) | 16 × 450 | 3402 | 0.999 | 0.51 | 0.27 | yes |
+| `standard` (`gpu_ray`, corrected labels) | 16 × 900 | 6812 | 0.999 | 0.48 | 0.32 | yes |
+| `high` (`gpu_ray`, corrected labels) | 32 × 1024 | 15373 | 0.999 | 0.48 | 0.45 | yes |
 
-Only `lite` keeps the real-time factor above 0.9 on this machine, so it is
-the default. `standard` sits right at the budget (0.886–0.900 across runs)
-and `high` costs a quarter of real time. The CPU ray sensor does not run in
-a separate physics-free thread in practice: every doubling of rays shows up
-in RTF even though the gzserver process uses well under one core.
+Only `lite` of the CPU profiles keeps the real-time factor above 0.9;
+`standard` sits at the budget (0.886–0.900 across runs) and `high` costs a
+quarter of real time, because the CPU ray sensor's cost lands in the physics
+loop even though gzserver uses well under one core. The GPU sensor costs no
+RTF at any profile on this Intel iGPU.
 
-`gpu_ray` on the Intel iGPU does work headless (the X display is reachable)
-and costs no RTF at all (0.998), **but its geometry is wrong**: the ground
-returns have a 1.27 m range bias with 0.57 m scatter, only 7 of 16 channels
-return, and 3150 instead of 3600 points arrive. This is the known Gazebo
-Classic GPU ray limitation (cube-map projection and vertical interpolation
-with few channels), so the launch keeps the CPU sensor unless explicitly
-asked for `lidar_gpu:=true`; `auto` never chooses it on its own
-(`lidar_prefer_gpu:=true` is required in addition to a display and GUI).
+On the **Mars heightmap world** (rover at rest, medium rocks) the GPU sensor
+measured RTF 0.998 / 0.999 / 0.999 (lite / standard / high) with gzserver at
+0.55 / 0.57 / 0.56 cores, against 0.999 / 0.32 without a LiDAR; while
+driving the 111 m traverse the RTF stayed at 0.999
+(`docs/validation/mars_traverse.md`). The CPU sensor never produced a
+simulation clock there. The default profile stays `lite` (16 × 450) so the
+CPU fallback on the flat and test worlds also holds the budget;
+`standard`/`high` are free on the GPU.
+
+GPU geometry after the one-step label correction (`/points`): lowest beam
+−15° (−22.5° for `high`), spacing exactly as configured, ground range bias
++1.9 mm, per-channel σ 2.9 cm (post-processing adds its range-dependent
+term to the sensor's own noise), test-box face within 0.5 mm, 0 self-hits per
+sweep, 3402 points per sweep (one labelled channel is dropped by the correction and
+the dropout model removes a few percent). The uncorrected raw topic showed a
+0.7–45 m range bias growing towards the horizon.
 
 Geometry and noise (CPU profiles): the lowest beam is at −15° (−22.5° for
 `high`) with exactly the configured 2° (1.45°) spacing; ground ranges match

@@ -40,7 +40,7 @@ colcon test-result --verbose
 
 The build runs `scripts/generate_terrain.py` for the default seed and
 installs the heightmap DEM, textures, rock meshes and worlds under
-`share/rover_sim/generated/`. The unit suite has **274 pytest tests** (158 controller, 36 kinematics/odometry, 35 teleop, 20 LiDAR/IMU/RViz, 19 terrain); `colcon test` reports them plus five CTest wrappers.
+`share/rover_sim/generated/`. The unit suite has **276 pytest tests** (164 controller, 36 kinematics/odometry, 35 teleop, 22 LiDAR/IMU/RViz, 19 terrain, up from 131 before the overhaul); `colcon test` reports **281** including the five CTest wrappers.
 
 ## Run
 
@@ -71,7 +71,8 @@ ros2 topic pub -1 /swerve/set_drive_mode std_msgs/String "{data: crab}"
 | `shadows` | `false` | cast shadows (GPU cost) |
 | `gui`, `rviz` | `true`, `false` | Gazebo client, RViz (`rviz/rover_mars.rviz`) |
 | `lidar`, `lidar_profile` | `true`, `lite` | `lite` 16×450, `standard` 16×900, `high` 32×1024 at 10 Hz |
-| `lidar_gpu` | `auto` | `true` uses `gpu_ray` (needs OpenGL); `auto` stays on the CPU sensor unless `lidar_prefer_gpu:=true` with a display and GUI |
+| `lidar_gpu` | `auto` | `auto` = `gpu_ray` on `world:=mars` when a display exists (the CPU ray sensor hangs on the heightmap), CPU `ray` elsewhere unless `lidar_prefer_gpu:=true`; `true`/`false` force it |
+| `lidar_channels`, `lidar_samples`, `lidar_vfov_deg`, `lidar_max_range` | profile values, `100.0` | override the profile's beam layout and range |
 | `scan_2d` | `false` | also publish a planar `/scan` |
 | `drive_mode` | `ackermann` | `ackermann`, `crab`, `point_turn`, `auto` |
 | `x`, `y`, `z`, `yaw` | `0 0 auto 0` | spawn pose; `z:=auto` samples the heightmap at the spawn pad |
@@ -94,7 +95,22 @@ world, Earth gravity).
 
 ## Measured results (2026-10-17, headless, this machine: i7-13700H, Intel iGPU)
 
-RESULTS_TABLE
+Every number below is from a recorded validator run (`docs/validation/mars_*.json`).
+
+| Area | Measured |
+| --- | --- |
+| Terrain (`validate_terrain`) | deterministic (46 files, identical hashes); 15 m relief, mean slope 15.9°, 70 % below 20°, 6.3 % above 35°; pad drift 0.26 mm/10 s; DEM probe error median 7.8 mm; RTF 0.998 at rest, gzserver 0.56 cores |
+| Step climb (`validate_step_climb`, 0.8 m/s, 8 N m, 3 approach angles) | 5 / 10 / 15 cm climbed 9/9; 20 / 25 / 30 / 40 cm blocked 12/12, 0 tunnelled, 0 flipped (30 cm never passes). At 0.5 m/s the limit is 10 cm. |
+| Slopes (`validate_slope`, μ = 0.65) | climbs 5–20° at 0.40 m/s, 25° at 0.21 m/s; 30 / 35 / 40° stall at the ramp foot without sliding or flipping; parking brake holds 5–25° with ≤ 9 mm drift in 5 s |
+| Suspension (`validate_suspension`) | 12 cm bump: 4/4 wheels in contact 100 %, settling 0.16 s; 5–9 cm rock field: 4/4 contact 98.8 %, mean speed 0.49 m/s |
+| Controller (`validate_controller`) | circle / figure-eight cross-track RMS 1.8 / 1.8 mm; crab, point-turn and ackermann modes verified; slip/stall warning 1.4 s after a wall impact; watchdog stop 0.9 s; reset resume 0.5 s |
+| Odometry vs ground truth | 0.13 % of distance (1.9 cm over 14 m), yaw error 0.24° (gyro yaw) |
+| Hardening / teleop / shutdown | 10/10, 10/10, 2/2 |
+| LiDAR CPU `ray` (flat world, at rest) | lite RTF 0.944 (gzserver 0.62 + post-processing 0.41 cores), standard 0.892, high 0.728; range σ 2.0 cm, box face within 1 mm, 0 self-hits. **Unusable on the heightmap world: gzserver hangs.** |
+| LiDAR `gpu_ray` (Intel iGPU, headless, corrected labels) | lite / standard / high all pass geometry (σ 2.9 cm, box face within 1 mm, 0 self-hits); RTF 0.999 at every profile on the flat and Mars worlds (gzserver 0.55–0.57 cores). Default on `world:=mars`. |
+| Traverse (`validate_traverse`, Mars world, GPU lite LiDAR) | planned 119 m loop: 36/36 waypoints, 111 m in 197 s (mean 0.57 m/s), max tilt 19.8°, 0 stuck events, **RTF 0.999 while driving** (gzserver 0.55 cores), odometry drift 0.60 % / 1.1° |
+
+Baseline before the overhaul: RTF 0.998 at rest with the prototype rover and 2-D scan, 131 unit tests.
 
 ## Validation scripts
 
@@ -114,7 +130,7 @@ ros2 run rover_sim measure_performance.py --launch rover_mars.launch.py --arg wo
 ```
 
 Reports: `docs/validation/mars_terrain.md`, `mars_mechanics.md`,
-`mars_lidar.md`, `mars_controller.md`, `mars_traverse.md`.
+`mars_lidar.md`, `mars_controller.md`, `mars_traverse.md`, `mars_clean_checkout.md`.
 
 ## Documentation
 

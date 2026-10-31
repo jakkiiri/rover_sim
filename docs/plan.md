@@ -88,7 +88,7 @@ from the table above.
 - [x] B5 final `validate_step_climb` / `validate_slope` runs, `docs/mechanics.md` measured section, commit ab88041
 - [x] D1-D4 LiDAR profiles, IMU, RViz, `validate_lidar3d` 3/3 (CPU), gpu_ray measured and rejected, `docs/lidar.md`, commit
 - [x] C1-C8 controller rewrite, odometry, teleop, 274 unit tests, `validate_controller` 7/7, hardening 10/10, teleop 10/10, shutdown 2/2, `docs/controller.md`, commit
-- [ ] E1-E3 launch, `validate_traverse`, README, reports, clean-checkout build, final commit
+- [x] E1-E3 launch, `validate_traverse` passed (111 m, RTF 0.999, 0 stuck), README, reports; clean-checkout build in `docs/validation/mars_clean_checkout.md`, final commit
 
 
 ## Paused 2026-10-17 — resume here

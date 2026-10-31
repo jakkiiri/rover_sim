@@ -24,10 +24,143 @@ from rover_sim.validation.harness import Observer, SimulationLaunch, truth_since
 
 DEFAULT_WAYPOINTS = [(10.0, 0.0), (20.0, 8.0), (22.0, 22.0), (8.0, 30.0), (-10.0, 26.0), (-22.0, 14.0),
                      (-20.0, -4.0), (-8.0, -14.0), (6.0, -12.0), (0.0, 0.0)]
+ROUTE_TARGETS = [(0.0, 34.0), (-32.0, 0.0), (0.0, -34.0), (0.0, 0.0)]   # loop through four quadrant goals
 
 
 def wrap(angle):
     return math.atan2(math.sin(angle), math.cos(angle))
+
+
+def plan_route(terrain_dir, targets=ROUTE_TARGETS, cell=1.0, max_slope_deg=18.0, rock_clearance=1.2,
+               spacing=3.0):
+    """A* over the DEM slope map (cells steeper than ``max_slope_deg`` or next
+    to a large rock are blocked, gentle slopes are cheap) through ``targets``.
+
+    A rover driving a planned route is the realistic use of the terrain: the
+    traverse then measures physics, traction and the sensors instead of the
+    tilt limiter stopping the rover on a cliff it was pointed at blindly.
+    Returns waypoints spaced about ``spacing`` metres apart.
+    """
+    import heapq
+    import re
+    import numpy as np
+    from rover_sim.terrain.heightmap import diagnostics
+    from rover_sim.terrain.pipeline import load_manifest, read_height_field
+    manifest = load_manifest(terrain_dir)
+    height = read_height_field(terrain_dir)
+    size = manifest['size']
+    pixel = size / (height.shape[0] - 1)
+    slope = diagnostics(height, pixel)[0]
+    factor = max(1, int(round(cell / pixel)))
+    n = height.shape[0] // factor
+    coarse = slope[:n * factor, :n * factor].reshape(n, factor, n, factor).mean(axis=(1, 3))
+    cell = pixel * factor
+    half = size / 2.0
+
+    def to_cell(x, y):
+        return int((half - y) / cell), int((x + half) / cell)          # row (north down), column
+
+    def to_world(row, col):
+        return (-half + (col + 0.5) * cell, half - (row + 0.5) * cell)
+
+    blocked = coarse > max_slope_deg
+    # Large rocks (hull collisions) from the world file: block their surroundings.
+    world = Path(terrain_dir) / 'worlds' / 'mars_medium.world'
+    if world.exists():
+        text = world.read_text()
+        for chunk in re.finditer(r'<model name="rocks_\d+_\d+"><static>true</static><pose>([-\d.]+) ([-\d.]+) ', text):
+            cx, cy = float(chunk.group(1)), float(chunk.group(2))
+            body = text[chunk.end():]
+            body = body[:body.find('</model>')]
+            for hull in re.finditer(r'<collision name="c\d+"><pose>([-\d.]+) ([-\d.]+) [^<]*</pose><geometry><mesh>', body):
+                rx, ry = cx + float(hull.group(1)), cy + float(hull.group(2))
+                r0, c0 = to_cell(rx, ry)
+                reach = int(math.ceil(rock_clearance / cell))
+                blocked[max(0, r0 - reach):r0 + reach + 1, max(0, c0 - reach):c0 + reach + 1] = True
+    margin = int(3.0 / cell)
+    blocked[:margin, :] = blocked[-margin:, :] = blocked[:, :margin] = blocked[:, -margin:] = True
+    cost = 1.0 + (coarse / 10.0) ** 2
+
+    def nearest_free(node):
+        if not blocked[node]:
+            return node
+        for radius in range(1, n):
+            candidates = [(node[0] + dr, node[1] + dc) for dr in range(-radius, radius + 1)
+                          for dc in range(-radius, radius + 1)
+                          if max(abs(dr), abs(dc)) == radius and 0 <= node[0] + dr < n and 0 <= node[1] + dc < n]
+            free = [c for c in candidates if not blocked[c]]
+            if free:
+                return min(free, key=lambda c: math.hypot(c[0] - node[0], c[1] - node[1]))
+        raise RuntimeError('no free terrain cell found')
+
+    def astar(start, goal):
+        start, goal = nearest_free(to_cell(*start)), nearest_free(to_cell(*goal))
+        frontier = [(0.0, start)]
+        came, best = {start: None}, {start: 0.0}
+        while frontier:
+            _, current = heapq.heappop(frontier)
+            if current == goal:
+                break
+            for dr in (-1, 0, 1):
+                for dc in (-1, 0, 1):
+                    if dr == dc == 0:
+                        continue
+                    nxt = (current[0] + dr, current[1] + dc)
+                    if not (0 <= nxt[0] < n and 0 <= nxt[1] < n) or blocked[nxt]:
+                        continue
+                    step = math.hypot(dr, dc) * cost[nxt]
+                    candidate = best[current] + step
+                    if candidate < best.get(nxt, math.inf):
+                        best[nxt] = candidate
+                        came[nxt] = current
+                        heapq.heappush(frontier, (candidate + math.hypot(goal[0] - nxt[0], goal[1] - nxt[1]), nxt))
+        if goal not in came:
+            raise RuntimeError('no route to the goal through terrain below the slope limit')
+        path, node = [], goal
+        while node is not None:
+            path.append(to_world(*node))
+            node = came[node]
+        return path[::-1]
+
+    # Goals: the farthest cell connected to the pad in each requested direction
+    # (within ``goal_radius`` m), so every leg is reachable below the slope limit.
+    start = to_cell(0.0, 0.0)
+    reachable = {start}
+    stack = [start]
+    while stack:
+        r, c = stack.pop()
+        for dr in (-1, 0, 1):
+            for dc in (-1, 0, 1):
+                nb = (r + dr, c + dc)
+                if 0 <= nb[0] < n and 0 <= nb[1] < n and nb not in reachable and not blocked[nb]:
+                    reachable.add(nb)
+                    stack.append(nb)
+    cells = np.array(sorted(reachable))
+    world_xy = np.array([to_world(r, c) for r, c in cells])
+    goals = []
+    for tx, ty in targets:
+        if (tx, ty) == (0.0, 0.0):
+            goals.append((0.0, 0.0))
+            continue
+        direction = np.array([tx, ty]) / math.hypot(tx, ty)
+        projection = world_xy @ direction
+        lateral = np.abs(world_xy @ np.array([-direction[1], direction[0]]))
+        radius = math.hypot(tx, ty)
+        candidates = (projection <= radius) & (lateral < 0.5 * radius)
+        index = int(np.argmax(np.where(candidates, projection, -np.inf)))
+        goals.append(tuple(float(v) for v in world_xy[index]))
+    waypoints, previous = [], (0.0, 0.0)
+    for target in goals:
+        segment = astar(previous, target)
+        accumulated = 0.0
+        for a, b in zip(segment, segment[1:]):
+            accumulated += math.hypot(b[0] - a[0], b[1] - a[1])
+            if accumulated >= spacing:
+                waypoints.append(b)
+                accumulated = 0.0
+        waypoints.append(segment[-1])
+        previous = target
+    return waypoints
 
 
 def main():
@@ -36,14 +169,24 @@ def main():
     parser.add_argument('--speed', type=float, default=0.6)
     parser.add_argument('--yaw-gain', type=float, default=1.2)
     parser.add_argument('--lookahead', type=float, default=1.5, help='waypoint reached radius (m)')
-    parser.add_argument('--max-sim-seconds', type=float, default=600.0)
-    parser.add_argument('--waypoints', type=str, help='x1,y1;x2,y2;...')
+    parser.add_argument('--max-sim-seconds', type=float, default=900.0)
+    parser.add_argument('--waypoints', type=str, help='x1,y1;x2,y2;... (default: a slope-aware planned loop)')
+    parser.add_argument('--terrain-dir', type=Path, help='generated terrain directory (default: installed)')
+    parser.add_argument('--max-route-slope', type=float, default=18.0, help='planner slope limit (deg)')
     parser.add_argument('--arg', action='append', default=[], help='extra launch arguments')
     parser.add_argument('--snapshots', type=Path, help='directory for PNG top-down snapshots of /points')
     parser.add_argument('--log', type=Path)
     args = parser.parse_args()
-    waypoints = DEFAULT_WAYPOINTS if not args.waypoints else [
-        tuple(float(v) for v in pair.split(',')) for pair in args.waypoints.split(';')]
+    if args.waypoints:
+        waypoints = [tuple(float(v) for v in pair.split(',')) for pair in args.waypoints.split(';')]
+    else:
+        terrain_dir = args.terrain_dir
+        if terrain_dir is None:
+            from ament_index_python.packages import get_package_share_directory
+            terrain_dir = Path(get_package_share_directory('rover_sim')) / 'generated'
+        waypoints = plan_route(terrain_dir, max_slope_deg=args.max_route_slope)
+        print(f'planned {len(waypoints)} waypoints over gentle terrain, route length '
+              f'{sum(math.hypot(b[0]-a[0], b[1]-a[1]) for a, b in zip([(0.0, 0.0)] + waypoints, waypoints)):.0f} m', flush=True)
     launch_args = ['gui:=false', 'world:=mars'] + args.arg
     result = dict(launch_args=launch_args, waypoints=waypoints, speed=args.speed)
     snapshots = []

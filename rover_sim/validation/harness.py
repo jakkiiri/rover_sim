@@ -198,6 +198,7 @@ class Observer:
         """
         if command is not None:
             self.command = command
+        self.wait_for(lambda: self.sim_time() is not None, timeout=60.0, what='first /clock sample')
         start = self.sim_time()
         self.wait_for(lambda: self.sim_time() is not None and self.sim_time() - start >= seconds,
                       timeout=max(30.0, seconds * timeout_factor), what='simulation time to advance')
