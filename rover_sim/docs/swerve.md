@@ -142,7 +142,7 @@ In another sourced terminal, with no other cmd_vel publisher running:
 
 ```bash
 ros2 run rover_sim validate_swerve.py --output \
-  ~/rover_ws/src/rover_sim/docs/validation/local_motion.json
+  ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_motion.json
 ```
 
 This explicitly invoked script publishes commands continuously during pose

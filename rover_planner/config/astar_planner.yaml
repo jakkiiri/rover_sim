@@ -1,0 +1,55 @@
+# A* planner settings. Reasons for each value: README.md, "Settings".
+astar_planner:
+  ros__parameters:
+    cloud_topic: /stereo/points2
+    # 3D LiDAR (rover_sim lidar_mode:=3d, the default); '' uses the stereo camera only.
+    lidar_topic: /points
+    lidar_rate: 10.0
+    lidar_max_range: 10.0
+    # Gazebo sensor noise 0.02 m + post-processing about 0.01 m; constant with range.
+    lidar_range_sigma: 0.03
+    # One terrain fit takes ~40 ms; clouds arrive at up to 15 Hz.
+    terrain_cache_s: 0.2
+    odom_topic: /odom
+    goal_topic: /goal_pose
+    global_frame: odom
+    resolution: 0.1
+    grid_size: 12.0
+    # Heights are above the local ground (measured), not above z = 0.
+    z_min: 0.12
+    z_max: 1.5
+    ground_tolerance: 0.05
+    # Terrain. The rover climbs, crosses and turns on 35 deg ramps and slides at 40 deg
+    # (slope_test); 25 deg leaves margin for stereo slope error, bumps and stopping.
+    max_slope_deg: 25.0
+    slope_cost: 3.0
+    slope_window: 1.0
+    ground_window: 2.0
+    terrain_min_fraction: 0.3
+    terrain_outlier: 0.08
+    height_error_floor: 0.02
+    elevation_size: 30.0
+    # Drop-offs (crater walls the low camera cannot see past an edge).
+    drop_check_near: 0.45
+    drop_check_far: 0.9
+    drop_check_views: 3
+    camera_bearings_deg: [-40.0, 29.0]
+    max_range: 6.0
+    min_points_per_cell: 2
+    confirm_hits: 3
+    # 0.25 px disparity error / (240 px focal length * 0.12 m baseline)
+    depth_error_k: 0.0087
+    clear_misses: 3
+    unconfirmed_s: 2.0
+    cloud_rate: 5.0
+    plan_rate: 2.0
+    footprint_half_length: 0.58
+    footprint_half_width: 0.51
+    inflation: 0.15
+    # The rover turns to follow a path (no strafing), so plan with a disc that fits every heading.
+    footprint_shape: circle
+    goal_tolerance: 0.3
+    # A goal the rover cannot stand on is replaced by the nearest safe reachable cell this close.
+    goal_snap_radius: 1.5
+    # ... keeping this far from blocked cells when there is room (the grid misses a rock's low flank).
+    goal_snap_clearance: 0.2

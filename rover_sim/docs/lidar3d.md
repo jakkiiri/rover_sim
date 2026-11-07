@@ -137,7 +137,7 @@ source ~/rover_ws/install/setup.bash
 export ROS_DOMAIN_ID=55
 export GAZEBO_MASTER_URI=http://127.0.0.1:11365
 ros2 run rover_sim validate_lidar3d.py --profile lite --duration 5 --windows 2 \
-  --output ~/rover_ws/src/rover_sim/docs/validation/local_lidar3d.json
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_lidar3d.json
 ```
 
 The required output path is created as needed. The validator tests cloud
@@ -152,7 +152,7 @@ then run in the same isolated Terminal 2:
 
 ```bash
 ros2 run rover_sim validate_lidar3d.py --performance-only --duration 5 --windows 2 \
-  --output ~/rover_ws/src/rover_sim/docs/validation/local_lidar3d_baseline.json
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_lidar3d_baseline.json
 ```
 
 Measure without RViz/Gazebo GUI. Compare under similar host load; wall-time

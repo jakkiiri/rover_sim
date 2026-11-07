@@ -103,7 +103,7 @@ ros2 run rover_sim validate_swerve.py --cases \
   forward backward rotate_left rotate_right forward_yaw zero \
   blocked_lateral_left blocked_lateral_right \
   blocked_lateral_forward blocked_lateral_yaw \
-  --output ~/rover_ws/src/rover_sim/docs/validation/no_strafe_motion.json
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/no_strafe_motion.json
 ```
 
 ## Reset/watchdog regression and an intermittent recovery limitation

@@ -1,0 +1,17 @@
+# Path follower settings (rover_planner/path_follower.py).
+path_follower:
+  ros__parameters:
+    lookahead: 0.5       # m along the path to aim at
+    max_linear: 0.4      # m/s, same as teleop
+    max_angular: 0.5     # rad/s, same as teleop
+    min_angular: 0.15    # rad/s, so in-place turns do not stall
+    turn_angle: 0.5      # rad (~30 deg) off the nose above which it turns in place
+    heading_gain: 1.5    # rad/s per rad of heading error
+    slow_radius: 0.6     # m from the path end where it starts slowing down
+    stop_radius: 0.15    # m from the path end where it stops
+    path_timeout: 1.0    # s without a new path or pose before stopping
+    rate: 10.0           # Hz; the controller stops 0.5 s after the last command
+    scan_delay: 2.0      # s of "no path, can turn" (/planner/status) before looking around
+    scan_rate: 0.3       # rad/s while turning in place to look around
+    scan_turn: 6.3       # rad, the most one look-around turns (one full turn)
+    scan_travel: 1.0     # m driven before another look-around may start

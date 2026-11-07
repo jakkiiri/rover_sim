@@ -151,7 +151,7 @@ export ROS_DOMAIN_ID=45
 export GAZEBO_MASTER_URI=http://127.0.0.1:11355
 ros2 run rover_sim validate_lidar.py \
   --duration 10 --windows 3 --watchdog 0.3 \
-  --output ~/rover_ws/src/rover_sim/docs/validation/local_lidar.json
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_lidar.json
 ```
 
 The `--output` argument is required. The validator creates the JSON file and
@@ -197,7 +197,7 @@ After spawn, in the same sourced, isolated Terminal 2:
 ```bash
 ros2 run rover_sim validate_lidar.py --performance-only \
   --duration 10 --windows 3 --watchdog 0.3 \
-  --output ~/rover_ws/src/rover_sim/docs/validation/local_lidar_baseline.json
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_lidar_baseline.json
 ```
 
 The baseline runs four performance/watchdog checks and does not require `/scan`.

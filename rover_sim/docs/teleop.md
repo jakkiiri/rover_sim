@@ -105,7 +105,7 @@ With the launch running, in a second sourced terminal:
 
 ```bash
 ros2 run rover_sim validate_teleop.py \
-  --output ~/rover_ws/src/rover_sim/docs/validation/no_strafe_teleop.json
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/no_strafe_teleop.json
 ```
 
 The validation executable feeds keys into the actual installed teleop through

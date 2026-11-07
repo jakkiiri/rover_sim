@@ -1,0 +1,56 @@
+{
+  "sensor /stereo/points2": {
+    "pass": true,
+    "rate_hz": 14.71,
+    "nominal_hz": 15.0,
+    "frames": [
+      "stereo_left_optical_frame"
+    ],
+    "expected_frame": "stereo_left_optical_frame"
+  },
+  "sensor /stereo/left/image_raw": {
+    "pass": true,
+    "rate_hz": 14.7,
+    "nominal_hz": 15.0,
+    "frames": [
+      "stereo_left_optical_frame"
+    ],
+    "expected_frame": "stereo_left_optical_frame"
+  },
+  "sensor /scan": {
+    "pass": true,
+    "rate_hz": 10.0,
+    "nominal_hz": 10.0,
+    "frames": [
+      "lidar_link"
+    ],
+    "expected_frame": "lidar_link"
+  },
+  "rates": {
+    "/stereo/points2": {
+      "rate_hz": 14.71,
+      "nominal_hz": 15.0,
+      "frames": [
+        "stereo_left_optical_frame"
+      ],
+      "expected_frame": "stereo_left_optical_frame"
+    },
+    "/stereo/left/image_raw": {
+      "rate_hz": 14.7,
+      "nominal_hz": 15.0,
+      "frames": [
+        "stereo_left_optical_frame"
+      ],
+      "expected_frame": "stereo_left_optical_frame"
+    },
+    "/scan": {
+      "rate_hz": 10.0,
+      "nominal_hz": 10.0,
+      "frames": [
+        "lidar_link"
+      ],
+      "expected_frame": "lidar_link"
+    }
+  },
+  "failures": []
+}

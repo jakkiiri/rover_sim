@@ -263,7 +263,7 @@ Terminal 2 (same sourcing and exports), once the launch prints
 
 ```bash
 ros2 run rover_sim validate_stereo.py --performance-only \
-  --output ~/rover_ws/src/rover_sim/docs/validation/local_stereo_baseline.json
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_stereo_baseline.json
 ```
 
 Stop terminal 1 with Ctrl+C. Restart it without `stereo:=false`, then in
@@ -271,8 +271,8 @@ terminal 2:
 
 ```bash
 ros2 run rover_sim validate_stereo.py \
-  --compare ~/rover_ws/src/rover_sim/docs/validation/local_stereo_baseline.json \
-  --output ~/rover_ws/src/rover_sim/docs/validation/local_stereo.json
+  --compare ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_stereo_baseline.json \
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_stereo.json
 ```
 
 The launch-combination check starts its own simulations, so nothing else may
@@ -280,7 +280,7 @@ be running in that domain:
 
 ```bash
 ros2 run rover_sim validate_launch_matrix.py \
-  --output ~/rover_ws/src/rover_sim/docs/validation/local_launch_matrix.json \
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_launch_matrix.json \
   --log-dir /tmp/rover_launch_matrix
 ```
 

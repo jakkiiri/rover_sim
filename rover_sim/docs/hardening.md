@@ -205,7 +205,7 @@ terminal, with the same domain/master:
 ```bash
 ROS_DOMAIN_ID=45 GAZEBO_MASTER_URI=http://127.0.0.1:11355 \
   ros2 run rover_sim validate_hardening.py --controller-pid PID --watchdog 0.3 \
-  --output ~/rover_ws/src/rover_sim/docs/validation/local_hardening.json
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_hardening.json
 ```
 
 This changes only that isolated world's physics settings, temporarily suspends
@@ -222,7 +222,7 @@ checks final zero delivery and one destruction, and repeats before feedback:
 
 ```bash
 ROS_DOMAIN_ID=46 ros2 run rover_sim validate_shutdown.py \
-  --output ~/rover_ws/src/rover_sim/docs/validation/local_shutdown.json
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_shutdown.json
 ```
 
 The `local_*.json` output paths preserve the committed historical reports.

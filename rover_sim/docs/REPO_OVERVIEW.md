@@ -40,7 +40,7 @@ holonomic.
 | Python | 3.10 (system) |
 | Build | `ament_cmake` + `ament_cmake_python`, colcon |
 
-Workspace layout expected: `~/rover_ws/src/rover_sim/package.xml`.
+Workspace layout expected: `~/rover_ws/src/rover_sim/rover_sim/package.xml`.
 
 ```bash
 cd ~/rover_ws
