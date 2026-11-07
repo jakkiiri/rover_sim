@@ -1,0 +1,55 @@
+{
+  "profile": "lite",
+  "performance_only": true,
+  "checks": [
+    {
+      "case": "performance_window_1",
+      "passed": true,
+      "real_time_factor": 0.8008937311038519,
+      "scan_rate_sim_hz": null,
+      "scan_rate_wall_hz": null,
+      "maximum_heartbeat_wall_gap": 0.03402314300001308,
+      "epochs": [
+        2146022768958
+      ]
+    },
+    {
+      "case": "performance_window_2",
+      "passed": true,
+      "real_time_factor": 0.78625263766905,
+      "scan_rate_sim_hz": null,
+      "scan_rate_wall_hz": null,
+      "maximum_heartbeat_wall_gap": 0.1304438450001726,
+      "epochs": [
+        2146022768958
+      ]
+    },
+    {
+      "case": "no_watchdog_false_trip",
+      "passed": true
+    }
+  ],
+  "performance": [
+    {
+      "real_time_factor": 0.8008937311038519,
+      "scan_rate_sim_hz": null,
+      "scan_rate_wall_hz": null,
+      "maximum_heartbeat_wall_gap": 0.03402314300001308,
+      "epochs": [
+        2146022768958
+      ]
+    },
+    {
+      "real_time_factor": 0.78625263766905,
+      "scan_rate_sim_hz": null,
+      "scan_rate_wall_hz": null,
+      "maximum_heartbeat_wall_gap": 0.1304438450001726,
+      "epochs": [
+        2146022768958
+      ]
+    }
+  ],
+  "passed": true,
+  "median_real_time_factor": 0.7935731843864509,
+  "temporary_entities_removed": true
+}

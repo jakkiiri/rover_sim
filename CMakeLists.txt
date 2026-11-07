@@ -16,7 +16,11 @@ install(TARGETS rover_swerve_actuators LIBRARY DESTINATION lib)
 ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS scripts/swerve_controller scripts/validate_swerve.py
   scripts/rover_teleop scripts/validate_teleop.py scripts/validate_hardening.py
-  scripts/validate_shutdown.py scripts/validate_lidar.py DESTINATION lib/${PROJECT_NAME})
+  scripts/validate_shutdown.py scripts/validate_lidar.py scripts/lidar_postprocess
+  scripts/validate_lidar3d.py DESTINATION lib/${PROJECT_NAME})
+install(PROGRAMS scripts/stereo_camera_relay scripts/stereo_processor scripts/generate_sand_texture.py
+  scripts/validate_stereo.py scripts/validate_launch_matrix.py scripts/generate_mars_world.py
+  DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
@@ -28,11 +32,22 @@ if(BUILD_TESTING)
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
   ament_add_pytest_test(lidar_description test/test_lidar.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
+  # Stereo camera system (self-contained; see docs/stereo.md).
+  foreach(stereo_test stereo_geometry stereo_matching stereo_truth stereo_description
+          stereo_nodes stereo_launch stereo_world)
+    ament_add_pytest_test(${stereo_test} test/test_${stereo_test}.py
+      APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
+  endforeach()
+  ament_add_pytest_test(lidar3d test/test_lidar3d.py
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 install(DIRECTORY launch worlds urdf LICENSES docs config rviz
   DESTINATION share/${PROJECT_NAME}
 )
+
+# Material resource folder; found through the gazebo_model_path export in package.xml.
+install(DIRECTORY models DESTINATION share/${PROJECT_NAME})
 
 install(FILES THIRD_PARTY_NOTICES.md README.md
   DESTINATION share/${PROJECT_NAME}

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- Local adapter for the pinned, Classic-only upstream 3D LiDAR. -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="../upstream/mars_lidar3d.urdf.xacro"/>
+  <xacro:macro name="proxy_lidar3d" params="parent profile rate:=10 max_range:=100.0 samples:=''">
+    <!-- At 0.40 m the lowest beam clears the chassis and all four wheels. -->
+    <xacro:rover_lidar3d parent="${parent}" xyz="0 0 0.40"
+                        profile="${profile}" gpu="false"
+                        rate="${rate}" max_range="${max_range}" samples="${samples}"/>
+  </xacro:macro>
+</robot>

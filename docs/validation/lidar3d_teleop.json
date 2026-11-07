@@ -1,0 +1,108 @@
+[
+  {
+    "case": "W",
+    "command": [
+      0.4,
+      0.0,
+      0.0
+    ],
+    "duration": 2.9749999999999943,
+    "body_displacement": [
+      1.1900004170822065,
+      1.1897953960173264e-05
+    ],
+    "yaw_change": -1.4390877585051357e-05,
+    "translation_error": 1.1905262114177714e-05,
+    "heading_error": 1.4390877585051357e-05,
+    "passed": true
+  },
+  {
+    "case": "S",
+    "command": [
+      -0.4,
+      0.0,
+      0.0
+    ],
+    "duration": 3.005000000000024,
+    "body_displacement": [
+      -1.2019990522278698,
+      -9.62505893925291e-05
+    ],
+    "yaw_change": 2.352764799848554e-05,
+    "translation_error": 9.62552555990496e-05,
+    "heading_error": 2.352764799848554e-05,
+    "passed": true
+  },
+  {
+    "case": "A",
+    "command": [
+      0.0,
+      0.0,
+      0.5
+    ],
+    "duration": 2.6229999999999905,
+    "body_displacement": [
+      -0.00011448617594386869,
+      -6.509595102626699e-05
+    ],
+    "yaw_change": 1.3084898155923927,
+    "translation_error": 0.00013169877494595235,
+    "heading_error": 0.0030101844076024786,
+    "passed": true
+  },
+  {
+    "case": "D",
+    "command": [
+      0.0,
+      0.0,
+      -0.5
+    ],
+    "duration": 2.7290000000000134,
+    "body_displacement": [
+      5.15933345776448e-05,
+      -0.0002030119700505881
+    ],
+    "yaw_change": -1.3609605917592467,
+    "translation_error": 0.00020946534834349493,
+    "heading_error": 0.0035394082407600447,
+    "passed": true
+  },
+  {
+    "case": "Q_disabled",
+    "zero_latency_wall_seconds": 0.0016594139999597246,
+    "max_wheel_speed_after_stop": 0.0008817734380599007,
+    "passed": true
+  },
+  {
+    "case": "E_disabled",
+    "zero_latency_wall_seconds": 0.0033099510001193266,
+    "max_wheel_speed_after_stop": 5.876178559002694e-06,
+    "passed": true
+  },
+  {
+    "case": "Space",
+    "zero_latency_wall_seconds": 0.0016014020000056917,
+    "max_wheel_speed_after_stop": 2.0951724970330164e-05,
+    "passed": true
+  },
+  {
+    "case": "release",
+    "zero_latency_wall_seconds": 0.652992667000035,
+    "max_wheel_speed_after_stop": 1.1769329211341837e-05,
+    "passed": true
+  },
+  {
+    "case": "Ctrl+C",
+    "zero_latency_wall_seconds": 0.009706677999929525,
+    "max_wheel_speed_after_stop": 5.017822409001341e-05,
+    "passed": true,
+    "exit_code": 0,
+    "terminal_restored": true,
+    "active_command_printed": true
+  },
+  {
+    "case": "teleop_never_publishes_lateral",
+    "messages_checked": 1385,
+    "passed": true
+  }
+]

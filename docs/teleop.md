@@ -98,7 +98,7 @@ colcon build --packages-select rover_sim
 source ~/rover_ws/install/setup.bash
 colcon test --packages-select rover_sim --event-handlers console_direct+
 colcon test-result --verbose
-ros2 launch rover_sim rover_desert.launch.py gui:=false
+ros2 launch rover_sim rover_desert.launch.py world:=desert gui:=false
 ```
 
 With the launch running, in a second sourced terminal:

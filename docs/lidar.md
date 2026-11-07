@@ -1,4 +1,8 @@
-# Prototype 2D LiDAR and local RViz
+# Original 2D LiDAR and local RViz
+
+This guide covers the retained `lidar_mode:=2d` compatibility mode. The
+operator launch now defaults to [3D LiDAR](lidar3d.md). Phase 5 measurement
+results and counts below describe the original 2D milestone.
 
 For a clean machine and checkout, complete the
 [README setup, dependency and build steps](../README.md) first. From the
@@ -9,8 +13,14 @@ cd ~/rover_ws
 source /opt/ros/humble/setup.bash
 colcon build --packages-select rover_sim
 source ~/rover_ws/install/setup.bash
-ros2 launch rover_sim rover_desert.launch.py rviz:=true
+ros2 launch rover_sim rover_desert.launch.py lidar_mode:=2d rviz:=true
 ```
+
+Since the [stereo camera](stereo.md) was added, it is on by default. With it,
+`rviz:=true` opens the combined `rviz/rover_sensors.rviz` (the same LiDAR
+display plus stereo). Add `stereo:=false` to get exactly the LiDAR-only setup
+and RViz view described below, for example to reproduce the Phase 5
+measurements. The LiDAR itself is unchanged.
 
 Gazebo Classic remains the simulator. RViz is optional and defaults off;
 `gui:=false rviz:=true` runs a headless Gazebo server with RViz. `lidar:=false`
@@ -108,9 +118,9 @@ command publisher, as it moves the rover.
 
 ### Reproduce the sensor integration checks
 
-Build and run the 131 unit tests using the [README commands](../README.md).
+Build and run the 322 unit tests using the [README commands](../README.md).
 The commands below reproduce the separate 12 LiDAR integration checks,
-including three performance windows; the complete milestone's 44 integration
+including three performance windows; the Phase 5 milestone's 44 integration
 checks also include motion, keyboard, hardening and shutdown regressions.
 Choose unused domain/master values. These examples use ROS domain 45 and
 Classic master port 11355; use the same pair in every participating terminal.
@@ -126,7 +136,7 @@ source ~/rover_ws/install/setup.bash
 export ROS_DOMAIN_ID=45
 export GAZEBO_MASTER_URI=http://127.0.0.1:11355
 ros2 launch rover_sim rover_desert.launch.py \
-  gui:=false lidar:=true rviz:=false actuator_watchdog:=0.3
+  world:=desert gui:=false lidar:=true lidar_mode:=2d rviz:=false actuator_watchdog:=0.3
 ```
 
 Terminal 2: source the same workspace and select the same isolated domain/master.
@@ -179,7 +189,7 @@ sourced, isolated Terminal 1, launch the sensor-disabled variant:
 
 ```bash
 ros2 launch rover_sim rover_desert.launch.py \
-  gui:=false lidar:=false rviz:=false actuator_watchdog:=0.3
+  world:=desert gui:=false lidar:=false lidar_mode:=2d rviz:=false actuator_watchdog:=0.3
 ```
 
 After spawn, in the same sourced, isolated Terminal 2:
@@ -216,7 +226,7 @@ For a normal combined launch in a new terminal, use:
 source /opt/ros/humble/setup.bash
 source ~/rover_ws/install/setup.bash
 env -u GTK_PATH -u GTK_EXE_PREFIX -u GIO_MODULE_DIR -u GTK_IM_MODULE_FILE \
-  ros2 launch rover_sim rover_desert.launch.py rviz:=true
+  ros2 launch rover_sim rover_desert.launch.py lidar_mode:=2d rviz:=true
 ```
 
 This does not change shell startup files or ROS/simulator configuration.

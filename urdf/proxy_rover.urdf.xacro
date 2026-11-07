@@ -5,9 +5,38 @@
   <xacro:arg name="enable_control" default="true"/>
   <xacro:arg name="actuator_watchdog" default="0.3"/>
   <xacro:arg name="enable_lidar" default="true"/>
+  <!-- Preserve direct-Xacro 2D compatibility; the operator launch selects 3D. -->
+  <xacro:arg name="lidar_mode" default="2d"/>
+  <xacro:arg name="lidar_profile" default="lite"/>
+  <xacro:arg name="lidar_rate" default="10"/>
+  <xacro:arg name="lidar_range" default="100.0"/>
+  <xacro:arg name="lidar_samples" default=""/>
+  <!-- Stereo camera (independent of the LiDAR switch); see docs/stereo.md. -->
+  <xacro:arg name="enable_stereo" default="true"/>
+  <!-- 480x360 RGB = 518,400 B per frame fits Fast DDS's default 512 KiB shared-memory
+       segment; larger frames measurably delayed the controller reset handshake. -->
+  <xacro:arg name="stereo_width" default="480"/>
+  <xacro:arg name="stereo_height" default="360"/>
+  <xacro:arg name="stereo_rate" default="15"/>
+  <xacro:arg name="stereo_baseline" default="0.12"/>
+  <xacro:arg name="stereo_hfov" default="1.5707963267948966"/>
+  <xacro:arg name="stereo_xyz" default="0.52 0 -0.03"/>
+  <xacro:arg name="stereo_rpy" default="0 0 0"/>
+  <!-- LiDAR keep-out (base_link metres / degrees). Defaults fit the 2D LiDAR;
+       rover_desert.launch.py passes the 3D LiDAR's mount and beam band. -->
+  <xacro:arg name="lidar_keepout_origin" default="0 0 0.20"/>
+  <xacro:arg name="lidar_keepout_vfov_min" default="-15"/>
+  <xacro:arg name="lidar_keepout_vfov_max" default="15"/>
+  <xacro:arg name="lidar_keepout_margin" default="2"/>
+  <xacro:arg name="lidar_keepout_radius" default="0.15"/>
+  <xacro:arg name="lidar_keepout_band" default="true"/>
+  <!-- Ground-truth pose for the A* planner (rover_planner package). -->
+  <xacro:arg name="ground_truth" default="true"/>
   <xacro:include filename="upstream/wheel_steered.urdf.xacro"/>
   <xacro:include filename="upstream/inertia_tensors.urdf.xacro"/>
   <xacro:include filename="sensors/lidar.urdf.xacro"/>
+  <xacro:include filename="sensors/lidar3d.urdf.xacro"/>
+  <xacro:include filename="sensors/stereo.urdf.xacro"/>
   <xacro:property name="axle_link_radius" value="0.06"/>
   <xacro:property name="steering_link_mass" value="1.0"/>
   <!-- Massless ROS root avoids the KDL root-inertia warning. -->
@@ -54,12 +83,45 @@
   <xacro:wheel_module prefix="rear_left" x="-0.38" side="1"/>
   <xacro:wheel_module prefix="rear_right" x="-0.38" side="-1"/>
   <xacro:if value="$(arg enable_lidar)">
-    <xacro:rover_lidar parent="base_link"/>
+    <xacro:if value="${'$(arg lidar_mode)' == '2d'}">
+      <xacro:rover_lidar parent="base_link"/>
+    </xacro:if>
+    <xacro:if value="${'$(arg lidar_mode)' == '3d'}">
+      <xacro:proxy_lidar3d parent="base_link" profile="$(arg lidar_profile)"
+                           rate="$(arg lidar_rate)" max_range="$(arg lidar_range)"
+                           samples="$(arg lidar_samples)"/>
+    </xacro:if>
+  </xacro:if>
+  <xacro:if value="$(arg enable_stereo)">
+    <xacro:rover_stereo parent="base_link" xyz="$(arg stereo_xyz)" rpy="$(arg stereo_rpy)"
+                        width="$(arg stereo_width)" height="$(arg stereo_height)"
+                        rate="$(arg stereo_rate)" baseline="$(arg stereo_baseline)" hfov="$(arg stereo_hfov)"
+                        keepout_origin="$(arg lidar_keepout_origin)"
+                        keepout_vfov_min="$(arg lidar_keepout_vfov_min)"
+                        keepout_vfov_max="$(arg lidar_keepout_vfov_max)"
+                        keepout_margin="$(arg lidar_keepout_margin)"
+                        keepout_radius="$(arg lidar_keepout_radius)"
+                        keepout_band="$(arg lidar_keepout_band)"/>
   </xacro:if>
   <xacro:if value="$(arg enable_control)">
     <gazebo>
       <plugin name="swerve_actuators" filename="librover_swerve_actuators.so">
         <watchdog_timeout>$(arg actuator_watchdog)</watchdog_timeout>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+  <!-- Publishes the rover's exact pose in Gazebo's world frame as
+       nav_msgs/Odometry on /ground_truth/odom. It adds no TF, sensor, mass or
+       collision; rover_planner's ground_truth_odom node turns it into /odom
+       and the odom -> base_root TF. Gazebo merges base_link into base_root
+       (fixed joint, zero offset), so base_root is the body Gazebo knows. -->
+  <xacro:if value="$(arg ground_truth)">
+    <gazebo>
+      <plugin name="ground_truth_pose" filename="libgazebo_ros_p3d.so">
+        <ros><remapping>odom:=/ground_truth/odom</remapping></ros>
+        <body_name>base_root</body_name>
+        <frame_name>world</frame_name>
+        <update_rate>50</update_rate>
       </plugin>
     </gazebo>
   </xacro:if>

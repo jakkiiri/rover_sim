@@ -40,10 +40,14 @@
         </collision>
         <visual name="visual">
           <geometry><box><size>100 100 0.5</size></box></geometry>
+          <!-- Visual only: textured sand gives stereo something to match.
+               Collision, friction and LiDAR returns are unchanged. -->
           <material>
-            <ambient>0.76 0.62 0.39 1</ambient>
-            <diffuse>0.86 0.72 0.47 1</diffuse>
-            <specular>0.02 0.02 0.02 1</specular>
+            <script>
+              <uri>model://rover_sim_materials/materials/scripts</uri>
+              <uri>model://rover_sim_materials/materials/textures</uri>
+              <name>RoverSim/Sand</name>
+            </script>
           </material>
         </visual>
       </link>
@@ -103,6 +107,71 @@
             <diffuse>0.86 0.72 0.47 1</diffuse>
             <specular>0.02 0.02 0.02 1</specular>
           </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Stereo test features (added for docs/stereo.md). Rules, checked by
+         test/test_stereo_world.py:
+         - static, unrotated boxes and vertical cylinders only; no spheres
+           (validate_lidar.py treats every sphere collision as a hill);
+         - at most 0.35 m tall, below the 2D LiDAR plane (~0.53 m above flat ground);
+         - 3.5-6 m ahead of the spawn point, clear of the rover's validation
+           motion area, the LiDAR validator's probe boxes and the hill footprints.
+         Their collision makes them visible to a future 3D LiDAR, as real rocks would be.
+         Pose = centre of the shape (metres); exact values are parsed by the validators. -->
+    <model name="stereo_feature_crate">
+      <static>true</static>
+      <pose>4.5 0 0.175 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.5 0.5 0.35</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.5 0.5 0.35</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/WoodPallet</name></script></material>
+        </visual>
+      </link>
+    </model>
+    <model name="stereo_feature_rock_slab">
+      <static>true</static>
+      <pose>4.5 1.4 0.125 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.6 0.4 0.25</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.6 0.4 0.25</size></box></geometry>
+          <material><script><uri>model://rover_sim_materials/materials/scripts</uri><uri>model://rover_sim_materials/materials/textures</uri><name>RoverSim/Rock</name></script></material>
+        </visual>
+      </link>
+    </model>
+    <model name="stereo_feature_brick_block">
+      <static>true</static>
+      <pose>3.6 -2.2 0.15 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.4 0.4 0.3</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.4 0.4 0.3</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Bricks</name></script></material>
+        </visual>
+      </link>
+    </model>
+    <model name="stereo_feature_rock_post">
+      <static>true</static>
+      <pose>5.2 -1.6 0.15 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.2</radius><length>0.3</length></cylinder></geometry></collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.2</radius><length>0.3</length></cylinder></geometry>
+          <material><script><uri>model://rover_sim_materials/materials/scripts</uri><uri>model://rover_sim_materials/materials/textures</uri><name>RoverSim/Rock</name></script></material>
+        </visual>
+      </link>
+    </model>
+    <model name="stereo_feature_stump">
+      <static>true</static>
+      <pose>5.4 2.6 0.1 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.25</radius><length>0.2</length></cylinder></geometry></collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.25</radius><length>0.2</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/WoodPallet</name></script></material>
         </visual>
       </link>
     </model>

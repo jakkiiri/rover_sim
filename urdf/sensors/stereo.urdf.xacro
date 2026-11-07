@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<!-- Self-contained stereo camera for Gazebo Classic / gazebo_ros. See docs/stereo.md.
+     Non-interference rules:
+     - Visual geometry only: no <collision>, so no ray sensor (2D or 3D LiDAR) can hit it.
+     - No <inertial>: fixed-joint lumping keeps visuals and the sensor, and the
+       rover's mass and dynamics stay exactly as they were.
+     - Expansion fails if the mount enters the configurable LiDAR keep-out region.
+     - Frames use the stereo_ prefix; topics live under /stereo. -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="rover_stereo"
+               params="parent xyz rpy width height rate baseline hfov
+                       keepout_origin keepout_vfov_min keepout_vfov_max keepout_margin keepout_radius
+                       keepout_band:='true'">
+    <xacro:property name="b" value="${float(baseline)}"/>
+    <xacro:property name="w" value="${int(width)}"/>
+    <xacro:property name="h" value="${int(height)}"/>
+    <!-- Camera centres sit 3 cm ahead of stereo_link, in front of the housing. -->
+    <xacro:property name="lens_x" value="0.03"/>
+    <xacro:property name="housing_x" value="0.04"/>
+    <xacro:property name="housing_y" value="${b + 0.06}"/>
+    <xacro:property name="housing_z" value="0.03"/>
+
+    <!-- Keep-out check at expansion time. Every stereo visual lies inside the box
+         x in [-housing_x/2, lens_x], |y| <= housing_y/2, |z| <= housing_z/2 of
+         stereo_link; its rotated corners give exact height and horizontal-distance
+         limits. test/test_stereo_description.py also checks sampled visuals. -->
+    <xacro:property name="m" value="${[float(v) for v in xyz.split()]}"/>
+    <xacro:property name="a" value="${[float(v) for v in rpy.split()]}"/>
+    <xacro:property name="o" value="${[float(v) for v in keepout_origin.split()]}"/>
+    <xacro:property name="rot" value="${[
+        [cos(a[2])*cos(a[1]), cos(a[2])*sin(a[1])*sin(a[0]) - sin(a[2])*cos(a[0]), cos(a[2])*sin(a[1])*cos(a[0]) + sin(a[2])*sin(a[0])],
+        [sin(a[2])*cos(a[1]), sin(a[2])*sin(a[1])*sin(a[0]) + cos(a[2])*cos(a[0]), sin(a[2])*sin(a[1])*cos(a[0]) - cos(a[2])*sin(a[0])],
+        [-sin(a[1]), cos(a[1])*sin(a[0]), cos(a[1])*cos(a[0])]]}"/>
+    <xacro:property name="corners" value="${[[m[i] - o[i] + rot[i][0]*c[0] + rot[i][1]*c[1] + rot[i][2]*c[2] for i in (0, 1, 2)]
+        for c in [[cx, cy, cz] for cx in (-housing_x/2, lens_x) for cy in (-housing_y/2, housing_y/2)
+                  for cz in (-housing_z/2, housing_z/2)]]}"/>
+    <xacro:property name="z_low" value="${min(p[2] for p in corners)}"/>
+    <xacro:property name="z_high" value="${max(p[2] for p in corners)}"/>
+    <xacro:property name="h_far" value="${max(sqrt(p[0]**2 + p[1]**2) for p in corners)}"/>
+    <xacro:property name="h_near" value="${max(0.0, min(sqrt(p[0]**2 + p[1]**2) for p in corners)
+        - max(sqrt((p[0]-q[0])**2 + (p[1]-q[1])**2) for p in corners for q in corners))}"/>
+    <xacro:property name="band_low" value="${float(keepout_vfov_min) - float(keepout_margin)}"/>
+    <xacro:property name="band_high" value="${float(keepout_vfov_max) + float(keepout_margin)}"/>
+    <!-- Entirely below the LiDAR: highest elevation is atan2(z_high, h_far); above: lowest
+         is atan2(z_low, h_far). A shape straddling the LiDAR height is rejected. -->
+    <xacro:property name="in_beam_band" value="${
+        (degrees(atan2(z_high, h_far)) >= band_low) if z_high &lt; 0 else
+        ((degrees(atan2(z_low, h_far)) &lt;= band_high) if z_low > 0 else True)}"/>
+    <xacro:property name="in_housing_zone" value="${h_near &lt;= float(keepout_radius)
+        and z_low &lt;= float(keepout_radius) and z_high >= -float(keepout_radius)}"/>
+    <!-- keepout_band false: the LiDAR is a dome that looks down over the whole
+         rover (airy profile), so the camera is necessarily in its view; only
+         the housing clearance is checked. -->
+    <xacro:if value="${in_housing_zone or (in_beam_band and str(keepout_band).lower() in ('true', '1'))}">
+      ${xacro.fatal('stereo mount', xyz, rpy, 'enters the LiDAR keep-out region: elevation band',
+                    round(band_low, 2), 'to', round(band_high, 2), 'deg, stereo spans heights',
+                    round(z_low, 3), 'to', round(z_high, 3), 'm relative to the LiDAR.',
+                    'Move stereo_xyz/stereo_rpy or adjust the lidar_keepout_* args.')}
+    </xacro:if>
+
+    <link name="stereo_link">
+      <visual>
+        <geometry><box size="${housing_x} ${housing_y} ${housing_z}"/></geometry>
+        <material name="stereo_housing"><color rgba="0.20 0.22 0.25 1"/></material>
+      </visual>
+      <xacro:macro name="stereo_lens" params="y">
+        <visual>
+          <origin xyz="${lens_x - 0.005} ${y} 0" rpy="0 ${pi/2} 0"/>
+          <geometry><cylinder radius="0.012" length="0.01"/></geometry>
+          <material name="stereo_lens"><color rgba="0.05 0.05 0.08 1"/></material>
+        </visual>
+      </xacro:macro>
+      <xacro:stereo_lens y="${b/2}"/>
+      <xacro:stereo_lens y="${-b/2}"/>
+    </link>
+    <joint name="stereo_joint" type="fixed">
+      <parent link="${parent}"/><child link="stereo_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+
+    <!-- ROS optical frames: x right, y down, z forward. -->
+    <link name="stereo_left_optical_frame"/>
+    <joint name="stereo_left_optical_joint" type="fixed">
+      <parent link="stereo_link"/><child link="stereo_left_optical_frame"/>
+      <origin xyz="${lens_x} ${b/2} 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    </joint>
+    <link name="stereo_right_optical_frame"/>
+    <joint name="stereo_right_optical_joint" type="fixed">
+      <parent link="stereo_link"/><child link="stereo_right_optical_frame"/>
+      <origin xyz="${lens_x} ${-b/2} 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    </joint>
+
+    <gazebo reference="stereo_link">
+      <material>Gazebo/DarkGrey</material>
+      <!-- One multicamera sensor: both images share one capture time. Gazebo
+           cameras look along +X of their pose, matching stereo_link body axes. -->
+      <sensor name="stereo" type="multicamera">
+        <pose>0 0 0 0 0 0</pose>
+        <always_on>true</always_on>
+        <update_rate>${rate}</update_rate>
+        <visualize>false</visualize>
+        <xacro:macro name="stereo_camera" params="name y">
+          <camera name="${name}">
+            <pose>${lens_x} ${y} 0 0 0 0</pose>
+            <horizontal_fov>${hfov}</horizontal_fov>
+            <image><width>${w}</width><height>${h}</height><format>R8G8B8</format></image>
+            <clip><near>0.05</near><far>50</far></clip>
+            <noise><type>gaussian</type><mean>0.0</mean><stddev>0.007</stddev></noise>
+          </camera>
+        </xacro:macro>
+        <xacro:stereo_camera name="left" y="${b/2}"/>
+        <xacro:stereo_camera name="right" y="${-b/2}"/>
+        <plugin name="stereo_camera" filename="libgazebo_ros_camera.so">
+          <ros>
+            <namespace>/</namespace>
+            <!-- In multicamera mode this plugin uses one frame and one Tx for both
+                 cameras, so the right stream goes to an internal topic and
+                 stereo_camera_relay republishes it with the correct frame and Tx. -->
+            <remapping>stereo/right/image_raw:=stereo/gazebo/right/image_raw</remapping>
+            <remapping>stereo/right/camera_info:=stereo/gazebo/right/camera_info</remapping>
+          </ros>
+          <camera_name>stereo</camera_name>
+          <frame_name>stereo_left_optical_frame</frame_name>
+          <hack_baseline>0</hack_baseline>
+          <!-- The plugin default (w+1)/2 is one pixel off the symmetric-frustum centre. -->
+          <cx>${(w - 1) / 2.0}</cx>
+          <cy>${(h - 1) / 2.0}</cy>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+</robot>

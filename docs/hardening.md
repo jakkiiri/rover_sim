@@ -5,7 +5,8 @@ behavior. Historically, Phase 4.5 changed those areas and TF/provenance without
 adding sensors or changing kinematics, teleop, tire contact, gains or terrain.
 The subsequent reliability fix hardened watchdog recovery and repeated-signal
 shutdown. Phase 5 added the separate 2D LiDAR and local RViz; see
-[lidar.md](lidar.md). There is still no odometry. Dated validation reports retain
+[lidar.md](lidar.md). The later [3D LiDAR adaptation](lidar3d.md) changes the
+default sensor without changing control safety. There is still no odometry. Dated validation reports retain
 their original phase-specific results.
 
 ## Current chassis-command constraint
@@ -147,7 +148,7 @@ or forced process termination. SIGKILL cannot run controller cleanup.
 ```text
 base_root                         massless, coincident chassis dummy
 └── base_link                      fixed, robot_state_publisher
-    ├── lidar_link                 fixed lidar_joint, XYZ (0, 0, 0.20) m
+    ├── lidar_link                 fixed lidar_joint, XYZ (0, 0, 0.40) m in 3D mode
     ├── front_left_axle            front_left_kingpin
     │   └── front_left_wheel       front_left_wheel_joint
     ├── front_right_axle           front_right_kingpin
@@ -164,17 +165,21 @@ Robot_state_publisher owns all fixed robot transforms and uses measured joint
 states for articulated transforms. There is no `odom`, `map` or world-to-robot
 ROS transform yet. Local RViz should use `base_link` as Fixed Frame and
 `use_sim_time=true`. Robot_state_publisher owns `base_link -> lidar_link`;
-the ray sensor plugin publishes `/scan` in `lidar_link` and publishes no TF.
+the ray sensor plugin publishes `/points_raw` in `lidar_link`, and its separate
+processor publishes `/points`. Neither publishes TF. In `lidar_mode:=2d`,
+the original mount remains XYZ `(0, 0, 0.20)` m and the output is `/scan`.
 The optional `lidar:=false` launch omits that sensor branch. A future odometry
 source must exclusively own the moving transform to the rover root; no static
 world-to-base transform is added.
 
 ## Tests and integration validation
 
-The current complete suite contains 131 unit tests: 22 kinematics, 22 teleop,
-73 controller and 14 LiDAR description/RViz cases. See the
-[milestone validation index](validation/phase5.md) for the 44 recorded
-integration checks. Deterministic controller tests exercise explicit clocks,
+The current complete suite contains 322 unit tests: 22 kinematics, 22 teleop,
+73 controller, 14 2D LiDAR, 29 3D LiDAR and 162 stereo cases. See the
+[current validation report](validation/stereo.md) for the 63 recorded stereo
+integration checks and the [3D LiDAR guide](lidar3d.md) for the 3D sensor checks;
+the stereo camera's effect on the reset handshake is
+described in the [stereo guide](stereo.md#parameters). Deterministic controller tests exercise explicit clocks,
 complete/invalid feedback, startup,
 timeouts, reset, pause and parameter validation. See
 [recorded Phase 4.5 results](validation/phase45.md).
@@ -191,7 +196,7 @@ source /opt/ros/humble/setup.bash
 colcon build --packages-select rover_sim
 source ~/rover_ws/install/setup.bash
 ROS_DOMAIN_ID=45 GAZEBO_MASTER_URI=http://127.0.0.1:11355 \
-  ros2 launch rover_sim rover_desert.launch.py gui:=false actuator_watchdog:=0.3
+  ros2 launch rover_sim rover_desert.launch.py world:=desert gui:=false actuator_watchdog:=0.3
 ```
 
 Use the exact `swerve_controller` PID printed by that launch in another sourced

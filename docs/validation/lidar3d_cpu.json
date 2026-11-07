@@ -1,0 +1,289 @@
+{
+  "profile": "lite",
+  "performance_only": false,
+  "checks": [
+    {
+      "case": "performance_window_1",
+      "passed": true,
+      "real_time_factor": 0.745739350434676,
+      "scan_rate_sim_hz": 9.972299168975068,
+      "scan_rate_wall_hz": 7.399240757287501,
+      "maximum_heartbeat_wall_gap": 0.06108596900003249,
+      "epochs": [
+        1147692916777
+      ]
+    },
+    {
+      "case": "performance_window_2",
+      "passed": true,
+      "real_time_factor": 0.7307423545312048,
+      "scan_rate_sim_hz": 9.961261759822914,
+      "scan_rate_wall_hz": 7.317864468372788,
+      "maximum_heartbeat_wall_gap": 0.04502456499994878,
+      "epochs": [
+        1147692916777
+      ]
+    },
+    {
+      "case": "cloud_interface",
+      "passed": true,
+      "fields": [
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "ring",
+        "time"
+      ],
+      "points": 3624,
+      "frame_id": "lidar_link",
+      "rings_present": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "case": "simulation_timestamps",
+      "passed": true,
+      "latest_stamp": 9.383,
+      "current_sim_time": 9.4
+    },
+    {
+      "case": "fixed_tf_and_ownership",
+      "passed": true,
+      "translation": [
+        0.0,
+        0.0,
+        0.4
+      ],
+      "owner": "robot_state_publisher"
+    },
+    {
+      "case": "ground_and_hill_geometry",
+      "passed": true,
+      "base_pose": [
+        1.861639047497746e-05,
+        -7.45626563848655e-09,
+        0.32896495466592135,
+        -5.219550868537966e-09,
+        3.102778234923639e-09,
+        1.1699412457906879e-07
+      ],
+      "sensor_world_origin": [
+        1.8617631586027165e-05,
+        -5.368445145868647e-09,
+        0.7289649546659214
+      ],
+      "self_hits": 0,
+      "objects": {
+        "ground": {
+          "count": 3195,
+          "median_error_m": 0.013836428387435262,
+          "p95_error_m": 0.03812198471081052
+        },
+        "hill_east": {
+          "count": 324,
+          "median_error_m": 0.013236574496247044,
+          "p95_error_m": 0.03905658028164804
+        },
+        "hill_west": {
+          "count": 125,
+          "median_error_m": 0.014571691310851342,
+          "p95_error_m": 0.04459182139120834
+        },
+        "hill_north": {
+          "count": 140,
+          "median_error_m": 0.013955677900698404,
+          "p95_error_m": 0.046638531662637726
+        }
+      }
+    },
+    {
+      "case": "known_distance_box",
+      "passed": true,
+      "base_pose": [
+        2.1669216296263725e-05,
+        2.43374801777228e-09,
+        0.32896495466592063,
+        -5.219601608718458e-09,
+        3.1027806105072684e-09,
+        1.256244383355086e-07
+      ],
+      "sensor_world_origin": [
+        2.1670457408245643e-05,
+        4.521588817173675e-09,
+        0.7289649546659207
+      ],
+      "self_hits": 0,
+      "objects": {
+        "ground": {
+          "count": 3167,
+          "median_error_m": 0.01381612384694808,
+          "p95_error_m": 0.039249202445843234
+        },
+        "probe": {
+          "count": 308,
+          "median_error_m": 0.013933020163713561,
+          "p95_error_m": 0.03435297601402576
+        },
+        "hill_east": {
+          "count": 172,
+          "median_error_m": 0.014253676703371632,
+          "p95_error_m": 0.03934429011292141
+        },
+        "hill_west": {
+          "count": 125,
+          "median_error_m": 0.012365562487143933,
+          "p95_error_m": 0.03393598894935579
+        },
+        "hill_north": {
+          "count": 140,
+          "median_error_m": 0.014360614473066136,
+          "p95_error_m": 0.03958319609796969
+        }
+      }
+    },
+    {
+      "case": "cloud_on_forward_motion",
+      "passed": true,
+      "forward_m": 0.47095126194784576,
+      "lateral_m": -1.106601215458944e-05,
+      "yaw_rad": 3.114254441033149e-06
+    },
+    {
+      "case": "box_after_forward_motion",
+      "passed": true,
+      "base_pose": [
+        0.47097293116552846,
+        -1.1004415418805983e-05,
+        0.32896495470880815,
+        -2.926780697069222e-09,
+        3.211026514474811e-09,
+        3.239878879368657e-06
+      ],
+      "sensor_world_origin": [
+        0.47097293244993527,
+        -1.1003244702365827e-05,
+        0.7289649547088082
+      ],
+      "self_hits": 0,
+      "objects": {
+        "ground": {
+          "count": 3121,
+          "median_error_m": 0.013117264814125118,
+          "p95_error_m": 0.0390802761316551
+        },
+        "probe": {
+          "count": 410,
+          "median_error_m": 0.011871258209043667,
+          "p95_error_m": 0.03701335810918946
+        },
+        "hill_east": {
+          "count": 182,
+          "median_error_m": 0.013786663222394413,
+          "p95_error_m": 0.04025562937720791
+        },
+        "hill_west": {
+          "count": 117,
+          "median_error_m": 0.015603962005588556,
+          "p95_error_m": 0.035083895363863936
+        },
+        "hill_north": {
+          "count": 140,
+          "median_error_m": 0.013061482233184485,
+          "p95_error_m": 0.03793640313235956
+        }
+      }
+    },
+    {
+      "case": "cloud_on_yaw_motion",
+      "passed": true,
+      "yaw_rad": 1.0317111843472295,
+      "center_shift_m": 0.0002643064026786348
+    },
+    {
+      "case": "box_after_yaw_motion",
+      "passed": true,
+      "base_pose": [
+        0.47076064429441183,
+        -0.000168459675249757,
+        0.32896495679196397,
+        2.246549027798594e-08,
+        -1.141228884414053e-07,
+        1.031714424226109
+      ],
+      "sensor_world_origin": [
+        0.47076062857227174,
+        -0.00016850346350637824,
+        0.7289649567919613
+      ],
+      "self_hits": 0,
+      "objects": {
+        "ground": {
+          "count": 3126,
+          "median_error_m": 0.01326517434630059,
+          "p95_error_m": 0.037840632116561634
+        },
+        "probe": {
+          "count": 397,
+          "median_error_m": 0.012812386162444511,
+          "p95_error_m": 0.03830449128576365
+        },
+        "hill_east": {
+          "count": 186,
+          "median_error_m": 0.014020939326114146,
+          "p95_error_m": 0.04283522895265546
+        },
+        "hill_west": {
+          "count": 115,
+          "median_error_m": 0.01057761589905759,
+          "p95_error_m": 0.04276397188877361
+        },
+        "hill_north": {
+          "count": 140,
+          "median_error_m": 0.012511498014492695,
+          "p95_error_m": 0.039392991624016646
+        }
+      }
+    },
+    {
+      "case": "no_watchdog_false_trip",
+      "passed": true,
+      "epochs": [
+        1147692916777
+      ]
+    }
+  ],
+  "performance": [
+    {
+      "real_time_factor": 0.745739350434676,
+      "scan_rate_sim_hz": 9.972299168975068,
+      "scan_rate_wall_hz": 7.399240757287501,
+      "maximum_heartbeat_wall_gap": 0.06108596900003249,
+      "epochs": [
+        1147692916777
+      ]
+    },
+    {
+      "real_time_factor": 0.7307423545312048,
+      "scan_rate_sim_hz": 9.961261759822914,
+      "scan_rate_wall_hz": 7.317864468372788,
+      "maximum_heartbeat_wall_gap": 0.04502456499994878,
+      "epochs": [
+        1147692916777
+      ]
+    }
+  ],
+  "passed": true,
+  "median_real_time_factor": 0.7382408524829405,
+  "temporary_entities_removed": true
+}

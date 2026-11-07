@@ -25,11 +25,21 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
   <exec_depend>rcl_interfaces</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <!-- Stereo camera system (docs/stereo.md). -->
+  <exec_depend>stereo_msgs</exec_depend>
+  <exec_depend>message_filters</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-opencv</exec_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>python3-yaml</test_depend>
   <export>
     <build_type>ament_cmake</build_type>
+    <!-- Lets worlds use model://rover_sim_materials/... (ground/rock textures).
+         Do not export gazebo_media_path: gazebo_ros would then replace
+         GAZEBO_RESOURCE_PATH and hide Gazebo's built-in materials. -->
+    <gazebo_ros gazebo_model_path="${prefix}/models"/>
   </export>
 </package>

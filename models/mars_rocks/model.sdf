@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!-- Resource folder of meshes. -->
+<sdf version="1.6"><model name="mars_rocks"><static>true</static><link name="link"/></model></sdf>

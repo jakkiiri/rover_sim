@@ -1,0 +1,124 @@
+{
+  "combinations": [
+    {
+      "combination": "stereo_on_lidar_on",
+      "stereo": true,
+      "lidar": true,
+      "log": "stereo_on_lidar_on.log (not kept)",
+      "scan_topic": true,
+      "stereo_topics": [
+        "/stereo/depth/camera_info",
+        "/stereo/depth/image_raw",
+        "/stereo/disparity",
+        "/stereo/gazebo/right/camera_info",
+        "/stereo/gazebo/right/image_raw",
+        "/stereo/left/camera_info",
+        "/stereo/left/image_raw",
+        "/stereo/points2",
+        "/stereo/right/camera_info",
+        "/stereo/right/image_raw"
+      ],
+      "data_received": [
+        "/joint_states",
+        "/scan",
+        "/stereo/depth/image_raw",
+        "/stereo/points2"
+      ],
+      "expected_data": [
+        "/joint_states",
+        "/scan",
+        "/stereo/points2",
+        "/stereo/depth/image_raw"
+      ],
+      "shutdown_error_lines": [
+        "[ERROR] [gzserver-6]: process[gzserver-6] failed to terminate '5' seconds after receiving 'SIGINT', escalating to 'SIGTERM'",
+        "[ERROR] [gzserver-6]: process has died [pid 77859, exit code -6, cmd 'gzserver /home/silviovaso/rover_ws/install/rover_sim/share/rover_sim/worlds/desert.world -slibgazebo_ros_init.so -slibgazebo_ros_factory.so -slibgazebo_ros_force_system.so']."
+      ],
+      "saw_ctrl_c": true,
+      "startup_error_lines": [],
+      "exit_code": 0,
+      "leftover_processes": [],
+      "passed": false
+    },
+    {
+      "combination": "stereo_on_lidar_off",
+      "stereo": true,
+      "lidar": false,
+      "log": "stereo_on_lidar_off.log (not kept)",
+      "scan_topic": false,
+      "stereo_topics": [
+        "/stereo/depth/camera_info",
+        "/stereo/depth/image_raw",
+        "/stereo/disparity",
+        "/stereo/gazebo/right/camera_info",
+        "/stereo/gazebo/right/image_raw",
+        "/stereo/left/camera_info",
+        "/stereo/left/image_raw",
+        "/stereo/points2",
+        "/stereo/right/camera_info",
+        "/stereo/right/image_raw"
+      ],
+      "data_received": [
+        "/joint_states",
+        "/stereo/depth/image_raw",
+        "/stereo/points2"
+      ],
+      "expected_data": [
+        "/joint_states",
+        "/stereo/points2",
+        "/stereo/depth/image_raw"
+      ],
+      "shutdown_error_lines": [],
+      "saw_ctrl_c": true,
+      "startup_error_lines": [],
+      "exit_code": 0,
+      "leftover_processes": [],
+      "passed": true
+    },
+    {
+      "combination": "stereo_off_lidar_on",
+      "stereo": false,
+      "lidar": true,
+      "log": "stereo_off_lidar_on.log (not kept)",
+      "scan_topic": true,
+      "stereo_topics": [],
+      "data_received": [
+        "/joint_states",
+        "/scan"
+      ],
+      "expected_data": [
+        "/joint_states",
+        "/scan"
+      ],
+      "shutdown_error_lines": [],
+      "saw_ctrl_c": true,
+      "startup_error_lines": [],
+      "exit_code": 0,
+      "leftover_processes": [],
+      "passed": true
+    },
+    {
+      "combination": "stereo_off_lidar_off",
+      "stereo": false,
+      "lidar": false,
+      "log": "stereo_off_lidar_off.log (not kept)",
+      "scan_topic": false,
+      "stereo_topics": [],
+      "data_received": [
+        "/joint_states"
+      ],
+      "expected_data": [
+        "/joint_states"
+      ],
+      "shutdown_error_lines": [
+        "[ERROR] [swerve_controller-1]: process has died [pid 79349, exit code -2, cmd '/home/silviovaso/rover_ws/install/rover_sim/lib/rover_sim/swerve_controller --ros-args --params-file /home/silviovaso/rover_ws/install/rover_sim/share/rover_sim/config/swerve.yaml --params-file /tmp/launch_params_nort6ck1"
+      ],
+      "saw_ctrl_c": true,
+      "startup_error_lines": [],
+      "exit_code": 0,
+      "leftover_processes": [],
+      "passed": false
+    }
+  ],
+  "passed": false
+}

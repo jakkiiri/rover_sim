@@ -16,9 +16,11 @@ PACKAGE = Path(__file__).resolve().parents[1]
 @pytest.fixture(scope='module')
 def descriptions():
     path = str(PACKAGE / 'urdf' / 'proxy_rover.urdf.xacro')
+    # Stereo is pinned off so these checks compare LiDAR on/off in isolation;
+    # test_stereo_description.py covers every stereo x LiDAR combination.
     return {
         enabled: ET.fromstring(xacro.process_file(
-            path, mappings={'enable_lidar': str(enabled).lower()}).toxml())
+            path, mappings={'enable_lidar': str(enabled).lower(), 'enable_stereo': 'false'}).toxml())
         for enabled in (True, False)
     }
 

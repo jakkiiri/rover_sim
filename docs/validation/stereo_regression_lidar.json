@@ -1,0 +1,726 @@
+{
+  "performance_only": false,
+  "performance": [
+    {
+      "window": 1,
+      "wall_seconds": 9.913914261998798,
+      "real_time_factor": 0.9985964915944316,
+      "scan_count": 100,
+      "scan_rate_sim_hz": 9.998990001009998,
+      "scan_rate_wall_hz": 9.985409398460355,
+      "maximum_heartbeat_wall_gap": 0.022492613999929745,
+      "maximum_clock_wall_gap": 0.10194100999979128,
+      "maximum_scan_wall_gap": 0.10173224499885691,
+      "epochs": [
+        13553322924024
+      ]
+    },
+    {
+      "window": 2,
+      "wall_seconds": 9.811347299000772,
+      "real_time_factor": 0.9988434515000884,
+      "scan_count": 100,
+      "scan_rate_sim_hz": 10.000000000000002,
+      "scan_rate_wall_hz": 9.989182682793796,
+      "maximum_heartbeat_wall_gap": 0.022010747001331765,
+      "maximum_clock_wall_gap": 0.10160090300087177,
+      "maximum_scan_wall_gap": 0.10174591100076213,
+      "epochs": [
+        13553322924024
+      ]
+    },
+    {
+      "window": 3,
+      "wall_seconds": 9.917502154999966,
+      "real_time_factor": 0.9982352254906101,
+      "scan_count": 100,
+      "scan_rate_sim_hz": 10.000000000000002,
+      "scan_rate_wall_hz": 9.982952390515372,
+      "maximum_heartbeat_wall_gap": 0.02082469600100012,
+      "maximum_clock_wall_gap": 0.10240174600039609,
+      "maximum_scan_wall_gap": 0.10244345899991458,
+      "epochs": [
+        13553322924024
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "case": "performance_window_1",
+      "passed": true,
+      "window": 1,
+      "wall_seconds": 9.913914261998798,
+      "real_time_factor": 0.9985964915944316,
+      "scan_count": 100,
+      "scan_rate_sim_hz": 9.998990001009998,
+      "scan_rate_wall_hz": 9.985409398460355,
+      "maximum_heartbeat_wall_gap": 0.022492613999929745,
+      "maximum_clock_wall_gap": 0.10194100999979128,
+      "maximum_scan_wall_gap": 0.10173224499885691,
+      "epochs": [
+        13553322924024
+      ]
+    },
+    {
+      "case": "performance_window_2",
+      "passed": true,
+      "window": 2,
+      "wall_seconds": 9.811347299000772,
+      "real_time_factor": 0.9988434515000884,
+      "scan_count": 100,
+      "scan_rate_sim_hz": 10.000000000000002,
+      "scan_rate_wall_hz": 9.989182682793796,
+      "maximum_heartbeat_wall_gap": 0.022010747001331765,
+      "maximum_clock_wall_gap": 0.10160090300087177,
+      "maximum_scan_wall_gap": 0.10174591100076213,
+      "epochs": [
+        13553322924024
+      ]
+    },
+    {
+      "case": "performance_window_3",
+      "passed": true,
+      "window": 3,
+      "wall_seconds": 9.917502154999966,
+      "real_time_factor": 0.9982352254906101,
+      "scan_count": 100,
+      "scan_rate_sim_hz": 10.000000000000002,
+      "scan_rate_wall_hz": 9.982952390515372,
+      "maximum_heartbeat_wall_gap": 0.02082469600100012,
+      "maximum_clock_wall_gap": 0.10240174600039609,
+      "maximum_scan_wall_gap": 0.10244345899991458,
+      "epochs": [
+        13553322924024
+      ]
+    },
+    {
+      "case": "scan_interface",
+      "passed": true,
+      "topic_type": [
+        "sensor_msgs/msg/LaserScan"
+      ],
+      "frame_id": "lidar_link",
+      "scan_publishers": [
+        "//lidar_ros"
+      ],
+      "samples": 720,
+      "angle_min": -3.141590118408203,
+      "angle_max": 3.141590118408203,
+      "angle_increment": 0.008738775737583637,
+      "range_min": 0.11999999731779099,
+      "range_max": 30.0,
+      "finite_returns": 222,
+      "positive_infinite_returns": 498,
+      "negative_infinite_returns": 0,
+      "scan_sim_stamp": 38.665,
+      "current_sim_time": 38.7,
+      "age_sim_seconds": 0.035000000000003695
+    },
+    {
+      "case": "tf_fixed_mount_and_ownership",
+      "passed": true,
+      "parent": "base_link",
+      "child": "lidar_link",
+      "translation": [
+        0.0,
+        0.0,
+        0.2
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "tf_static_publishers": [
+        "//robot_state_publisher"
+      ],
+      "transform_messages_received": 1,
+      "competing_dynamic_lidar_transforms": 0
+    },
+    {
+      "case": "analytic_hill_returns",
+      "passed": true,
+      "base_pose": [
+        6.663729807728027e-05,
+        1.4223037268053112e-07,
+        0.3289657442027331,
+        -5.349587575790968e-09,
+        3.077893518190484e-09,
+        2.563991459634937e-07
+      ],
+      "sensor_world_origin": [
+        6.663791365570958e-05,
+        1.4330029035352314e-07,
+        0.5289657442027331
+      ],
+      "pose_sim_stamp": 40.379,
+      "scan_sim_stamp": 40.465,
+      "tolerance_metres": 0.06,
+      "comparisons": [
+        {
+          "object": "hill_west",
+          "selected_beams": [
+            {
+              "index": 684,
+              "angle": 2.8357324860990047,
+              "expected": 8.113793368156205,
+              "actual": 8.127975463867188,
+              "absolute_error": 0.014182095710982168
+            },
+            {
+              "index": 685,
+              "angle": 2.8444712618365884,
+              "expected": 8.110602270847448,
+              "actual": 8.10448932647705,
+              "absolute_error": 0.006112944370396889
+            },
+            {
+              "index": 686,
+              "angle": 2.853210037574172,
+              "expected": 8.110190412164064,
+              "actual": 8.117486953735352,
+              "absolute_error": 0.0072965415712875625
+            },
+            {
+              "index": 687,
+              "angle": 2.8619488133117557,
+              "expected": 8.112555500731135,
+              "actual": 8.113630294799805,
+              "absolute_error": 0.0010747940686695046
+            },
+            {
+              "index": 688,
+              "angle": 2.8706875890493393,
+              "expected": 8.117710721677408,
+              "actual": 8.094672203063965,
+              "absolute_error": 0.023038518613443415
+            }
+          ],
+          "passed": true
+        },
+        {
+          "object": "hill_north",
+          "selected_beams": [
+            {
+              "index": 537,
+              "angle": 1.55113245267421,
+              "expected": 9.18588851469455,
+              "actual": 9.203632354736328,
+              "absolute_error": 0.01774384004177776
+            },
+            {
+              "index": 538,
+              "angle": 1.5598712284117937,
+              "expected": 9.18170417692789,
+              "actual": 9.168438911437988,
+              "absolute_error": 0.013265265489902589
+            },
+            {
+              "index": 539,
+              "angle": 1.5686100041493773,
+              "expected": 9.179912387476058,
+              "actual": 9.170417785644531,
+              "absolute_error": 0.00949460183152695
+            },
+            {
+              "index": 540,
+              "angle": 1.577348779886961,
+              "expected": 9.18050711788953,
+              "actual": 9.202003479003906,
+              "absolute_error": 0.021496361114376583
+            },
+            {
+              "index": 541,
+              "angle": 1.5860875556245446,
+              "expected": 9.183490367483223,
+              "actual": 9.185096740722656,
+              "absolute_error": 0.0016063732394329122
+            }
+          ],
+          "passed": true
+        },
+        {
+          "object": "hill_east",
+          "selected_beams": [
+            {
+              "index": 376,
+              "angle": 0.14418955892324448,
+              "expected": 6.948217607524988,
+              "actual": 6.954721450805664,
+              "absolute_error": 0.006503843280675881
+            },
+            {
+              "index": 377,
+              "angle": 0.1529283346608281,
+              "expected": 6.945868926168938,
+              "actual": 6.948870658874512,
+              "absolute_error": 0.003001732705573801
+            },
+            {
+              "index": 378,
+              "angle": 0.16166711039841175,
+              "expected": 6.944758266487188,
+              "actual": 6.934593200683594,
+              "absolute_error": 0.010165065803594331
+            },
+            {
+              "index": 379,
+              "angle": 0.1704058861359954,
+              "expected": 6.944883736334287,
+              "actual": 6.947927474975586,
+              "absolute_error": 0.003043738641299143
+            },
+            {
+              "index": 380,
+              "angle": 0.17914466187357903,
+              "expected": 6.946245549338426,
+              "actual": 6.934504985809326,
+              "absolute_error": 0.011740563529099468
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    {
+      "case": "known_distance_obstacles",
+      "passed": true,
+      "base_pose": [
+        6.994897805822092e-05,
+        1.531328222682149e-07,
+        0.3289657442027346,
+        -5.349555024343823e-09,
+        3.077901024966393e-09,
+        2.657903561787761e-07
+      ],
+      "sensor_world_origin": [
+        6.994959363814154e-05,
+        1.542027334366989e-07,
+        0.5289657442027347
+      ],
+      "pose_sim_stamp": 42.376,
+      "scan_sim_stamp": 42.465,
+      "tolerance_metres": 0.06,
+      "comparisons": [
+        {
+          "object": "lidar_validation_front_80142",
+          "selected_beams": [
+            {
+              "index": 357,
+              "angle": -0.02184718009084463,
+              "expected": 5.00112349021253,
+              "actual": 5.003199577331543,
+              "absolute_error": 0.0020760871190130814
+            },
+            {
+              "index": 358,
+              "angle": -0.013108404353260994,
+              "expected": 5.000359633393437,
+              "actual": 5.0132317543029785,
+              "absolute_error": 0.012872120909541707
+            },
+            {
+              "index": 359,
+              "angle": -0.004369628615677357,
+              "expected": 4.999977778447058,
+              "actual": 4.9940385818481445,
+              "absolute_error": 0.005939196598913732
+            },
+            {
+              "index": 360,
+              "angle": 0.0043691471219062805,
+              "expected": 4.9999777795413065,
+              "actual": 5.014062404632568,
+              "absolute_error": 0.014084625091261849
+            },
+            {
+              "index": 361,
+              "angle": 0.013107922859489918,
+              "expected": 5.0003596366766,
+              "actual": 5.021467685699463,
+              "absolute_error": 0.021108049022863007
+            }
+          ],
+          "passed": true
+        },
+        {
+          "object": "lidar_validation_left_80142",
+          "selected_beams": [
+            {
+              "index": 537,
+              "angle": 1.55113245267421,
+              "expected": 4.000773285358861,
+              "actual": 3.9921300411224365,
+              "absolute_error": 0.008643244236424152
+            },
+            {
+              "index": 538,
+              "angle": 1.5598712284117937,
+              "expected": 4.000238561593743,
+              "actual": 3.9999616146087646,
+              "absolute_error": 0.0002769469849779327
+            },
+            {
+              "index": 539,
+              "angle": 1.5686100041493773,
+              "expected": 4.000009403505077,
+              "actual": 4.005366802215576,
+              "absolute_error": 0.005357398710499339
+            },
+            {
+              "index": 540,
+              "angle": 1.577348779886961,
+              "expected": 4.000085723579889,
+              "actual": 3.993626356124878,
+              "absolute_error": 0.006459367455010856
+            },
+            {
+              "index": 541,
+              "angle": 1.5860875556245446,
+              "expected": 4.000467550962646,
+              "actual": 4.002678871154785,
+              "absolute_error": 0.002211320192139432
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    {
+      "case": "scan_changes_on_forward_motion",
+      "passed": true,
+      "body_displacement": [
+        0.471614073351298,
+        -7.951392997193062e-06
+      ],
+      "yaw_change": 4.32920886736564e-06,
+      "mean_scan_change_metres": 0.8201143579350577
+    },
+    {
+      "case": "obstacles_after_forward_motion",
+      "passed": true,
+      "base_pose": [
+        0.471684022331453,
+        -7.672909702389602e-06,
+        0.32896574451435523,
+        2.8106615419076114e-09,
+        3.872326636323685e-09,
+        4.5949992235444155e-06
+      ],
+      "sensor_world_origin": [
+        0.47168402310592095,
+        -7.67347183113931e-06,
+        0.5289657445143552
+      ],
+      "pose_sim_stamp": 46.198,
+      "scan_sim_stamp": 46.265,
+      "tolerance_metres": 0.06,
+      "comparisons": [
+        {
+          "object": "lidar_validation_front_80142",
+          "selected_beams": [
+            {
+              "index": 357,
+              "angle": -0.02184718009084463,
+              "expected": 4.529396418108324,
+              "actual": 4.529523849487305,
+              "absolute_error": 0.0001274313789805248
+            },
+            {
+              "index": 358,
+              "angle": -0.013108404353260994,
+              "expected": 4.528704782871163,
+              "actual": 4.533904075622559,
+              "absolute_error": 0.005199292751395745
+            },
+            {
+              "index": 359,
+              "angle": -0.004369628615677357,
+              "expected": 4.528359117412629,
+              "actual": 4.536502838134766,
+              "absolute_error": 0.00814372072213665
+            },
+            {
+              "index": 360,
+              "angle": 0.0043691471219062805,
+              "expected": 4.528359289721572,
+              "actual": 4.536098957061768,
+              "absolute_error": 0.0077396673401954885
+            },
+            {
+              "index": 361,
+              "angle": 0.013107922859489918,
+              "expected": 4.528705299863794,
+              "actual": 4.527597904205322,
+              "absolute_error": 0.0011073956584715106
+            }
+          ],
+          "passed": true
+        },
+        {
+          "object": "lidar_validation_left_80142",
+          "selected_beams": [
+            {
+              "index": 550,
+              "angle": 1.6647365372627974,
+              "expected": 4.017724103945842,
+              "actual": 4.022108554840088,
+              "absolute_error": 0.004384450894246328
+            },
+            {
+              "index": 551,
+              "angle": 1.673475313000381,
+              "expected": 4.021188593927304,
+              "actual": 4.032463073730469,
+              "absolute_error": 0.011274479803164539
+            },
+            {
+              "index": 552,
+              "angle": 1.6822140887379646,
+              "expected": 4.024966698671338,
+              "actual": 4.035513877868652,
+              "absolute_error": 0.010547179197314627
+            },
+            {
+              "index": 553,
+              "angle": 1.6909528644755483,
+              "expected": 4.029059880917428,
+              "actual": 4.034688472747803,
+              "absolute_error": 0.005628591830374674
+            },
+            {
+              "index": 554,
+              "angle": 1.699691640213132,
+              "expected": 4.033469729105629,
+              "actual": 4.032408237457275,
+              "absolute_error": 0.0010614916483540071
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    {
+      "case": "scan_changes_on_yaw_motion",
+      "passed": true,
+      "yaw_change": 1.0285395178664505,
+      "center_displacement": 0.0003067403373852307,
+      "mean_scan_change_metres": 10.231719780630536
+    },
+    {
+      "case": "obstacles_after_yaw_motion",
+      "passed": true,
+      "base_pose": [
+        0.4714308937516198,
+        -0.00018092289282163298,
+        0.32896575068918926,
+        3.511468149664485e-08,
+        -1.2078250837049077e-07,
+        1.028544112865674
+      ],
+      "sensor_world_origin": [
+        0.4714308873007462,
+        -0.0001809472083400836,
+        0.5289657506891876
+      ],
+      "pose_sim_stamp": 50.897,
+      "scan_sim_stamp": 50.965,
+      "tolerance_metres": 0.06,
+      "comparisons": [
+        {
+          "object": "lidar_validation_front_80142",
+          "selected_beams": [
+            {
+              "index": 240,
+              "angle": -1.0442839413881302,
+              "expected": 4.529130129452336,
+              "actual": 4.531268119812012,
+              "absolute_error": 0.0021379903596754346
+            },
+            {
+              "index": 241,
+              "angle": -1.0355451656505466,
+              "expected": 4.5286800982849265,
+              "actual": 4.525419235229492,
+              "absolute_error": 0.003260863055434271
+            },
+            {
+              "index": 242,
+              "angle": -1.026806389912963,
+              "expected": 4.528575950125049,
+              "actual": 4.533751010894775,
+              "absolute_error": 0.005175060769726514
+            },
+            {
+              "index": 243,
+              "angle": -1.0180676141753793,
+              "expected": 4.528817645201378,
+              "actual": 4.5380120277404785,
+              "absolute_error": 0.009194382539100765
+            },
+            {
+              "index": 244,
+              "angle": -1.0093288384377956,
+              "expected": 4.529405275814001,
+              "actual": 4.513213157653809,
+              "absolute_error": 0.01619211816019206
+            }
+          ],
+          "passed": true
+        },
+        {
+          "object": "lidar_validation_left_80142",
+          "selected_beams": [
+            {
+              "index": 432,
+              "angle": 0.6335610002279282,
+              "expected": 4.01691441551462,
+              "actual": 4.009584426879883,
+              "absolute_error": 0.007329988634737106
+            },
+            {
+              "index": 433,
+              "angle": 0.6422997759655118,
+              "expected": 4.020284719164991,
+              "actual": 4.007397651672363,
+              "absolute_error": 0.01288706749262758
+            },
+            {
+              "index": 434,
+              "angle": 0.6510385517030954,
+              "expected": 4.023968234379871,
+              "actual": 4.012827396392822,
+              "absolute_error": 0.01114083798704879
+            },
+            {
+              "index": 435,
+              "angle": 0.6597773274406791,
+              "expected": 4.027966386322012,
+              "actual": 4.010997772216797,
+              "absolute_error": 0.016968614105214996
+            },
+            {
+              "index": 436,
+              "angle": 0.6685161031782627,
+              "expected": 4.032280725427664,
+              "actual": 4.035618305206299,
+              "absolute_error": 0.0033375797786350248
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    {
+      "case": "no_watchdog_false_trip_during_sensor_validation",
+      "passed": true,
+      "epochs": [
+        13553322924024
+      ]
+    }
+  ],
+  "epoch_events": [
+    {
+      "epoch": 13553322924024,
+      "monotonic_wall_time": 13559.916137384,
+      "simulation_time": 0.0,
+      "stage": "startup",
+      "stage_details": {},
+      "command": {
+        "linear_x": 0.0,
+        "linear_y": 0.0,
+        "angular_z": 0.0
+      },
+      "last_clock_wall_age": null,
+      "last_scan_wall_age": null,
+      "last_heartbeat_wall_age": 0.0011620019995461917
+    }
+  ],
+  "stage_events": [
+    {
+      "stage": "startup",
+      "monotonic_wall_time": 13559.902956297,
+      "simulation_time": 0.0
+    },
+    {
+      "stage": "performance",
+      "stage_details": {
+        "window": 1
+      },
+      "monotonic_wall_time": 13561.889715318,
+      "simulation_time": 8.7
+    },
+    {
+      "stage": "performance",
+      "stage_details": {
+        "window": 2
+      },
+      "monotonic_wall_time": 13571.900168724,
+      "simulation_time": 18.7
+    },
+    {
+      "stage": "performance",
+      "stage_details": {
+        "window": 3
+      },
+      "monotonic_wall_time": 13581.904906272,
+      "simulation_time": 28.6
+    },
+    {
+      "stage": "interface",
+      "stage_details": {},
+      "monotonic_wall_time": 13591.91275121,
+      "simulation_time": 38.6
+    },
+    {
+      "stage": "terrain",
+      "stage_details": {},
+      "monotonic_wall_time": 13591.934771289,
+      "simulation_time": 38.7
+    },
+    {
+      "stage": "probe_insert",
+      "stage_details": {
+        "probe": "front"
+      },
+      "monotonic_wall_time": 13593.721994345,
+      "simulation_time": 40.4
+    },
+    {
+      "stage": "probe_insert",
+      "stage_details": {
+        "probe": "left"
+      },
+      "monotonic_wall_time": 13593.843433686,
+      "simulation_time": 40.6
+    },
+    {
+      "stage": "known_probes",
+      "stage_details": {},
+      "monotonic_wall_time": 13594.055301501,
+      "simulation_time": 40.8
+    },
+    {
+      "stage": "forward",
+      "stage_details": {},
+      "monotonic_wall_time": 13595.755007321,
+      "simulation_time": 42.4
+    },
+    {
+      "stage": "yaw",
+      "stage_details": {},
+      "monotonic_wall_time": 13599.583861027,
+      "simulation_time": 46.3
+    },
+    {
+      "stage": "cleanup",
+      "stage_details": {},
+      "monotonic_wall_time": 13604.278152441,
+      "simulation_time": 51.0
+    }
+  ],
+  "median_real_time_factor": 0.9985964915944316,
+  "passed": true,
+  "temporary_entities_removed": true
+}

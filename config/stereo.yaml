@@ -1,0 +1,20 @@
+stereo_processor:
+  ros__parameters:
+    # OpenCV SGBM (3-way). Validated at startup; an invalid value stops the node.
+    min_disparity: 0          # pixels
+    num_disparities: 80       # pixels, multiple of 16; nearest depth = fx*B/80 = 0.36 m (fx = 240 at
+                              # 480 px, 90 deg). The closest visible ground (~0.40 m) needs 72 px
+    block_size: 5             # odd, 3..11
+    uniqueness_ratio: 10      # percent margin the best match must win by
+    speckle_window_size: 100  # pixels; small isolated blobs are removed
+    speckle_range: 2          # pixels of disparity variation inside a blob
+    disp12_max_diff: 1        # left-right consistency check, pixels
+    pre_filter_cap: 63
+    min_valid_disparity: 2.0  # pixels; smaller disparities (beyond fx*B/2 = 14 m) are marked invalid
+    min_texture: 4.0          # grey levels; patches flatter than this (sky, plain hills) are invalid.
+                              # Camera noise alone measured <= 2.4, textured sand >= 7.4
+    texture_window: 5         # odd patch size for the texture check (same patch as block_size)
+    edge_erosion: 2           # pixels removed around every valid region: silhouette artefacts
+                              # ("edge fattening") measured up to ~2 px wide at 480x360
+    cloud_stride: 2           # use every 2nd row/column for /stereo/points2
+    baseline_tolerance: 0.002 # metres; camera_info Tx must match the URDF baseline

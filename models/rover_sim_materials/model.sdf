@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- Placeholder required by model.config; the folder only provides materials. -->
+<sdf version="1.6">
+  <model name="rover_sim_materials">
+    <static>true</static>
+    <link name="link"/>
+  </model>
+</sdf>

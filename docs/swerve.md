@@ -25,8 +25,10 @@ This is a command interface, not a measured JointState topic.
 The local `librover_swerve_actuators.so` model plugin uses gazebo_ros and Gazebo
 Classic physics joints. It publishes actual positions, velocities and applied
 efforts on `/joint_states` at 50 Hz. This is actuator feedback. The separate
-Classic ray sensor publishes `/scan` in `lidar_link`; sensor description,
-plugin and local RViz configuration are documented in [lidar.md](lidar.md).
+Classic ray sensor publishes `/points_raw` in `lidar_link`, with `/points`
+from its separate post-processor. Sensor description, plugin and local RViz
+configuration are documented in [lidar3d.md](lidar3d.md). The original
+`/scan` sensor is selectable through `lidar_mode:=2d` ([2D guide](lidar.md)).
 The actuator plugin discovers joints by the `_kingpin`
 and `_wheel_joint` suffixes, checks that eight joints exist, and validates named
 commands before accepting the complete command frame.
@@ -120,10 +122,11 @@ wall time, default 0.3 s, configured by `actuator_watchdog` at launch. See
 
 ## Tests and repeatable Gazebo validation
 
-The current complete suite has 131 unit tests: 22 kinematics, 22 teleop,
-73 controller and 14 LiDAR description/RViz cases. See the
-[milestone validation index](validation/phase5.md) for the separate 44
-recorded integration checks.
+The current complete suite has 322 unit tests: 22 kinematics, 22 teleop,
+73 controller, 14 2D LiDAR, 29 3D LiDAR and 162 stereo cases. See the
+[current validation report](validation/stereo.md) for the separate 63
+recorded stereo integration checks, and the [3D LiDAR guide](lidar3d.md) for
+the 3D sensor checks.
 
 ```bash
 cd ~/rover_ws
@@ -132,7 +135,7 @@ colcon build --packages-select rover_sim
 source ~/rover_ws/install/setup.bash
 colcon test --packages-select rover_sim --event-handlers console_direct+
 colcon test-result --verbose
-ros2 launch rover_sim rover_desert.launch.py gui:=false
+ros2 launch rover_sim rover_desert.launch.py world:=desert gui:=false
 ```
 
 In another sourced terminal, with no other cmd_vel publisher running:

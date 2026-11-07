@@ -1,0 +1,135 @@
+{
+  "profile": "lite",
+  "performance_only": false,
+  "checks": [
+    {
+      "case": "performance_window_1",
+      "passed": true,
+      "real_time_factor": 0.5595470917577305,
+      "scan_rate_sim_hz": 10.0,
+      "scan_rate_wall_hz": 5.588245300363812,
+      "maximum_heartbeat_wall_gap": 0.07236456099985844,
+      "epochs": [
+        1789703185060
+      ]
+    },
+    {
+      "case": "performance_window_2",
+      "passed": true,
+      "real_time_factor": 0.573050903277002,
+      "scan_rate_sim_hz": 10.011123470522799,
+      "scan_rate_wall_hz": 5.688535499497204,
+      "maximum_heartbeat_wall_gap": 0.10116739499994765,
+      "epochs": [
+        1789703185060
+      ]
+    },
+    {
+      "case": "cloud_interface",
+      "passed": true,
+      "fields": [
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "ring",
+        "time"
+      ],
+      "points": 3648,
+      "frame_id": "lidar_link",
+      "rings_present": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "case": "simulation_timestamps",
+      "passed": true,
+      "latest_stamp": 8.313,
+      "current_sim_time": 8.4
+    },
+    {
+      "case": "fixed_tf_and_ownership",
+      "passed": true,
+      "translation": [
+        0.0,
+        0.0,
+        0.4
+      ],
+      "owner": "robot_state_publisher"
+    },
+    {
+      "case": "ground_and_hill_geometry",
+      "passed": false,
+      "base_pose": [
+        1.474699423394824e-05,
+        -1.9989035836016866e-08,
+        0.3289649546659226,
+        -5.219461855452731e-09,
+        3.1027757551855946e-09,
+        1.0605616673730662e-07
+      ],
+      "sensor_world_origin": [
+        1.4748235344028892e-05,
+        -1.7901250962208384e-08,
+        0.7289649546659227
+      ],
+      "self_hits": 0,
+      "objects": {
+        "ground": {
+          "count": 3086,
+          "median_error_m": 0.023163784989664427,
+          "p95_error_m": 0.6002596922595576
+        },
+        "hill_east": {
+          "count": 310,
+          "median_error_m": 0.09947774746427962,
+          "p95_error_m": 0.2960193293172849
+        },
+        "hill_west": {
+          "count": 123,
+          "median_error_m": 0.06874220659549479,
+          "p95_error_m": 0.22349485087138454
+        },
+        "hill_north": {
+          "count": 130,
+          "median_error_m": 0.0761900778103648,
+          "p95_error_m": 0.2908375849276007
+        }
+      }
+    }
+  ],
+  "performance": [
+    {
+      "real_time_factor": 0.5595470917577305,
+      "scan_rate_sim_hz": 10.0,
+      "scan_rate_wall_hz": 5.588245300363812,
+      "maximum_heartbeat_wall_gap": 0.07236456099985844,
+      "epochs": [
+        1789703185060
+      ]
+    },
+    {
+      "real_time_factor": 0.573050903277002,
+      "scan_rate_sim_hz": 10.011123470522799,
+      "scan_rate_wall_hz": 5.688535499497204,
+      "maximum_heartbeat_wall_gap": 0.10116739499994765,
+      "epochs": [
+        1789703185060
+      ]
+    }
+  ],
+  "passed": false,
+  "median_real_time_factor": 0.5662989975173662,
+  "error": "RuntimeError('Failed ground_and_hill_geometry')",
+  "temporary_entities_removed": true
+}

@@ -85,3 +85,57 @@ warnings without changing spawn coordinates. Phase 4.5 renames the misleading
 `base_footprint`/`base_footprint_joint` to `base_root`/`base_root_joint`; this
 dummy frame does not represent a projected ground footprint. A configurable
 `actuator_watchdog` Xacro argument is passed to the local actuator plugin.
+
+## 3D LiDAR adaptation (2026-11-07)
+
+Repository: https://github.com/jakkiiri/rover_sim
+
+Reference branch: `feat/mars-overhaul`; exact source commit:
+`4b503e9a0232867b749f1e1f6f7a8958ed70a3a8`.
+
+The upstream `package.xml` declares Apache-2.0 and the repository distributes
+`LICENSES/Apache-2.0.txt`. That license text matches the copy retained here.
+Neither imported file carries an individual copyright/license header; no new
+copyright holder is inferred. Prominent local modification notices identify
+both derivatives and point to this record. The original AIT/UOS model notices
+above remain applicable to the existing model helpers.
+
+Imported portions and every local modification:
+
+- Upstream `urdf/sensors/lidar3d.urdf.xacro` is adapted separately as
+  `urdf/upstream/mars_lidar3d.urdf.xacro`. Remove Fortress/backend branches and
+  backend-specific samples, retaining only Classic `ray`/`gpu_ray`. Remove
+  upstream GPU extra-beam compensation: measured local gazebo_plugins 3.9.0
+  already reports correct angles, so both variants use nominal beam bounds.
+  Extend the visual mast to length 0.265 m with
+  center Z=-0.1675 m for the local mount. Keep housing mass/inertia, profiles,
+  noise, ranges and plugin interface. Add the modification/provenance header.
+  Make update rate and maximum range parameters. Hold profiles in one table
+  with explicit lowest/highest beam angles and minimum range, add the local
+  `airy` profile (48-beam downward hemispherical dome, 0.1 m minimum range)
+  and skip beams below a per-profile cut-off that only see the rover.
+- Upstream `rover_sim/lidar_postprocess.py` is adapted at the same local
+  path. Add the modification/provenance header. Decode byte order and padded
+  organized rows and reject malformed field/data layouts. Filter noisy
+  ranges outside bounds, support one-channel ring labels and sanitize
+  non-finite intensities. Serialize explicit little-endian data. Correct
+  optional LaserScan angle metadata and use nearest-bin/minimum-range
+  aggregation with rear-direction wrapping. Validate limits and topic names;
+  declare processing parameters read-only to prevent partial runtime changes.
+  Catch malformed incoming clouds with a throttled warning. Handle external
+  ROS shutdown and constructor failure with guarded cleanup. Use flag-only
+  SIGINT/SIGTERM handlers so repeated signals cannot interrupt destruction. Remove the
+  upstream timing-cost claim because it was not measured on this host.
+  Support beam fans not centred on the horizon (`vertical_min_deg`) and drop
+  returns inside `self_filter_box`, the rover's own body.
+- The local wrapper `urdf/sensors/lidar3d.urdf.xacro` mounts the sensor at
+  `(0, 0, 0.40)` m on `base_link`; this is deliberately different from the
+  upstream Mars rover's mast pose. It selects CPU `ray` unconditionally.
+  The reference macro's GPU support is not exposed by the local robot/launch
+  because neither GPU experiment passed the local geometry validation.
+
+The local launch integration, executable wrapper, 3D RViz config, tests and
+validator are local additions. The existing 2D RViz config is the starting
+point for the new local config; no upstream odometry/accumulation settings
+are imported. No Mars drivetrain/controller, IMU, terrain generation,
+ground-truth TF, Fortress plugin or `ros_gz` code is imported.

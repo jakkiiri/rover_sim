@@ -1,0 +1,46 @@
+// rover_sim materials (visual only; collisions and physics are unaffected).
+// Loaded through model://rover_sim_materials (gazebo_model_path export in package.xml).
+
+// Sandy ground with non-repeating detail so stereo matching has texture.
+// The 1024 px texture repeats every 8 m on the 100 m ground box (scale 0.08),
+// far beyond the stereo disparity search range, so no false matches.
+material RoverSim/Sand
+{
+  technique
+  {
+    pass
+    {
+      ambient 0.85 0.85 0.85 1
+      diffuse 1 1 1 1
+      specular 0.02 0.02 0.02 1 1
+      texture_unit
+      {
+        texture rover_sand.png
+        filtering anisotropic
+        max_anisotropy 16
+        scale 0.08 0.08
+      }
+    }
+  }
+}
+
+// Speckled rock for the stereo test features (Gazebo's built-in granite texture).
+material RoverSim/Rock
+{
+  technique
+  {
+    pass
+    {
+      ambient 0.6 0.55 0.5 1
+      diffuse 0.85 0.8 0.75 1
+      specular 0.05 0.05 0.05 1 1
+      texture_unit
+      {
+        texture granite.jpg
+        filtering anisotropic
+        max_anisotropy 16
+        scale 0.5 0.5
+      }
+    }
+  }
+}
