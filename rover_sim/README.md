@@ -112,10 +112,12 @@ ros2 launch rover_sim rover_desert.launch.py rviz:=true
 Use `gui:=false` for a headless Gazebo server. RViz uses simulation time,
 Fixed Frame `base_link` and only the current LiDAR cloud. The LiDAR is 3D by
 default: the `airy` profile, a RoboSense Airy-style hemispherical dome
-mounted upside down (48 beams from the horizon to straight down, 900 samples,
-10 Hz, CPU) on a mast 0.40 m above the chassis; returns from the rover's own
-body are cropped out. It runs the Mars world at about 0.36 × real time;
-`lidar_samples:=450` gives about 0.54. `lidar_mode:=2d` restores the original
+mounted upside down (48 beams from the horizon to straight down, 360 samples
+(1°), 5 Hz, CPU) on a mast 0.40 m above the chassis (on the real rover, a 1 m
+pole); returns from the rover's own body are cropped out. With the real rover,
+the Gazebo window, stereo camera and planner, it runs the Mars world at about
+0.47 × real time; the earlier 900 samples at 10 Hz ran at 0.09.
+`lidar_samples:=900 lidar_rate:=10` brings back the full density. `lidar_mode:=2d` restores the original
 `/scan` sensor and viewer, `lidar_profile:=lite|standard|high|dense` picks a
 16-64 beam spinning LiDAR centred on the horizon (`lite` runs at about 0.68), and `lidar:=false` omits the LiDAR. `stereo:=false` omits the stereo
 camera; the LiDAR and stereo switches are independent. With stereo on (the
@@ -178,7 +180,8 @@ ros2 topic hz /stereo/points2
 
 Camera settings are launch arguments, for example
 `ros2 launch rover_sim rover_desert.launch.py stereo_rate:=10 stereo_baseline:=0.2`.
-The defaults are 480 × 360 at 15 Hz with a 0.12 m baseline and a 90° field of
+The defaults are 480 × 360 at 2 Hz (lowered from 15 for sim speed; the planner
+relies mostly on the LiDAR) with a 0.12 m baseline and a 90° field of
 view. Depth is usable from about 0.4 to 5 m on textured surfaces. Design,
 parameters, the LiDAR keep-out rules and the validation commands are in the
 [stereo guide](docs/stereo.md).

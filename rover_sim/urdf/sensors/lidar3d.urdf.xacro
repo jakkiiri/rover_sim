@@ -2,10 +2,14 @@
 <!-- Local adapter for the pinned, Classic-only upstream 3D LiDAR. -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:include filename="../upstream/mars_lidar3d.urdf.xacro"/>
-  <xacro:macro name="proxy_lidar3d" params="parent profile rate:=10 max_range:=100.0 samples:=''">
-    <!-- At 0.40 m the lowest beam clears the chassis and all four wheels. -->
-    <xacro:rover_lidar3d parent="${parent}" xyz="0 0 0.40"
+  <!-- Defaults are the proxy rover's: at 0.40 m the lowest beam clears the
+       chassis and all four wheels. The real rover passes its pole-top mount,
+       no mast (the pole is its own link) and its own lowest useful beam. -->
+  <xacro:macro name="proxy_lidar3d" params="parent profile rate:=10 max_range:=100.0 samples:=''
+                                           xyz:='0 0 0.40' mast_length:=0.265 min_beam_deg:=''">
+    <xacro:rover_lidar3d parent="${parent}" xyz="${xyz}"
                         profile="${profile}" gpu="false"
-                        rate="${rate}" max_range="${max_range}" samples="${samples}"/>
+                        rate="${rate}" max_range="${max_range}" samples="${samples}"
+                        mast_length="${mast_length}" min_beam_deg="${min_beam_deg}"/>
   </xacro:macro>
 </robot>

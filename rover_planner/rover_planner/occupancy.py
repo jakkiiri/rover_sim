@@ -53,6 +53,29 @@ def filter_obstacle_points(xyz, sensor_xyz, rover_pose, *, z_min, z_max, max_ran
     return xyz[~on_rover]
 
 
+def sight_line_hits_box(xyz, sensor_xyz, box):
+    """True for points whose line of sight from the sensor meets an axis-aligned box.
+
+    xyz: Nx3 points and sensor_xyz in the box's frame. box: (xmin, xmax, ymin,
+    ymax, zmin, zmax). Points inside the box count too. A part of the rover in
+    a sensor's view (the real rover's stowed arm) hides the ground behind it,
+    so stray returns there, from stereo mismatches at its edges or range
+    noise, would become obstacles that are never seen cleared.
+    """
+    lo = np.asarray(box[0::2], dtype=np.float64)
+    hi = np.asarray(box[1::2], dtype=np.float64)
+    origin = np.asarray(sensor_xyz, dtype=np.float64)
+    d = xyz - origin
+    with np.errstate(divide='ignore', invalid='ignore'):
+        t1 = (lo - origin) / d
+        t2 = (hi - origin) / d
+    # A zero component with the sensor inside that slab gives -inf/+inf or NaN
+    # (sensor on a face); NaN never limits the interval.
+    t_enter = np.nanmax(np.where(np.isnan(t1), -np.inf, np.minimum(t1, t2)), axis=1)
+    t_exit = np.nanmin(np.where(np.isnan(t2), np.inf, np.maximum(t1, t2)), axis=1)
+    return (t_exit >= np.maximum(t_enter, 0.0)) & (t_enter <= 1.0)
+
+
 def ground_points(xyz, sensor_xyz, *, z_min, max_range):
     """Points on the ground (|z| < z_min) within max_range of the camera.
 

@@ -70,9 +70,13 @@ class ElevationMap:
         self.origin = new
         self.weight, self.height, self.viewed = arrays
 
-    def mark_viewed(self, camera_xy, heading, near, far, bearing_min, bearing_max):
+    def mark_viewed(self, camera_xy, heading, near, far, bearing_min, bearing_max, hidden=None):
         """Count one look at the cells between near and far metres from the camera
-        (horizontally) within its usable bearings (rad, left positive)."""
+        (horizontally) within its usable bearings (rad, left positive).
+
+        hidden: optional function of cell-centre x, y arrays giving True where
+        part of the rover blocks the camera's view of the ground; those cells
+        are not counted, or ground the camera cannot see would look like a drop."""
         if self.origin is None:
             return
         res = self.resolution
@@ -83,6 +87,8 @@ class ElevationMap:
         d = np.hypot(dx, dy)
         bearing = np.angle(np.exp(1j * (np.arctan2(dy, dx) - heading)))
         seen = (d >= near) & (d <= far) & (bearing >= bearing_min) & (bearing <= bearing_max)
+        if hidden is not None and seen.any():
+            seen[seen] = ~hidden((ix[seen] + 0.5) * res, (iy[seen] + 0.5) * res)
         ax, ay = ix[seen] - self.origin[0], iy[seen] - self.origin[1]
         inside = (ax >= 0) & (ax < self.size) & (ay >= 0) & (ay < self.size)
         self.viewed[ay[inside], ax[inside]] = np.minimum(self.viewed[ay[inside], ax[inside]] + 1, 1000)

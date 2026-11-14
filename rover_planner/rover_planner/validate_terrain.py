@@ -39,7 +39,9 @@ from rclpy.node import Node
 from rclpy.parameter import Parameter
 
 from .terrain import fit_planes
-from .validate import CAMERA_BEARINGS, CAMERA_RANGE, CAMERA_X, HALF_LENGTH, HALF_WIDTH
+from . import validate as base
+from .robot_geometry import ROBOTS
+from .validate import CAMERA_BEARINGS, CAMERA_RANGE
 
 TOO_CLOSE, TOO_STEEP, OBSTACLE = 50, 80, 100
 
@@ -76,14 +78,15 @@ def touches(x, y, yaw, obj, margin=0.0):
     c, s = math.cos(yaw), math.sin(yaw)
     dx, dy = obj['x'] - x, obj['y'] - y
     lx, ly = dx * c + dy * s, -dx * s + dy * c
-    qx = min(max(lx, -HALF_LENGTH), HALF_LENGTH)
-    qy = min(max(ly, -HALF_WIDTH), HALF_WIDTH)
+    qx = min(max(lx, -base.HALF_LENGTH), base.HALF_LENGTH)
+    qy = min(max(ly, -base.HALF_WIDTH), base.HALF_WIDTH)
     return math.hypot(lx - qx, ly - qy) < obj['radius'] + margin
 
 
 def in_view(pose, x, y):
     rx, ry, yaw = pose
-    cx, cy = rx + CAMERA_X * math.cos(yaw), ry + CAMERA_X * math.sin(yaw)
+    cx = rx + base.CAMERA_X * math.cos(yaw) - base.CAMERA_Y * math.sin(yaw)
+    cy = ry + base.CAMERA_X * math.sin(yaw) + base.CAMERA_Y * math.cos(yaw)
     bearing = math.atan2(math.sin(math.atan2(y - cy, x - cx) - yaw), math.cos(math.atan2(y - cy, x - cx) - yaw))
     return math.hypot(x - cx, y - cy) < CAMERA_RANGE - 0.5 and CAMERA_BEARINGS[0] < bearing < CAMERA_BEARINGS[1]
 
@@ -299,7 +302,9 @@ def main():
     parser.add_argument('--path-seconds', type=float, default=5.0)
     parser.add_argument('--max-slope', type=float, default=25.0, help="planner's max_slope_deg")
     parser.add_argument('--step-height', type=float, default=0.12, help="planner's z_min")
+    parser.add_argument('--robot', choices=ROBOTS, default='real', help="rover_sim's robot argument")
     args = parser.parse_args()
+    base.configure_robot(args.robot)
 
     truth = Truth(args.step_height)
     rclpy.init()

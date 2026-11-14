@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Local Gazebo Classic joint actuator bridge. No simulated sensors.
+// Also publishes passive "*_rocker_joint" states (for robot_state_publisher)
+// and, with exactly two rockers, couples them like a rocker differential:
+// torque = -k (left + right) - c (left rate + right rate) on each rocker.
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo_ros/node.hpp>
@@ -9,6 +12,7 @@
 #include <chrono>
 #include <cmath>
 #include <functional>
+#include <iterator>
 #include <map>
 #include <mutex>
 #include <string>
@@ -24,6 +28,9 @@ class SwerveActuators : public gazebo::ModelPlugin {
     double integral = 0;
   };
   std::map<std::string, Actuator> actuators_;
+  std::map<std::string, gazebo::physics::JointPtr> passive_;
+  double differential_stiffness_ = 0;
+  double differential_damping_ = 0;
   gazebo_ros::Node::SharedPtr node_;
   gazebo::physics::WorldPtr world_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_;
@@ -59,6 +66,21 @@ class SwerveActuators : public gazebo::ModelPlugin {
       if (steering || drive) {
         actuators_.emplace(name, Actuator{joint, steering, joint->GetEffortLimit(0), 0.0});
       }
+    }
+    for (auto &joint : model->GetJoints()) {
+      const auto name = joint->GetName();
+      if (name.size() >= 13 && name.compare(name.size()-13, 13, "_rocker_joint") == 0) passive_.emplace(name, joint);
+    }
+    differential_stiffness_ = sdf->Get<double>("differential_stiffness", 0.0).first;
+    differential_damping_ = sdf->Get<double>("differential_damping", 0.0).first;
+    if (!std::isfinite(differential_stiffness_) || !std::isfinite(differential_damping_) ||
+        differential_stiffness_ < 0 || differential_damping_ < 0) {
+      RCLCPP_ERROR(node_->get_logger(), "differential gains must be finite and non-negative; bridge disabled");
+      return;
+    }
+    if (!passive_.empty() && passive_.size() != 2) {
+      RCLCPP_WARN(node_->get_logger(), "Found %zu rocker joints; differential needs exactly two and is off",
+                  passive_.size());
     }
     if (actuators_.size() != 8) {
       RCLCPP_ERROR(node_->get_logger(), "Expected four kingpins and four drive joints; actuator bridge disabled");
@@ -108,7 +130,8 @@ class SwerveActuators : public gazebo::ModelPlugin {
     pub_ = node_->create_publisher<sensor_msgs::msg::JointState>("/joint_states", 10);
     update_ = gazebo::event::Events::ConnectWorldUpdateBegin(
       std::bind(&SwerveActuators::Update, this, std::placeholders::_1));
-    RCLCPP_INFO(node_->get_logger(), "Eight-joint bridge ready; wall watchdog %.3f s", watchdog_timeout_);
+    RCLCPP_INFO(node_->get_logger(), "Eight-joint bridge ready (%zu passive rocker joints); wall watchdog %.3f s",
+                passive_.size(), watchdog_timeout_);
   }
   void Reset() override {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -180,6 +203,19 @@ class SwerveActuators : public gazebo::ModelPlugin {
       state.position.push_back(position);
       state.velocity.push_back(velocity);
       state.effort.push_back(std::clamp(effort, -a.effort, a.effort));
+    }
+    if (passive_.size() == 2) {
+      const auto &left = passive_.begin()->second, &right = std::next(passive_.begin())->second;
+      const double torque = -differential_stiffness_*(left->Position(0)+right->Position(0))
+                            -differential_damping_*(left->GetVelocity(0)+right->GetVelocity(0));
+      left->SetForce(0, torque);
+      right->SetForce(0, torque);
+    }
+    for (auto &[name, joint] : passive_) {
+      state.name.push_back(name);
+      state.position.push_back(joint->Position(0));
+      state.velocity.push_back(joint->GetVelocity(0));
+      state.effort.push_back(0.0);
     }
     if (info.simTime.Double() < last_publish_ || info.simTime.Double()-last_publish_ >= 0.02) {
       pub_->publish(state);

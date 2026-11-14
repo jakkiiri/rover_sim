@@ -10,7 +10,7 @@ from rover_sim.stereo_geometry import validate_stereo_config
 # 480x360 keeps each RGB frame (518,400 B) inside Fast DDS's default 512 KiB shared-memory
 # segment; 640x480 frames went over UDP and delayed the controller's reset handshake.
 SHM_SEGMENT_BYTES = 512 * 1024
-LAUNCH_ARGS = dict(stereo_width='480', stereo_height='360', stereo_rate='15',
+LAUNCH_ARGS = dict(stereo_width='480', stereo_height='360', stereo_rate='2',
                    stereo_baseline='0.12', stereo_hfov=str(math.pi / 2))
 
 

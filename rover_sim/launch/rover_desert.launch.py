@@ -1,5 +1,7 @@
-"""Spawn the swerve-controlled proxy rover in a Gazebo Classic world.
+"""Spawn the swerve-controlled rover in a Gazebo Classic world.
 
+robot:=real (default: the real rover from its Onshape CAD, rocker suspension,
+stowed arm, 3D LiDAR on a 1 m pole) or robot:=proxy (the original box rover).
 world:=mars (default) or world:=desert, or a path to a .world file.
 lidar_mode:=3d (default, 3D LiDAR on /points) or 2d (/scan);
 lidar_profile:=airy (default: RoboSense Airy-style 48-beam hemispherical dome
@@ -13,6 +15,7 @@ import os
 import math
 
 import xacro
+import yaml
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
@@ -28,15 +31,47 @@ from rover_sim import stereo_launch
 LIDAR3D_PROFILES = {'lite': (16, -15.0, 15.0, 0.5), 'standard': (16, -15.0, 15.0, 0.5),
                     'high': (32, -22.5, 22.5, 0.5), 'dense': (64, -22.5, 22.5, 0.5),
                     'airy': (48, -90.0, 0.0, 0.1)}
-LIDAR3D_HEIGHT = 0.40  # m above base_link, urdf/sensors/lidar3d.urdf.xacro
-# The rover's own body in the lidar_link frame (xmin xmax ymin ymax zmin zmax):
+# Proxy rover: 3D LiDAR 0.40 m above base_link (urdf/sensors/lidar3d.urdf.xacro).
+# Its own body in the lidar_link frame (xmin xmax ymin ymax zmin zmax):
 # chassis x +-0.50, wheels (r 0.18 at x +-0.38, y +-0.45) to x +-0.56, and to
 # y +-0.63 when steered sideways, camera to x 0.58, ground 0.73 m below the
 # LiDAR. Only the downward dome can see it.
-LIDAR3D_SELF_BOX = [-0.62, 0.64, -0.66, 0.66, -0.80, 0.0]
+PROXY = {'xacro': 'proxy_rover.urdf.xacro', 'lidar_xyz': (0.0, 0.0, 0.40),
+         'self_box': [-0.62, 0.64, -0.66, 0.66, -0.80, 0.0], 'min_beam_deg': None}
+LIDAR3D_HEIGHT = PROXY['lidar_xyz'][2]
+LIDAR3D_SELF_BOX = PROXY['self_box']
+SELF_BOX_MARGIN = 0.03   # m around the real rover's body in the self-filter box
 
 
-def lidar_keepout(mode, profile):
+def real_rover(geometry):
+    """LiDAR mount, self-filter box and lowest useful dome beam of the real rover.
+
+    geometry is config/real_rover.yaml (scripts/generate_real_rover.py). The
+    box holds the body, stowed arm and wheels (steered sideways they reach
+    wheel_y + radius) from the ground up to the LiDAR. Beams steeper than the
+    angle at which flat ground leaves the box on its nearest side hit only the
+    rover or ground under it, so they are not simulated.
+    """
+    lx, ly, lz = geometry['lidar_xyz']
+    extent, m = geometry['extent'], SELF_BOX_MARGIN
+    half_y = max(extent['half_width'], geometry['wheel_y'] + geometry['wheel_radius']) + m
+    box = [extent['rear'] - m - lx, extent['front'] + m - lx, -half_y - ly, half_y - ly,
+           geometry['ground_z'] - 0.08 - lz, 0.0]
+    nearest = min(-box[0], box[1], -box[2], box[3])
+    height = lz - geometry['ground_z']
+    return {'xacro': 'real_rover.urdf.xacro', 'lidar_xyz': (lx, ly, lz),
+            'self_box': [round(v, 3) for v in box],
+            'min_beam_deg': -math.degrees(math.atan2(height, nearest))}
+
+
+def robot_config(robot, share):
+    if robot == 'proxy':
+        return PROXY
+    with open(os.path.join(share, 'config', 'real_rover.yaml')) as f:
+        return real_rover(yaml.safe_load(f))
+
+
+def lidar_keepout(mode, profile, lidar_xyz=PROXY['lidar_xyz']):
     """Xacro args that keep the stereo camera out of the active LiDAR's beams."""
     if mode != '3d':
         return {}
@@ -44,7 +79,7 @@ def lidar_keepout(mode, profile):
     # A dome looking down over the rover sees the camera whatever its mount;
     # only the housing clearance is checked then.
     dome = low <= -60.0
-    return {'lidar_keepout_origin': f'0 0 {LIDAR3D_HEIGHT}',
+    return {'lidar_keepout_origin': ' '.join(f'{v:g}' for v in lidar_xyz),
             'lidar_keepout_vfov_min': str(low), 'lidar_keepout_vfov_max': str(high),
             'lidar_keepout_band': str(not dome).lower()}
 
@@ -77,13 +112,16 @@ def rviz_config(stereo, mode):
 
 def generate_launch_description():
     share = get_package_share_directory('rover_sim')
-    args = [DeclareLaunchArgument('gui', default_value='true'),
+    args = [DeclareLaunchArgument('robot', default_value='real', choices=['real', 'proxy'],
+                                  description='real (CAD model, rockers, LiDAR pole) or proxy (box rover)'),
+            DeclareLaunchArgument('gui', default_value='true'),
             DeclareLaunchArgument('world', default_value='mars',
                                   description='mars, desert, or a path to a .world file'),
             DeclareLaunchArgument('lidar', default_value='true', description='Enable the Classic ray LiDAR'),
             DeclareLaunchArgument('lidar_mode', default_value='3d', choices=['2d', '3d']),
             DeclareLaunchArgument('lidar_profile', default_value='airy', choices=list(LIDAR3D_PROFILES)),
-            DeclareLaunchArgument('lidar_rate', default_value='10', description='3D LiDAR sweeps per second'),
+            DeclareLaunchArgument('lidar_rate', default_value='5',
+                                  description='3D LiDAR sweeps per second (5 keeps the sim near half real time)'),
             DeclareLaunchArgument('lidar_range', default_value='100.0', description='3D LiDAR maximum range (m)'),
             DeclareLaunchArgument('lidar_samples', default_value='',
                                   description="3D LiDAR samples per beam per sweep ('' = the profile's)"),
@@ -97,6 +135,7 @@ def generate_launch_description():
     for name, value in [('x', '0'), ('y', '0'), ('z', '0.36'),
                         ('roll', '0'), ('pitch', '0'), ('yaw', '0')]:
         args.append(DeclareLaunchArgument(name, default_value=value))
+    # Entity name kept as proxy_rover for both robots: validators move it by name.
     spawn_args = ['-entity', 'proxy_rover', '-topic', 'robot_description',
                   '-timeout', '60']
     for option, name in [('x', 'x'), ('y', 'y'), ('z', 'z'),
@@ -115,14 +154,18 @@ def generate_launch_description():
         enabled = IfCondition(LaunchConfiguration('lidar')).evaluate(context)
         rate, max_range = lidar3d_rate_and_range(LaunchConfiguration('lidar_rate').perform(context),
                                                  LaunchConfiguration('lidar_range').perform(context))
+        robot = robot_config(LaunchConfiguration('robot').perform(context), share)
+        extra = {}
+        if robot['min_beam_deg'] is not None:
+            extra['lidar_min_beam_deg'] = f"{robot['min_beam_deg']:.3f}"
         description = xacro.process_file(
-            os.path.join(share, 'urdf', 'proxy_rover.urdf.xacro'),
+            os.path.join(share, 'urdf', robot['xacro']),
             mappings={'actuator_watchdog': str(watchdog),
                       'enable_lidar': LaunchConfiguration('lidar').perform(context),
                       'lidar_mode': mode, 'lidar_profile': profile,
                       'lidar_rate': str(rate), 'lidar_range': str(max_range),
                       'lidar_samples': lidar3d_samples(LaunchConfiguration('lidar_samples').perform(context)),
-                      **lidar_keepout(mode, profile),
+                      **lidar_keepout(mode, profile, robot['lidar_xyz']), **extra,
                       **stereo_launch.xacro_mappings(stereo, stereo_config)}).toxml()
         nodes = (stereo_launch.stereo_nodes(share, description, stereo_config) if stereo else []) + [
             Node(package='rover_sim', executable='swerve_controller',
@@ -148,7 +191,7 @@ def generate_launch_description():
                                            'vertical_fov_deg': high - low, 'vertical_min_deg': low,
                                            'rate': rate, 'min_range': min_range,
                                            'max_range': max_range,
-                                           'self_filter_box': LIDAR3D_SELF_BOX,
+                                           'self_filter_box': robot['self_box'],
                                            'vertical_shift_steps': 0.0}],
                               output='screen'))
         return nodes

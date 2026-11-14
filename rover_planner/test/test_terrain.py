@@ -150,3 +150,19 @@ def test_drop_off_needs_enough_looks():
     t = TerrainModel(emap, -40, -40, 80, 80, slope_window=1.0, ground_window=2.0,
                      min_fraction=0.3, outlier=0.08, unseen_views=3)
     assert not t.unseen.any()
+
+
+def test_ground_hidden_by_the_rover_is_not_a_drop_off():
+    # Ground measured up to x = 0.5 m only; the cells beyond are hidden from the
+    # camera for y < 0 (a stowed arm) and open for y >= 0, where there is a real drop.
+    pts = ramp_points(0, x_range=(-3, 0.5))
+    emap = ElevationMap(RES, 120, max_weight=1e9)
+    emap.recentre(0.0, 0.0, margin=10)
+    emap.add(pts, np.full(len(pts), 0.02), min_points=1)
+    for _ in range(3):
+        emap.mark_viewed((0.2, 0.0), 0.0, 0.45, 1.6, math.radians(-40), math.radians(29),
+                         hidden=lambda x, y: y < 0.0)
+    t = TerrainModel(emap, -40, -40, 80, 80, slope_window=1.0, ground_window=2.0,
+                     min_fraction=0.3, outlier=0.08, unseen_views=3)
+    assert not t.unseen[cell(1.0, -0.3)]       # hidden: just unknown
+    assert t.unseen[cell(1.0, 0.3)]            # looked at, nothing there: drop-off

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!-- Local prototype CPU ray LiDAR for Gazebo Classic / gazebo_ros. -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="rover_lidar" params="parent">
+  <xacro:macro name="rover_lidar" params="parent xyz:='0 0 0.20'">
     <link name="lidar_link">
       <inertial>
         <mass value="0.15"/>
@@ -22,7 +22,7 @@
     </link>
     <joint name="lidar_joint" type="fixed">
       <parent link="${parent}"/><child link="lidar_link"/>
-      <origin xyz="0 0 0.20" rpy="0 0 0"/>
+      <origin xyz="${xyz}" rpy="0 0 0"/>
     </joint>
     <!-- Gazebo may lump this fixed link into base_link. The sensor pose is
          retained; RSP still owns lidar_link TF from the original URDF. -->

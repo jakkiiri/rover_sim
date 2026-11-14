@@ -1,0 +1,235 @@
+<?xml version="1.0"?>
+<!-- The real rover: meshes, dimensions and masses from its Onshape export
+     (cad/assembly_1), turned into config/real_rover.yaml and meshes/real_rover/
+     by scripts/generate_real_rover.py. Dimensions are metres, masses kg (42 total).
+
+     Kinematics: base_link carries two passive rockers (pivot axis across the
+     rover); each rocker carries a front and a rear swerve module (vertical
+     kingpin through the wheel centre + driven wheel). The rockers are linked by
+     a differential (simulated as a stiff torque coupling in the actuator
+     plugin), so on uneven ground one side's rocker pitches up as the other
+     pitches down and all four wheels stay on the ground.
+
+     The arm is fixed in a stowed pose; a 1 m pole on the top plate carries the
+     downward-looking 3D LiDAR. Launch arguments match proxy_rover.urdf.xacro. -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="real_rover">
+  <xacro:arg name="enable_control" default="true"/>
+  <xacro:arg name="actuator_watchdog" default="0.3"/>
+  <xacro:arg name="enable_lidar" default="true"/>
+  <xacro:arg name="lidar_mode" default="3d"/>
+  <xacro:arg name="lidar_profile" default="airy"/>
+  <xacro:arg name="lidar_rate" default="10"/>
+  <xacro:arg name="lidar_range" default="100.0"/>
+  <xacro:arg name="lidar_samples" default=""/>
+  <!-- Lowest dome beam worth simulating (deg); steeper beams only hit the
+       rover, which lidar_postprocess crops. rover_desert.launch.py passes it. -->
+  <xacro:arg name="lidar_min_beam_deg" default="-72.0"/>
+  <xacro:arg name="enable_stereo" default="true"/>
+  <xacro:arg name="stereo_width" default="480"/>
+  <xacro:arg name="stereo_height" default="360"/>
+  <xacro:arg name="stereo_rate" default="15"/>
+  <xacro:arg name="stereo_baseline" default="0.12"/>
+  <xacro:arg name="stereo_hfov" default="1.5707963267948966"/>
+  <!-- Front face of the body, beside the stowed arm's shoulder bracket. -->
+  <xacro:arg name="stereo_xyz" default="0.25 0.16 0.12"/>
+  <xacro:arg name="stereo_rpy" default="0 0 0"/>
+  <xacro:arg name="lidar_keepout_origin" default="0 0 1.27"/>
+  <xacro:arg name="lidar_keepout_vfov_min" default="-90"/>
+  <xacro:arg name="lidar_keepout_vfov_max" default="0"/>
+  <xacro:arg name="lidar_keepout_margin" default="2"/>
+  <xacro:arg name="lidar_keepout_radius" default="0.15"/>
+  <xacro:arg name="lidar_keepout_band" default="false"/>
+  <xacro:arg name="ground_truth" default="true"/>
+  <!-- Differential: torque = -stiffness * (left + right angle) - damping * (sum of rates). -->
+  <xacro:arg name="differential_stiffness" default="2000"/>
+  <xacro:arg name="differential_damping" default="60"/>
+
+  <xacro:include filename="upstream/inertia_tensors.urdf.xacro"/>
+  <xacro:include filename="sensors/lidar.urdf.xacro"/>
+  <xacro:include filename="sensors/lidar3d.urdf.xacro"/>
+  <xacro:include filename="sensors/stereo.urdf.xacro"/>
+
+  <xacro:property name="g" value="${xacro.load_yaml('$(find rover_sim)/config/real_rover.yaml')}"/>
+  <xacro:property name="mesh_dir" value="file://$(find rover_sim)/meshes/real_rover"/>
+  <xacro:property name="r" value="${g['wheel_radius']}"/>
+
+  <!-- One <visual> per generated mesh of a link (recursive: xacro has no loops). -->
+  <xacro:macro name="mesh_visuals" params="items">
+    <xacro:if value="${len(items) > 0}">
+      <xacro:property name="item" value="${items[0]}"/>
+      <visual>
+        <geometry><mesh filename="${mesh_dir}/${item['mesh']}"/></geometry>
+        <material name="${item['mesh'][:-4]}">
+          <color rgba="${item['rgb'][0]} ${item['rgb'][1]} ${item['rgb'][2]} 1"/>
+        </material>
+      </visual>
+      <xacro:mesh_visuals items="${items[1:]}"/>
+    </xacro:if>
+  </xacro:macro>
+  <xacro:macro name="inertial_at" params="mass xyz inertia">
+    <inertial>
+      <mass value="${mass}"/>
+      <origin xyz="${xyz[0]} ${xyz[1]} ${xyz[2]}"/>
+      <inertia ixx="${inertia[0]}" ixy="0" ixz="0" iyy="${inertia[1]}" iyz="0" izz="${inertia[2]}"/>
+    </inertial>
+  </xacro:macro>
+  <xacro:macro name="box_collision" params="box">
+    <collision>
+      <origin xyz="${box['xyz'][0]} ${box['xyz'][1]} ${box['xyz'][2]}"
+              rpy="${box['rpy'][0] if 'rpy' in box else 0} ${box['rpy'][1] if 'rpy' in box else 0} ${box['rpy'][2] if 'rpy' in box else 0}"/>
+      <geometry><box size="${box['size'][0]} ${box['size'][1]} ${box['size'][2]}"/></geometry>
+    </collision>
+  </xacro:macro>
+
+  <!-- Massless ROS root avoids the KDL root-inertia warning; the p3d plugin
+       reports base_root, which Gazebo merges with base_link. -->
+  <link name="base_root"/>
+  <joint name="base_root_joint" type="fixed">
+    <parent link="base_root"/><child link="base_link"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+  <!-- base_link: origin on the rocker pivot axis (in plan), x forward. -->
+  <link name="base_link">
+    <xacro:mesh_visuals items="${g['visuals']['base_link']}"/>
+    <xacro:box_collision box="${g['body']['chassis']}"/>
+    <xacro:box_collision box="${g['body']['payload']}"/>
+    <xacro:inertial_at mass="${g['masses']['body']}" xyz="${g['body']['com']}" inertia="${g['body']['inertia']}"/>
+  </link>
+
+  <link name="arm_link">
+    <xacro:mesh_visuals items="${g['visuals']['arm_link']}"/>
+    <xacro:box_collision box="${g['arm']['box']}"/>
+    <xacro:inertial_at mass="${g['masses']['arm']}" xyz="${g['arm']['com']}" inertia="${g['arm']['inertia']}"/>
+  </link>
+  <joint name="arm_joint" type="fixed">
+    <parent link="base_link"/><child link="arm_link"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+  <!-- 1 m LiDAR pole on the top plate (beside the science box). -->
+  <link name="lidar_pole_link">
+    <visual>
+      <origin xyz="0 0 ${g['pole']['length'] / 2}"/>
+      <geometry><cylinder radius="${g['pole']['radius']}" length="${g['pole']['length']}"/></geometry>
+      <material name="lidar_pole"><color rgba="0.55 0.56 0.58 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 ${g['pole']['length'] / 2}"/>
+      <geometry><cylinder radius="${g['pole']['radius']}" length="${g['pole']['length']}"/></geometry>
+    </collision>
+    <xacro:cylinder_inertial_with_origin radius="${g['pole']['radius']}" length="${g['pole']['length']}"
+                                         mass="${g['pole']['mass']}">
+      <origin xyz="0 0 ${g['pole']['length'] / 2}"/>
+    </xacro:cylinder_inertial_with_origin>
+  </link>
+  <joint name="lidar_pole_joint" type="fixed">
+    <parent link="base_link"/><child link="lidar_pole_link"/>
+    <origin xyz="${g['pole']['xy'][0]} ${g['pole']['xy'][1]} ${g['pole']['base_z']}"/>
+  </joint>
+
+  <!-- Rockers: pivot on base_link, zero = both wheels level (CAD pose levelled). -->
+  <xacro:macro name="rocker" params="side sign">
+    <link name="${side}_rocker">
+      <xacro:mesh_visuals items="${g['visuals'][side + '_rocker']}"/>
+      <xacro:box_collision box="${g['rocker']['boxes'][0]}"/>
+      <xacro:box_collision box="${g['rocker']['boxes'][1]}"/>
+      <xacro:inertial_at mass="${g['masses']['rocker']}"
+                         xyz="${[g['rocker']['com'][0], sign * g['rocker']['com'][1], g['rocker']['com'][2]]}"
+                         inertia="${g['rocker']['inertia']}"/>
+    </link>
+    <joint name="${side}_rocker_joint" type="revolute">
+      <parent link="base_link"/><child link="${side}_rocker"/>
+      <origin xyz="0 ${sign * g['rocker_y']} ${g['rocker_z']}"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-0.4" upper="0.4" effort="400" velocity="5"/>
+      <dynamics damping="1.0" friction="0.0"/>
+    </joint>
+    <gazebo reference="${side}_rocker"><self_collide>false</self_collide></gazebo>
+  </xacro:macro>
+  <xacro:rocker side="left" sign="1"/>
+  <xacro:rocker side="right" sign="-1"/>
+
+  <!-- Swerve module: vertical kingpin through the wheel centre (what
+       rover_sim/kinematics.py and the swerve plugin expect), driven wheel. -->
+  <xacro:macro name="wheel_module" params="prefix side sign x">
+    <link name="${prefix}_axle">
+      <xacro:mesh_visuals items="${g['visuals'][prefix + '_axle']}"/>
+      <xacro:sphere_inertial radius="0.06" mass="${g['masses']['module']}"/>
+    </link>
+    <joint name="${prefix}_kingpin" type="continuous">
+      <parent link="${side}_rocker"/><child link="${prefix}_axle"/>
+      <origin xyz="${x} ${sign * (g['wheel_y'] - g['rocker_y'])} ${g['wheel_z'] - g['rocker_z']}"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="25" velocity="3.0"/>
+      <dynamics friction="0.02" damping="0.1"/>
+    </joint>
+    <link name="${prefix}_wheel">
+      <xacro:mesh_visuals items="${g['visuals'][prefix + '_wheel']}"/>
+      <!-- Narrow centred tread approximates the rounded tyre contact band, as on
+           the proxy: full-width cylinder edges cause turn scrub in ODE. -->
+      <collision><geometry><cylinder length="0.02" radius="${r}"/></geometry></collision>
+      <xacro:cylinder_inertial length="${g['wheel_width']}" radius="${r}" mass="${g['masses']['wheel']}"/>
+    </link>
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="${prefix}_axle"/><child link="${prefix}_wheel"/>
+      <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+      <axis xyz="0 0 1"/>
+      <dynamics damping="0.05" friction="0.02"/>
+      <limit effort="40" velocity="20"/>
+    </joint>
+    <gazebo reference="${prefix}_wheel">
+      <mu1>1.0</mu1><mu2>1.0</mu2>
+      <kp>1000000</kp><kd>100</kd>
+      <minDepth>0.001</minDepth><maxVel>0.1</maxVel>
+    </gazebo>
+  </xacro:macro>
+  <xacro:wheel_module prefix="front_left" side="left" sign="1" x="${g['wheel_x_front']}"/>
+  <xacro:wheel_module prefix="front_right" side="right" sign="-1" x="${g['wheel_x_front']}"/>
+  <xacro:wheel_module prefix="rear_left" side="left" sign="1" x="${g['wheel_x_rear']}"/>
+  <xacro:wheel_module prefix="rear_right" side="right" sign="-1" x="${g['wheel_x_rear']}"/>
+
+  <xacro:if value="$(arg enable_lidar)">
+    <xacro:if value="${'$(arg lidar_mode)' == '2d'}">
+      <!-- 2D LiDAR on the pole top, horizontal. -->
+      <xacro:rover_lidar parent="base_link"
+                         xyz="${g['lidar_xyz'][0]} ${g['lidar_xyz'][1]} ${g['lidar_xyz'][2]}"/>
+    </xacro:if>
+    <xacro:if value="${'$(arg lidar_mode)' == '3d'}">
+      <xacro:proxy_lidar3d parent="base_link" profile="$(arg lidar_profile)"
+                           rate="$(arg lidar_rate)" max_range="$(arg lidar_range)"
+                           samples="$(arg lidar_samples)"
+                           xyz="${g['lidar_xyz'][0]} ${g['lidar_xyz'][1]} ${g['lidar_xyz'][2]}"
+                           mast_length="0" min_beam_deg="$(arg lidar_min_beam_deg)"/>
+    </xacro:if>
+  </xacro:if>
+  <xacro:if value="$(arg enable_stereo)">
+    <xacro:rover_stereo parent="base_link" xyz="$(arg stereo_xyz)" rpy="$(arg stereo_rpy)"
+                        width="$(arg stereo_width)" height="$(arg stereo_height)"
+                        rate="$(arg stereo_rate)" baseline="$(arg stereo_baseline)" hfov="$(arg stereo_hfov)"
+                        keepout_origin="$(arg lidar_keepout_origin)"
+                        keepout_vfov_min="$(arg lidar_keepout_vfov_min)"
+                        keepout_vfov_max="$(arg lidar_keepout_vfov_max)"
+                        keepout_margin="$(arg lidar_keepout_margin)"
+                        keepout_radius="$(arg lidar_keepout_radius)"
+                        keepout_band="$(arg lidar_keepout_band)"/>
+  </xacro:if>
+  <xacro:if value="$(arg enable_control)">
+    <gazebo>
+      <plugin name="swerve_actuators" filename="librover_swerve_actuators.so">
+        <watchdog_timeout>$(arg actuator_watchdog)</watchdog_timeout>
+        <differential_stiffness>$(arg differential_stiffness)</differential_stiffness>
+        <differential_damping>$(arg differential_damping)</differential_damping>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+  <xacro:if value="$(arg ground_truth)">
+    <gazebo>
+      <plugin name="ground_truth_pose" filename="libgazebo_ros_p3d.so">
+        <ros><remapping>odom:=/ground_truth/odom</remapping></ros>
+        <body_name>base_root</body_name>
+        <frame_name>world</frame_name>
+        <update_rate>50</update_rate>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+</robot>

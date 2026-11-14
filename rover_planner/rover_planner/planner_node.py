@@ -45,7 +45,7 @@ import tf2_ros
 
 from .astar import (OBSTACLE, GridAStar, circle_kernel, footprint_blocked,
                     footprint_kernel, nearest_valid_cell, plan_from)
-from .occupancy import GridWindow, ObstacleMemory, transform_points
+from .occupancy import GridWindow, ObstacleMemory, sight_line_hits_box, transform_points
 from .terrain import ElevationMap, TerrainModel, height_sigma
 
 # Values in /planner/grid besides OBSTACLE (100) and free (0).
@@ -92,6 +92,10 @@ PARAMETERS = {
     'plan_rate': 2.0,            # Hz of grid publishing and replanning
     'footprint_half_length': 0.58,  # m, base_link to front of wheels / camera
     'footprint_half_width': 0.51,   # m, base_link to outside of the wheels
+    # Box in base_frame (xmin, xmax, ymin, ymax, zmin, zmax) round a part of the
+    # rover in the sensors' view; points on or behind it are dropped. All zeros: off.
+    'self_shadow_box': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    'base_frame': 'base_link',
     'inflation': 0.15,           # m of clearance added on every side
     'footprint_shape': 'circle',  # 'circle' fits any heading; 'rectangle' uses the current heading
     'goal_tolerance': 0.3,       # m; closer than this counts as reached
@@ -133,6 +137,8 @@ class AStarPlanner(Node):
             raise ValueError('resolution, cloud_rate and plan_rate must be positive; grid_size >= 1 m')
         if p['footprint_shape'] not in ('circle', 'rectangle'):
             raise ValueError("footprint_shape must be 'circle' or 'rectangle'")
+        if len(p['self_shadow_box']) != 6:
+            raise ValueError('self_shadow_box must be xmin, xmax, ymin, ymax, zmin, zmax')
         self.frame = p['global_frame']
         self.size = int(round(p['grid_size'] / p['resolution']))
         self.memory = ObstacleMemory(p['resolution'], p['unconfirmed_s'], p['min_points_per_cell'],
@@ -152,6 +158,7 @@ class AStarPlanner(Node):
         self.terrain_cache = None  # (window origin, sim time, TerrainModel)
         self.stats = {'clouds': 0, 'lidar_clouds': 0, 'tf_skips': 0, 'plans': 0, 'plan_ms': 0.0}
         self.last_warning = None  # avoids repeating the same warning every plan
+        self.body_tf = {}         # cloud frame -> (translation, rotation) into base_frame
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
@@ -207,7 +214,8 @@ class AStarPlanner(Node):
         b0, b1 = (math.radians(a) for a in p['camera_bearings_deg'])
         self.elevation.recentre(self.pose[0], self.pose[1], margin=self.size // 2 + 15)
         self.elevation.mark_viewed(sensor[:2], math.atan2(fy, fx), p['drop_check_near'],
-                                   p['drop_check_far'], b0, b1)
+                                   p['drop_check_far'], b0, b1,
+                                   hidden=self.hidden_by_rover(msg.header.frame_id))
         self.add_points(xyz, sensor, stamp_s, height_sigma(xyz, sensor, p['depth_error_k'],
                                                            p['height_error_floor']), None)
         self.stats['clouds'] += 1
@@ -245,8 +253,54 @@ class AStarPlanner(Node):
             return None
         t, r = tf.transform.translation, tf.transform.rotation
         sensor = (t.x, t.y, t.z)
-        xyz = transform_points(cloud_to_xyz(msg), sensor, (r.x, r.y, r.z, r.w))
+        raw = self.drop_self_shadow(cloud_to_xyz(msg), msg.header.frame_id)
+        if raw is None:
+            return None
+        xyz = transform_points(raw, sensor, (r.x, r.y, r.z, r.w))
         return self.drop_far_and_own_points(xyz, sensor, max_range), sensor, r
+
+    def hidden_by_rover(self, frame):
+        """Function of fixed-frame x, y arrays: True where self_shadow_box hides the
+        ground from this sensor, seen from above. None when there is no box.
+
+        Near the rover the sight line down to the ground crosses the box's height
+        range (the stowed arm reaches from below the camera to above it), so
+        the top-down test is enough for the drop-off check's 0.45-0.9 m band.
+        """
+        box = self.p['self_shadow_box']
+        if not box[1] > box[0] or frame not in self.body_tf:
+            return None
+        sensor = self.body_tf[frame][0]
+        flat_box = (box[0], box[1], box[2], box[3], -math.inf, math.inf)
+        rx, ry, yaw = self.pose
+        c, s = math.cos(yaw), math.sin(yaw)
+
+        def hidden(x, y):
+            dx, dy = x - rx, y - ry
+            body = np.column_stack([dx * c + dy * s, -dx * s + dy * c, np.full(len(x), sensor[2])])
+            return sight_line_hits_box(body, sensor, flat_box)
+        return hidden
+
+    def drop_self_shadow(self, raw, frame):
+        """Points of a cloud (in its own frame) that are not on or behind self_shadow_box.
+
+        The sensors are fixed to the body, so the sensor-to-body transform is
+        looked up once per frame and kept. None until it is available.
+        """
+        box = self.p['self_shadow_box']
+        if not box[1] > box[0]:
+            return raw
+        if frame not in self.body_tf:
+            try:
+                tf = self.tf_buffer.lookup_transform(self.p['base_frame'], frame, Time())
+            except tf2_ros.TransformException:
+                self.stats['tf_skips'] += 1
+                return None
+            t, r = tf.transform.translation, tf.transform.rotation
+            self.body_tf[frame] = ((t.x, t.y, t.z), (r.x, r.y, r.z, r.w))
+        translation, rotation = self.body_tf[frame]
+        body = transform_points(raw, translation, rotation)
+        return raw[~sight_line_hits_box(body, translation, box)]
 
     def add_points(self, xyz, sensor, stamp_s, sigma_z, range_sigma, ground_only=False):
         """Ground heights, then obstacle and ground cells, from one placed cloud.

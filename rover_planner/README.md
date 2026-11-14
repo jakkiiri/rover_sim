@@ -183,7 +183,7 @@ Gazebo ground-truth plugin --/ground_truth/odom--> ground_truth_odom --> /odom +
 | `goal_snap_clearance` | 0.2 m | Extra room the safe point keeps from blocked cells, for the low edges of rocks the grid does not hold. |
 | `lidar_rate` / `lidar_max_range` | 10 Hz / 10 m | Twice the stereo rate; 10 m covers the 12 m grid's corners from the centre. |
 | `lidar_range_sigma` | 0.03 m | LiDAR range error is small and does not grow with range like stereo's. |
-| `cloud_rate` / `plan_rate` | 5 / 2 Hz | The camera runs at 15 Hz; at teleop speed (0.4 m/s) the rover moves 8 cm per grid update and 20 cm per plan. |
+| `cloud_rate` / `plan_rate` | 5 / 2 Hz | The camera runs at 2 Hz by default (15 before; `stereo_rate:=15` restores it), so stereo clouds come in at 2 Hz and LiDAR at 5 Hz; at teleop speed (0.4 m/s) the rover moves 8 cm per grid update and 20 cm per plan. |
 
 ## Verification, desert world (2026-10-31)
 

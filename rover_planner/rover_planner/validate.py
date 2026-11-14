@@ -39,9 +39,19 @@ from rclpy.qos import qos_profile_sensor_data
 from rclpy.time import Time
 from sensor_msgs.msg import Image, LaserScan, PointCloud2
 
-# Rover footprint without the planner's extra clearance (proxy_rover.urdf.xacro).
+from .robot_geometry import ROBOTS, rover_geometry
+
+# Rover footprint without the planner's extra clearance and stereo camera
+# position in base_link; configure_robot() sets them (default: real rover).
 HALF_LENGTH, HALF_WIDTH = 0.58, 0.51
-CAMERA_X, CAMERA_RANGE = 0.55, 6.0
+CAMERA_X, CAMERA_Y, CAMERA_RANGE = 0.55, 0.0, 6.0
+
+
+def configure_robot(robot):
+    """Use the footprint and camera position of robot ('real' or 'proxy')."""
+    global HALF_LENGTH, HALF_WIDTH, CAMERA_X, CAMERA_Y
+    g = rover_geometry(robot)
+    HALF_LENGTH, HALF_WIDTH, CAMERA_X, CAMERA_Y = g['half_length'], g['half_width'], g['camera_x'], g['camera_y']
 # Bearings the stereo pair can measure: the image spans +-45 deg, but SGBM
 # leaves the left num_disparities = 80 of 480 columns without a match, so the
 # rover's left side ends at atan(160 / 240) = 33.7 deg (rover_sim stereo.yaml).
@@ -240,7 +250,9 @@ def main():
     parser.add_argument('--drive-timeout', type=float, default=120.0, help='Wall seconds')
     parser.add_argument('--goal', type=float, nargs=2, default=(5.5, -3.4),
                         help='Goal in odom; the default is behind the brick block')
+    parser.add_argument('--robot', choices=ROBOTS, default='real', help="rover_sim's robot argument")
     args = parser.parse_args()
+    configure_robot(args.robot)
 
     rclpy.init()
     probe = Probe()
@@ -278,7 +290,8 @@ def main():
         rx, ry = pose.position.x, pose.position.y
         q = pose.orientation
         yaw = math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z))
-        cam_x, cam_y = rx + CAMERA_X * math.cos(yaw), ry + CAMERA_X * math.sin(yaw)
+        cam_x = rx + CAMERA_X * math.cos(yaw) - CAMERA_Y * math.sin(yaw)
+        cam_y = ry + CAMERA_X * math.sin(yaw) + CAMERA_Y * math.cos(yaw)
 
         # ---- grid against the world ----
         g = probe.grid

@@ -20,6 +20,7 @@ install(PROGRAMS scripts/swerve_controller scripts/validate_swerve.py
   scripts/validate_lidar3d.py DESTINATION lib/${PROJECT_NAME})
 install(PROGRAMS scripts/stereo_camera_relay scripts/stereo_processor scripts/generate_sand_texture.py
   scripts/validate_stereo.py scripts/validate_launch_matrix.py scripts/generate_mars_world.py
+  scripts/generate_real_rover.py
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
@@ -40,6 +41,8 @@ if(BUILD_TESTING)
   endforeach()
   ament_add_pytest_test(lidar3d test/test_lidar3d.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
+  ament_add_pytest_test(real_rover test/test_real_rover.py
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 install(DIRECTORY launch worlds urdf LICENSES docs config rviz
@@ -48,6 +51,9 @@ install(DIRECTORY launch worlds urdf LICENSES docs config rviz
 
 # Material resource folder; found through the gazebo_model_path export in package.xml.
 install(DIRECTORY models DESTINATION share/${PROJECT_NAME})
+
+# Real rover meshes (scripts/generate_real_rover.py); urdf/real_rover.urdf.xacro uses file:// URIs.
+install(DIRECTORY meshes DESTINATION share/${PROJECT_NAME})
 
 install(FILES THIRD_PARTY_NOTICES.md README.md
   DESTINATION share/${PROJECT_NAME}

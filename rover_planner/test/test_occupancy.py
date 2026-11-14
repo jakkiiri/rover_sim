@@ -5,6 +5,7 @@ import pytest
 
 from rover_planner.astar import OBSTACLE
 from rover_planner.occupancy import (GridWindow, ObstacleMemory, filter_obstacle_points,
+                                    sight_line_hits_box,
                                      quaternion_matrix, transform_points)
 
 FILTER = dict(z_min=0.06, z_max=1.5, max_range=6.0, half_length=0.58, half_width=0.51)
@@ -173,3 +174,45 @@ def test_lidar_cells_use_a_constant_range_error_and_stay_tight():
     lidar.add(np.array([[5.55, 0.05, 0.3]]), 0.0, range_sigma=0.03)
     assert len(occupied(stereo)[0]) >= 5
     assert len(occupied(lidar)[0]) == 1
+
+
+# Real rover: stowed arm box (base_link) from the CAD plus 5 cm, camera beside it.
+ARM_BOX = (0.18, 0.67, -0.36, 0.14, -0.14, 0.61)
+CAMERA = (0.25, 0.16, 0.25)
+
+
+def test_sight_line_drops_points_on_and_behind_the_arm():
+    pts = np.array([
+        [0.76, -0.13, 0.37],   # stereo stray seen in the sim: 15 cm past the arm, behind it
+        [0.65, -0.04, 0.51],   # LiDAR noise 3.5 cm past the arm face: inside the margin
+        [0.40, -0.10, 0.20],   # on the arm itself
+        [3.00, -1.20, 0.30],   # far out, straight behind the arm from the camera
+    ])
+    assert sight_line_hits_box(pts, CAMERA, ARM_BOX).all()
+
+
+def test_sight_line_keeps_points_clear_of_the_arm():
+    pts = np.array([
+        [1.50, 0.60, -0.30],   # ground ahead-left, the camera sees it past the arm
+        [0.10, 0.16, -0.34],   # ground right under the camera
+        [2.00, 0.16, 0.25],    # straight ahead along the camera's own y
+        [-1.0, 0.00, 0.00],    # behind the rover
+    ])
+    assert not sight_line_hits_box(pts, CAMERA, ARM_BOX).any()
+
+
+def test_sight_line_axis_parallel_rays_and_sensor_inside_slab():
+    box = (1.0, 2.0, -1.0, 1.0, -1.0, 1.0)
+    pts = np.array([[3.0, 0.0, 0.0],    # ray along x through the box
+                    [0.5, 0.0, 0.0]])   # stops short of the box
+    assert sight_line_hits_box(pts, (0.0, 0.0, 0.0), box).tolist() == [True, False]
+    # Parallel to x but outside the box in y: the y slab gives no crossing at all.
+    assert not sight_line_hits_box(np.array([[3.0, 1.5, 0.0]]), (0.0, 1.5, 0.0), box).any()
+
+
+def test_sight_line_top_down_box_with_unbounded_height():
+    # The planner's drop-off check tests sight lines from above: z bounds infinite,
+    # sensor and points at the same height.
+    box = (0.18, 0.67, -0.36, 0.14, -math.inf, math.inf)
+    pts = np.array([[0.86, -0.15, 0.25], [0.86, 0.40, 0.25]])
+    assert sight_line_hits_box(pts, CAMERA, box).tolist() == [True, False]

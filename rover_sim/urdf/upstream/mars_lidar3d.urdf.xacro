@@ -9,25 +9,29 @@
      are macro parameters (local launch args lidar_rate / lidar_range).
      Added the "airy" profile: a RoboSense Airy-style hemispherical dome
      mounted upside down, 48 beams from horizontal (0 deg) to straight down
-     (-90 deg), 900 samples per beam, 0.1 m minimum range. The beam angles
+     (-90 deg), 360 samples per beam (1 deg; was 900, cut for sim speed), 0.1 m minimum range. The beam angles
      are flipped instead of the link, so lidar_link stays z-up; the top beam
      is lowered 0.1 deg (see lidar_vmax). Its beams
      below -50.7 deg (the lowest 21) only ever hit the rover's own body, which
      lidar_postprocess crops out, so they are not simulated: the published
      cloud and its ring numbers (0 = -90 deg) are unchanged, at 56% of the
      ray cost.
+     Macro parameters mast_length (visual mast under the housing; 0 when the
+     robot has its own pole) and min_beam_deg (overrides the profile's lowest
+     beam worth simulating, for a different mount height) were added for the
+     real rover model.
      See THIRD_PARTY_NOTICES.md and LICENSES/Apache-2.0.txt.
      3-D spinning LiDAR (VLP-16-like): lite 16x450, standard 16x900,
-     high 32x1024, dense 64x1024, airy 48x900 dome, 10 Hz. GPU needs display/OpenGL.
+     high 32x1024, dense 64x1024, airy 48x360 dome, 10 Hz (launch default 5). GPU needs display/OpenGL.
      Raw cloud on /points_raw; lidar_postprocess publishes /points. -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="rover_lidar3d" params="parent xyz profile gpu channels:='' samples:='' vfov_deg:='' max_range:=100.0 rate:=10">
+  <xacro:macro name="rover_lidar3d" params="parent xyz profile gpu channels:='' samples:='' vfov_deg:='' max_range:=100.0 rate:=10 mast_length:=0.265 min_beam_deg:=''">
     <!-- profile: (channels, samples, lowest beam deg, highest beam deg, minimum range m,
          lowest beam worth simulating deg) -->
     <xacro:property name="lidar_profiles" value="${dict(
         lite=(16, 450, -15.0, 15.0, 0.5, -90.0), standard=(16, 900, -15.0, 15.0, 0.5, -90.0),
         high=(32, 1024, -22.5, 22.5, 0.5, -90.0), dense=(64, 1024, -22.5, 22.5, 0.5, -90.0),
-        airy=(48, 900, -90.0, 0.0, 0.1, -50.7))}"/>
+        airy=(48, 360, -90.0, 0.0, 0.1, -50.7))}"/>
     <xacro:property name="lidar_profile" value="${lidar_profiles[profile]}"/>
     <xacro:property name="lidar_all_channels" value="${int(channels) if str(channels) else lidar_profile[0]}"/>
     <xacro:property name="lidar_samples" value="${int(samples) if str(samples) else lidar_profile[1]}"/>
@@ -37,7 +41,7 @@
     <!-- Skip the lowest beams below the profile's cut-off, keeping the others' exact angles. -->
     <xacro:property name="lidar_step" value="${(lidar_full_vmax - lidar_full_vmin) / max(lidar_all_channels - 1, 1)}"/>
     <xacro:property name="lidar_skipped" value="${0 if str(vfov_deg) or lidar_all_channels &lt; 2 else
-        max(0, int(ceil((lidar_profile[5] - lidar_full_vmin) / lidar_step - 1e-9)))}"/>
+        max(0, int(ceil(((float(min_beam_deg) if str(min_beam_deg) else lidar_profile[5]) - lidar_full_vmin) / lidar_step - 1e-9)))}"/>
     <xacro:property name="lidar_channels" value="${lidar_all_channels - lidar_skipped}"/>
     <xacro:property name="lidar_vmin" value="${radians(lidar_full_vmin + lidar_skipped * lidar_step)}"/>
     <!-- A beam at exactly 0 deg (the dome's top) gets false hits 0.2-0.6 m away on
@@ -56,11 +60,13 @@
         <geometry><cylinder radius="0.055" length="0.07"/></geometry>
         <material name="lidar_dark"><color rgba="0.12 0.15 0.18 1"/></material>
       </visual>
-      <visual>
-        <origin xyz="0 0 -0.1675"/>
-        <geometry><cylinder radius="0.02" length="0.265"/></geometry>
-        <material name="lidar_mount"><color rgba="0.45 0.45 0.45 1"/></material>
-      </visual>
+      <xacro:if value="${float(mast_length) > 0}">
+        <visual>
+          <origin xyz="0 0 ${-0.035 - float(mast_length) / 2}"/>
+          <geometry><cylinder radius="0.02" length="${mast_length}"/></geometry>
+          <material name="lidar_mount"><color rgba="0.45 0.45 0.45 1"/></material>
+        </visual>
+      </xacro:if>
     </link>
     <joint name="lidar_joint" type="fixed">
       <parent link="${parent}"/><child link="lidar_link"/>

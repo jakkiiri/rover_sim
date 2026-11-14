@@ -127,7 +127,7 @@ Launch arguments (also xacro arguments of `proxy_rover.urdf.xacro`):
 | --- | --- | --- |
 | `stereo` | `true` | Add the camera and its nodes (`enable_stereo` in xacro) |
 | `stereo_width`, `stereo_height` | `480`, `360` | Image size in pixels (64–4096) |
-| `stereo_rate` | `15` | Hz in simulation time (0–60] |
+| `stereo_rate` | `2` | Hz in simulation time (0–60]; lowered from 15 for sim speed |
 | `stereo_baseline` | `0.12` | Metres between optical centres (0.01–1.0) |
 | `stereo_hfov` | `1.5708` | Horizontal field of view, radians (0.1–2.8) |
 

@@ -34,7 +34,7 @@ def sensor(root):
     ('high', 32, 1024, -22.5, 22.5, .5), ('dense', 64, 1024, -22.5, 22.5, .5),
     # Airy: 48 beams from -90 to 0 deg; the lowest 21 only see the rover and are not simulated.
     # The top beam sits 0.1 deg below the horizon (Gazebo's horizontal rays hit the Mars mesh falsely).
-    ('airy', 27, 900, -90 + 21 * 90 / 47, -0.1, .1)])
+    ('airy', 27, 360, -90 + 21 * 90 / 47, -0.1, .1)])
 def test_profile_beams(profile, channels, samples, low, high, min_range):
     s = sensor(expand(lidar_profile=profile))
     assert s.get('type') == 'ray'
