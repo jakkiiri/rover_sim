@@ -19,7 +19,7 @@ def world(request):
 
 
 def test_worlds_exist():
-    assert {p.name for p in WORLDS} >= {'desert.world', 'mars.world'}
+    assert {p.name for p in WORLDS} >= {'desert.world', 'mars.world', 'usgs.world'}
 
 
 def test_world_uses_shared_physics_and_systems(world):

@@ -5,7 +5,7 @@ workspace as `~/rover_ws/src/rover_sim`:
 
 | Folder | Package | What it is |
 | --- | --- | --- |
-| [`rover_sim/`](rover_sim/README.md) | `rover_sim` | Gazebo Classic rover on imported USGS survey terrain (default), optional Mars/desert worlds, stereo camera, 3D LiDAR and teleop |
+| [`rover_sim/`](rover_sim/README.md) | `rover_sim` | Gazebo Fortress rover on imported USGS Utah survey terrain (default), optional Mars/desert worlds, stereo camera, 3D LiDAR and teleop |
 | [`rover_planner/`](rover_planner/README.md) | `rover_planner` | Slope-aware A* planner on a stereo + LiDAR costmap, path follower, terrain validation |
 
 ```bash

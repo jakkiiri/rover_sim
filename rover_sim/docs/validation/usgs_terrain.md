@@ -1,6 +1,32 @@
 # USGS terrain integration — 2026-11-21
 
-The six user-supplied LAZ tiles are now the default Gazebo Classic world.
+## Gazebo Fortress re-run (Silvio-Fortress, 2026-11-21)
+
+The world was ported to Fortress (shared `fortress_world.py` header, DART +
+Bullet, unique collision/visual names; tiles and meshes unchanged) and
+`validate_survey_terrain.py` was moved to the `/sim/*` ros_gz services. One
+headless run (`gui:=false`, default real rover, 3D LiDAR at 5 Hz, stereo on,
+`ROS_DOMAIN_ID=73`, `IGN_PARTITION=usgs_check`) passed **13/13**
+([JSON](usgs_simulation_fortress.json)):
+
+| Check | Result |
+| --- | --- |
+| Spawn, raw cloud rate, RTF | 5.00 Hz, RTF 0.997 |
+| Resting drift / base z std | 0.35 mm / 0.004 mm |
+| Wheel-bottom gap to survey | 0.15–0.27 mm |
+| Chassis clearance | 0.111 m |
+| LiDAR vs survey mesh (start / after driving) | median 11.5 / 10.8 mm, p95 69 / 77 mm |
+| 5 m box face | 494 returns, median 12.2 mm |
+| Forward / backward 2 s at 0.2 m/s | +0.392 / −0.389 m, lateral ≤ 2 mm |
+| Yaw left / right 2 s at 0.3 rad/s | +0.49 / −0.59 rad |
+| Blocked strafe, watchdog epoch | no motion, epoch unchanged |
+
+No mesh or texture load errors appeared in the server log. The Classic
+results below are kept as recorded.
+
+## Original Classic integration
+
+The six user-supplied LAZ tiles were made the default Gazebo Classic world.
 Their originals remain unchanged. [Conversion and launch guide](../usgs_terrain.md)
 contains copyable build/run/regeneration commands; the
 [data manifest](../../worlds/usgs.terrain.json) records source SHA-256 values,

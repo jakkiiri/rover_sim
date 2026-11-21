@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Check the USGS world in a dedicated Classic launch; moves the rover.
+"""Check the USGS world in a dedicated Fortress launch; moves the rover.
 
-Requires isolated ROS_DOMAIN_ID / GAZEBO_MASTER_URI and no teleop/planner.
+Requires isolated ROS_DOMAIN_ID / IGN_PARTITION and no teleop/planner.
 Ground truth is used solely to validate collision, ground contact and LiDAR.
 """
 import argparse
@@ -16,7 +16,7 @@ import time
 import numpy as np
 import rclpy
 from ament_index_python.packages import get_package_share_directory
-from gazebo_msgs.srv import DeleteEntity, SpawnEntity
+from ros_gz_interfaces.srv import DeleteEntity, SpawnEntity
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from rclpy.clock import Clock, ClockType
@@ -31,6 +31,7 @@ from tf2_ros import Buffer, TransformListener
 import yaml
 
 from rover_sim.lidar_postprocess import CLOUD_QOS, cloud_to_array
+from rover_sim import sim_services
 from rover_sim.survey_terrain import SurveySurface
 
 
@@ -60,8 +61,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--expected-rate', type=float, default=5.)
     args = parser.parse_args()
-    if not os.environ.get('ROS_DOMAIN_ID') or not os.environ.get('GAZEBO_MASTER_URI'):
-        parser.error('Choose an isolated ROS_DOMAIN_ID and GAZEBO_MASTER_URI')
+    sim_services.require_isolation(parser)
     if not math.isfinite(args.expected_rate) or args.expected_rate <= 0:
         parser.error('expected-rate must be positive and finite')
     share = Path(get_package_share_directory('rover_sim'))
@@ -158,8 +158,8 @@ def main():
         record(case, len(residuals) > 50 and median < .035 and p95 < .09,
                compared_points=len(residuals), median_vertical_error_m=median, p95_vertical_error_m=p95)
 
-    spawn = node.create_client(SpawnEntity, '/spawn_entity')
-    delete = node.create_client(DeleteEntity, '/delete_entity')
+    spawn = node.create_client(SpawnEntity, sim_services.SPAWN)
+    delete = node.create_client(DeleteEntity, sim_services.DELETE)
     entity = None
 
     def call(client, request):
@@ -211,13 +211,11 @@ def main():
         origin = position(base)
         center = origin[:2]+np.array([5.25, 0.])
         z = surface.height(float(center[0]), float(center[1]))+1.
-        request = SpawnEntity.Request(name=entity, reference_frame='world', xml=(
+        call(spawn, sim_services.spawn_request(entity, (
             '<sdf version="1.6"><model name="probe"><static>true</static><link name="box">'
             '<collision name="c"><geometry><box><size>.5 2 2</size></box></geometry></collision>'
-            '<visual name="v"><geometry><box><size>.5 2 2</size></box></geometry></visual></link></model></sdf>'))
-        request.initial_pose.position.x, request.initial_pose.position.y, request.initial_pose.position.z = float(center[0]), float(center[1]), z
-        request.initial_pose.orientation.w = 1.
-        call(spawn, request)
+            '<visual name="v"><geometry><box><size>.5 2 2</size></box></geometry></visual></link></model></sdf>'),
+            (float(center[0]), float(center[1]), z)))
         run(.8)
         points = world_cloud(clouds[-1][1])
         on_face = points[(abs(points[:, 0]-(center[0]-.25)) < .12) & (abs(points[:, 1]-center[1]) < .9)
@@ -225,7 +223,7 @@ def main():
         error = float(np.median(abs(on_face[:, 0]-(center[0]-.25)))) if len(on_face) else None
         record('known_distance_probe', len(on_face) >= 5 and error < .04,
                returns=len(on_face), face_distance_from_initial_base_m=5., median_face_error_m=error)
-        call(delete, DeleteEntity.Request(name=entity))
+        call(delete, sim_services.delete_request(entity))
         entity = None
         for case, velocity in [('forward', (.2, 0., 0.)), ('backward', (-.2, 0., 0.)),
                                ('yaw_left', (0., 0., .3)), ('yaw_right', (0., 0., -.3)),
@@ -255,7 +253,7 @@ def main():
         command[:] = (0., 0., 0.)
         publish()
         if entity:
-            call(delete, DeleteEntity.Request(name=entity))
+            call(delete, sim_services.delete_request(entity))
         if node.executor is not None:
             node.executor.shutdown()
         worker.join(timeout=2)

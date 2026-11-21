@@ -214,3 +214,20 @@ The hill drive's "gentle cells marked too
 steep" check fails at the summit (19–23%, limit 10%); the cells are on the
 rim of the large rock east of the summit, which the truth slope map (terrain
 mesh only) counts as gentle.
+
+## 6. USGS Utah survey terrain (`worlds/usgs.world`)
+
+Leo's Classic integration (origin/feat/usgs-utah-terrain, 7f2a3b0) is
+cherry-picked with its authorship, then ported:
+
+- `scripts/import_usgs_terrain.py` writes the Fortress header from
+  `fortress_world.py`; `--world-only` regenerates the world from
+  `worlds/usgs.terrain.json` without the LAZ files or conversion venv.
+- Each tile link's collision and visual have different names (`collision` /
+  `visual`; SDF 1.8 rejects both named `ground`). Meshes, poses and the
+  `ground.png` COLLADA texture are unchanged.
+- `world:=usgs` is the default again, as on Leo's branch; `z:=auto` (default)
+  resolves through `survey_terrain.spawn_height` into the `create` arguments.
+- `validate_survey_terrain.py` uses `sim_services` (SpawnEntity/DeleteEntity,
+  IGN_PARTITION isolation). Fortress run: 13/13, RTF 1.0
+  ([report](validation/usgs_terrain.md)).

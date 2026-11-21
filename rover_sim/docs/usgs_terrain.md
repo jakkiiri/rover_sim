@@ -46,9 +46,10 @@ env -u GTK_PATH -u GTK_EXE_PREFIX -u GIO_MODULE_DIR -u GTK_IM_MODULE_FILE \
   ros2 launch rover_sim rover_desert.launch.py rviz:=true
 ```
 
-A standalone Gazebo viewer should use `ros2 launch gazebo_ros gzclient.launch.py`
-in its sourced terminal (and the same domain/master if isolated). That launch
-sets Gazebo model paths from package exports; plain `gzclient` can miss them.
+`gui:=true` (the default) opens the Gazebo Fortress GUI. A separate viewer
+(`ign gazebo -g`) needs the same `IGN_PARTITION` and an `IGN_GAZEBO_RESOURCE_PATH`
+that includes the installed `share/rover_sim/models`, which the launch sets for
+its own processes.
 
 ## Data, scale and surface reconstruction
 
@@ -106,9 +107,12 @@ at launch x/y and adds the existing 0.36 m rover spawn clearance. Explicit
 rejected. The query gives a starting height, not a guarantee that arbitrary
 slopes/ledges support a safe rover pose.
 
-The converter uses a mesh rather than a Gazebo heightmap because this
-project previously observed ODE CPU ray/heightfield stalls. No `gz sim`,
-`ros_gz`, new sensor, controller or physics plugin is introduced.
+The converter uses a mesh rather than a Gazebo heightmap (the project saw
+CPU ray/heightfield stalls with heightmaps under Classic). On Fortress the
+world uses the shared header from `rover_sim/fortress_world.py` (DART with the
+Bullet collision detector, 1 ms step, the same systems and GUI as the Mars
+and desert worlds). The 294 meshes keep their own COLLADA texture
+(`ground.png`), and no new sensor, controller or physics plugin is added.
 
 ![Survey footprint, elevations and local spawn patch](validation/usgs_terrain_preview.png)
 
@@ -134,7 +138,11 @@ cd ~/rover_ws/src/rover_sim/rover_sim
 
 The defaults are `--spacing 4 --local-spacing 1 --tile-size 128`. The script
 validates matching metric coordinate systems and rejects duplicate inputs.
-It recreates only the USGS asset directory/world/manifest. Rebuild from
+It recreates only the USGS asset directory/world/manifest. To rewrite only
+`worlds/usgs.world` from the tiles in `worlds/usgs.terrain.json`, for example
+after a change to the shared Fortress header, run
+`python3 scripts/import_usgs_terrain.py --world-only` (no LAZ files or venv
+needed). Rebuild from
 `~/rover_ws` after regenerating assets. Normal operation uses the ROS setup
 and installed workspace, not the conversion venv.
 
@@ -146,7 +154,7 @@ source identities, spawn behavior and the default launch. Run the normal
 workspace `colcon test --packages-select rover_sim rover_planner` and
 `colcon test-result --verbose`.
 
-For integration, use unused domain/master values and no teleop/planner or
+For integration, use an unused `ROS_DOMAIN_ID` and `IGN_PARTITION` and no teleop/planner or
 other command publisher. The validator moves the rover and inserts/removes
 one temporary measurement box. Terminal 1 after building:
 
@@ -154,7 +162,7 @@ one temporary measurement box. Terminal 1 after building:
 source /opt/ros/humble/setup.bash
 source ~/rover_ws/install/setup.bash
 export ROS_DOMAIN_ID=60
-export GAZEBO_MASTER_URI=http://127.0.0.1:11370
+export IGN_PARTITION=usgs_check
 env -u GTK_PATH -u GTK_EXE_PREFIX -u GIO_MODULE_DIR -u GTK_IM_MODULE_FILE \
   ros2 launch rover_sim rover_desert.launch.py gui:=false rviz:=false
 ```
@@ -165,7 +173,7 @@ Terminal 2:
 source /opt/ros/humble/setup.bash
 source ~/rover_ws/install/setup.bash
 export ROS_DOMAIN_ID=60
-export GAZEBO_MASTER_URI=http://127.0.0.1:11370
+export IGN_PARTITION=usgs_check
 ros2 run rover_sim validate_survey_terrain.py \
   --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_usgs_simulation.json
 ```
@@ -174,7 +182,7 @@ The required JSON output includes spawn/rate/RTF, resting drift, wheel-ground
 gaps, chassis clearance, LiDAR-versus-mesh errors, a 5 m box-face check,
 forward/backward/left/right/no-strafe checks and watchdog epochs. Add
 `--expected-rate 3` if Terminal 1 uses `lidar_rate:=3`. Stop the isolated
-launch afterward and unset the domain/master before normal operation.
+launch afterward and unset `ROS_DOMAIN_ID` and `IGN_PARTITION` before normal operation.
 
 Limitations: this is bare-earth terrain, not a reconstruction of trees,
 buildings, water physics or overhangs. Four-metre background sampling loses

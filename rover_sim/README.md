@@ -136,7 +136,7 @@ Stop the launch with Ctrl+C. For Gazebo rendering problems, launch with
 source /opt/ros/humble/setup.bash
 source ~/rover_ws/install/setup.bash
 LIBGL_ALWAYS_SOFTWARE=1 QT_X11_NO_MITSHM=1 \
-  ros2 launch gazebo_ros gzclient.launch.py verbose:=true
+  ros2 launch rover_sim rover_desert.launch.py
 ```
 
 ## Worlds: USGS survey (default), Mars and desert

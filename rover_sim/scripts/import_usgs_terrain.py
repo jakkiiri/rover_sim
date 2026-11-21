@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Convert classified LAZ tiles into a portable Gazebo Classic ground world.
+"""Convert classified LAZ tiles into a portable Gazebo Fortress ground world.
 
 Use requirements-terrain.txt in an isolated environment. Input files are read
 only; outputs stay in this package. Metres are preserved, without flattening.
+
+--world-only rewrites worlds/usgs.world from the tiles recorded in
+worlds/usgs.terrain.json (no LAZ input or conversion dependencies needed),
+e.g. after a change to the shared world header in rover_sim/fortress_world.py.
 """
 import argparse
 import hashlib
@@ -12,14 +16,12 @@ from pathlib import Path
 import shutil
 import sys
 
-import laspy
 import numpy as np
-from scipy.ndimage import distance_transform_edt, maximum_filter
 
 PACKAGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PACKAGE))
-from rover_sim.survey_terrain import GroundGrid, grid_height, grid_mesh
-from generate_mars_world import write_collada
+from rover_sim.fortress_world import SYSTEMS, gui_block, physics_block  # noqa: E402
+from rover_sim.survey_terrain import GroundGrid, grid_height, grid_mesh  # noqa: E402
 
 
 def digest(path):
@@ -77,36 +79,57 @@ def tile_link(name, mesh, x, y):
     uri = f'model://usgs_terrain/meshes/{mesh}'
     geometry = f'<geometry><mesh><uri>{uri}</uri></mesh></geometry>'
     return f'''<link name="{name}"><pose>{x:.5f} {y:.5f} 0 0 0 0</pose>
-      <collision name="ground">{geometry}<surface><friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction></surface></collision>
-      <visual name="ground">{geometry}</visual></link>'''
+      <collision name="collision">{geometry}<surface><friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction></surface></collision>
+      <visual name="visual">{geometry}</visual></link>'''
 
 
 def world_xml(tiles):
     models = '\n'.join(f'<model name="{t["name"]}"><static>true</static>' +
                         tile_link('ground', t['mesh'], *t['origin'])+'</model>' for t in tiles)
     return f'''<?xml version="1.0"?>
-<!-- GENERATED from the six user-provided USGS LAZ tiles. See usgs.terrain.json. -->
-<sdf version="1.6"><world name="usgs">
-  <gravity>0 0 -9.81</gravity>
-  <physics name="default_physics" type="ode"><max_step_size>0.001</max_step_size>
-    <real_time_update_rate>1000</real_time_update_rate>
-    <ode><solver><type>quick</type><iters>150</iters><sor>1.0</sor></solver></ode>
-  </physics>
-  <scene><ambient>0.65 0.62 0.57 1</ambient><background>0.65 0.78 0.89 1</background>
-    <shadows>false</shadows><grid>false</grid></scene>
-  <light name="sun" type="directional"><cast_shadows>false</cast_shadows>
-    <pose>0 0 50 0 0 0</pose><diffuse>0.95 0.92 0.85 1</diffuse>
-    <specular>0.05 0.05 0.05 1</specular><direction>-0.4 0.2 -0.85</direction></light>
-  <gui fullscreen="0"><camera name="overview"><pose>-15 -18 14 0 0.45 0.85</pose>
-    <view_controller>orbit</view_controller></camera></gui>
-  {models}
-</world></sdf>
+<!-- GENERATED from the six user-provided USGS LAZ tiles. See usgs.terrain.json.
+     Gazebo Fortress; header blocks come from rover_sim/fortress_world.py. -->
+<sdf version="1.8">
+  <world name="usgs">
+    <gravity>0 0 -9.81</gravity>
+{physics_block()}{SYSTEMS}    <scene>
+      <ambient>0.65 0.62 0.57 1</ambient>
+      <background>0.65 0.78 0.89 1</background>
+      <shadows>false</shadows>
+      <grid>false</grid>
+    </scene>
+    <light name="sun" type="directional">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 50 0 0 0</pose>
+      <diffuse>0.95 0.92 0.85 1</diffuse>
+      <specular>0.05 0.05 0.05 1</specular>
+      <direction>-0.4 0.2 -0.85</direction>
+    </light>
+{gui_block('-15 -18 14 0 0.45 0.85', '0.65 0.78 0.89')}{models}
+  </world>
+</sdf>
 '''
 
 
+def write_world_from_manifest():
+    """Rewrite worlds/usgs.world from the tiles listed in worlds/usgs.terrain.json."""
+    world = PACKAGE/'worlds/usgs.world'
+    tiles = json.loads(world.with_suffix('.terrain.json').read_text())['tiles']
+    world.write_text(world_xml(tiles))
+    print(f'Wrote {world} with {len(tiles)} terrain tiles', flush=True)
+
+
 def main():
+    if sys.argv[1:] == ['--world-only']:
+        write_world_from_manifest()
+        return
+    # Conversion dependencies (requirements-terrain.txt) are needed only from here on.
+    global laspy, distance_transform_edt, maximum_filter, write_collada
+    import laspy
+    from scipy.ndimage import distance_transform_edt, maximum_filter
+    from generate_mars_world import write_collada
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('inputs', type=Path, nargs='+')
+    parser.add_argument('inputs', type=Path, nargs='+', help='LAZ tiles (or --world-only on its own)')
     parser.add_argument('--spacing', type=float, default=4., help='Background grid spacing, metres')
     parser.add_argument('--tile-size', type=float, default=128., help='Mesh tile width, metres')
     parser.add_argument('--local-spacing', type=float, default=1., help='Spawn tile grid spacing, metres')
