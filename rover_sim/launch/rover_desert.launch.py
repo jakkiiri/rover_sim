@@ -15,6 +15,9 @@ lidar_rate (Hz) and lidar_range (m) set its sweep rate and maximum range;
 lidar_samples overrides the profile's samples per beam per sweep (on
 Fortress fewer samples also means less accurate ranges: docs/fortress.md).
 gui:=false runs Gazebo headless (sensors still render).
+On the usgs world, chunks:=true (default) streams the terrain in 16 m chunks
+within chunk_radius (default 8) chunks of the rover, like Minecraft's render
+distance (rover_sim/terrain_chunks.py); chunks:=false loads all of it.
 """
 import os
 import math
@@ -23,13 +26,14 @@ import xacro
 import yaml
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import (DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, OpaqueFunction,
+                            SetLaunchConfiguration)
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-from rover_sim import stereo_launch, usgs_sites
+from rover_sim import stereo_launch, terrain_chunks, usgs_sites
 from rover_sim.survey_terrain import spawn_height
 
 
@@ -190,14 +194,43 @@ def generate_launch_description():
                         ('roll', '0'), ('pitch', '0'), ('yaw', '')]:
         args.append(DeclareLaunchArgument(name, default_value=value))
 
+    args.append(DeclareLaunchArgument('chunks', default_value='true',
+                                      description='usgs: stream 16 m terrain chunks around the rover'))
+    args.append(DeclareLaunchArgument('chunk_radius', default_value='8',
+                                      description='usgs: render distance in chunks (square radius)'))
+
+    def spawn_pose(context):
+        world_arg = LaunchConfiguration('world').perform(context)
+        return (world_arg, *usgs_sites.resolve_pose(
+            world_arg, LaunchConfiguration('site').perform(context),
+            *(LaunchConfiguration(name).perform(context) for name in ('x', 'y', 'yaw')),
+            usgs_sites.load_sites(os.path.join(share, 'config', 'usgs_sites.yaml'))))
+
+    def terrain(context):
+        """World file for Gazebo: on usgs with chunks, only the chunks around the spawn."""
+        world_arg, x, y, _ = spawn_pose(context)
+        if world_arg != 'usgs' or not IfCondition(LaunchConfiguration('chunks')).evaluate(context):
+            return [SetLaunchConfiguration('gazebo_world', world_arg)]
+        radius = int(LaunchConfiguration('chunk_radius').perform(context))
+        if radius < 1:
+            raise ValueError('chunk_radius must be at least 1')
+        manifest = terrain_chunks.build_chunks(os.path.join(share, 'worlds', 'usgs.terrain.json'),
+                                               os.path.join(share, 'models', 'usgs_terrain'))
+        index = terrain_chunks.ChunkIndex(manifest)
+        text, _ = terrain_chunks.chunk_world(os.path.join(share, 'worlds', 'usgs_chunked.world'),
+                                             index, x, y, radius)
+        path = manifest.parent / f'usgs_r{radius}_{x:g}_{y:g}.world'
+        path.write_text(text)
+        return [SetLaunchConfiguration('gazebo_world', str(path)),
+                Node(package='rover_sim', executable='terrain_chunks',
+                     parameters=[{'manifest': str(manifest), 'radius': radius,
+                                  'spawn_x': float(x), 'spawn_y': float(y), 'use_sim_time': True}],
+                     output='screen')]
+
     def robot_nodes(context):
         # The survey is shifted so its default spawn has ground z=0. Other
         # x/y locations need their actual triangle elevation, not a flat z.
-        world_arg = LaunchConfiguration('world').perform(context)
-        x, y, yaw = usgs_sites.resolve_pose(
-            world_arg, LaunchConfiguration('site').perform(context),
-            *(LaunchConfiguration(name).perform(context) for name in ('x', 'y', 'yaw')),
-            usgs_sites.load_sites(os.path.join(share, 'config', 'usgs_sites.yaml')))
+        world_arg, x, y, yaw = spawn_pose(context)
         z = spawn_height(world_arg, share, x, y, LaunchConfiguration('z').perform(context))
         watchdog = float(LaunchConfiguration('actuator_watchdog').perform(context))
         if not math.isfinite(watchdog) or watchdog <= 0:
@@ -255,10 +288,11 @@ def generate_launch_description():
                                            'vertical_shift_steps': 0.0}],
                               output='screen'))
         return nodes
+    world_args = {name: LaunchConfiguration(name) for name in ('gui', 'lidar', 'lidar_mode', 'stereo')}
+    world_args['world'] = LaunchConfiguration('gazebo_world')   # set by terrain()
     return LaunchDescription(args + [
-        OpaqueFunction(function=robot_nodes),
+        OpaqueFunction(function=lambda context: terrain(context) + robot_nodes(context)),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(os.path.join(share, 'launch', 'desert.launch.py')),
-            launch_arguments={name: LaunchConfiguration(name)
-                              for name in ('gui', 'world', 'lidar', 'lidar_mode', 'stereo')}.items()),
+            launch_arguments=world_args.items()),
     ])

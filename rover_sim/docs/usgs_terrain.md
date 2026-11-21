@@ -116,6 +116,30 @@ and desert worlds). The 294 meshes keep their own COLLADA texture
 
 ![Survey footprint, elevations and local spawn patch](validation/usgs_terrain_preview.png)
 
+## Terrain chunks (render distance)
+
+By default (`chunks:=true`) the usgs world does not load all 294 tiles. The
+launch cuts them into **16 m chunks** (17,543 of them, the same 587,784
+triangles, the tile normals and UVs kept so edges shade without seams) and
+puts only the chunks within `chunk_radius` (default **8**) chunks of the rover
+in the world, a 17 × 17 square (272 m, past the 100 m LiDAR range). At the
+hills site that is 289 chunks and about 9,200 triangles instead of 587,784.
+
+The `terrain_chunks` node (`rover_sim/terrain_chunks.py`) follows
+`/ground_truth/odom`: chunks that come into range are spawned nearest first
+through `/sim/spawn_entity`, and chunks more than `chunk_radius + 2` away are
+removed through `/sim/delete_entity` (the margin stops a chunk flickering in
+and out at an edge). It logs `Chunks +N -M: K loaded around chunk (ix, iy)`.
+
+The chunk meshes are not in the repository (about 140 MB of COLLADA): the first
+launch builds them into `~/.cache/rover_sim/usgs_chunks/<hash>/` in about 5 s
+and later launches reuse them; a change to the tiles (`usgs.terrain.json`)
+gives a new hash. The launch fills `worlds/usgs_chunked.world` (the usgs world
+without tiles, written by `import_usgs_terrain.py --world-only`) with the
+chunks around the spawn. Use `chunks:=false` for the whole survey, e.g. for
+`validate_survey_terrain.py` far from the spawn, and `chunk_radius:=N` to
+change the render distance.
+
 ## Test sites and rocks
 
 `config/usgs_sites.yaml` names the spawn sites; `site:=` picks one and

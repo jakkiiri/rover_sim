@@ -88,7 +88,8 @@ def launch_module():
 def test_every_combination_produces_the_expected_nodes_and_sensors(stereo, lidar, mode):
     context, nodes, _ = evaluate(stereo=str(stereo).lower(), lidar=str(lidar).lower(), lidar_mode=mode, rviz='true')
     names = sorted(executable(n) for n in nodes if isinstance(n, Node))
-    expected = ['create', 'robot_state_publisher', 'rviz2', 'swerve_controller']
+    # terrain_chunks: the default usgs world streams its terrain (chunks:=true)
+    expected = ['create', 'robot_state_publisher', 'rviz2', 'swerve_controller', 'terrain_chunks']
     if stereo:
         expected += ['stereo_camera_relay', 'stereo_processor']
     if lidar and mode == '3d':

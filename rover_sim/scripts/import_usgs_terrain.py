@@ -130,6 +130,10 @@ def write_world_from_manifest():
         extra += usgs_sites.rocks_sdf(rocks, field['site'])
         layout['fields'].append({'site': field['site'], 'centre': [site['x'], site['y']], 'rocks': rocks})
     world.write_text(world_xml(tiles, extra))
+    # Template for streamed chunks (rover_sim/terrain_chunks.py): no tiles; the
+    # launch puts the chunks around the spawn at the marker.
+    from rover_sim.terrain_chunks import TEMPLATE_MARKER
+    world.with_name('usgs_chunked.world').write_text(world_xml([], extra + f'    {TEMPLATE_MARKER}\n'))
     (PACKAGE/'worlds/usgs_rocks.json').write_text(json.dumps(layout, indent=1)+'\n')
     counts = {f['site']: len(f['rocks']) for f in layout['fields']}
     print(f'Wrote {world} with {len(tiles)} terrain tiles and rocks {counts}', flush=True)
