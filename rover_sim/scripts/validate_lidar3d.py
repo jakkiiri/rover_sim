@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate 3D clouds in a dedicated Classic desert launch (moves the rover).
 
-Use an isolated ROS_DOMAIN_ID and GAZEBO_MASTER_URI with no teleop/other
+Use an isolated ROS_DOMAIN_ID and IGN_PARTITION with no teleop/other
 command publisher. See docs/lidar3d.md for complete launch and run commands.
 Analytical scene comparisons use Gazebo truth strictly for testing, not TF.
 """
@@ -18,7 +18,9 @@ import time
 import numpy as np
 import rclpy
 from ament_index_python.packages import get_package_share_directory
-from gazebo_msgs.srv import DeleteEntity, SpawnEntity
+from ros_gz_interfaces.srv import DeleteEntity, SpawnEntity
+
+from rover_sim import sim_services
 from geometry_msgs.msg import Twist
 from rclpy.clock import Clock, ClockType
 from rclpy.executors import ExternalShutdownException
@@ -46,8 +48,7 @@ def main():
     parser.add_argument('--watchdog', type=float, default=.3)
     parser.add_argument('--performance-only', action='store_true', help='Sensor-disabled baseline')
     args = parser.parse_args()
-    if not os.environ.get('ROS_DOMAIN_ID') or not os.environ.get('GAZEBO_MASTER_URI'):
-        parser.error('Set an isolated ROS_DOMAIN_ID and GAZEBO_MASTER_URI')
+    sim_services.require_isolation(parser)
     if args.windows < 1 or not all(math.isfinite(v) and v > 0 for v in (args.duration, args.watchdog)):
         parser.error('duration, windows and watchdog must be positive and finite')
     channels, samples, vfov = {
@@ -182,8 +183,8 @@ def main():
             base_pose=base, sensor_world_origin=list(origin), self_hits=self_hits, objects=summary)
         return xyz
 
-    spawn = node.create_client(SpawnEntity, '/spawn_entity')
-    delete = node.create_client(DeleteEntity, '/delete_entity')
+    spawn = node.create_client(SpawnEntity, sim_services.SPAWN)
+    delete = node.create_client(DeleteEntity, sim_services.DELETE)
     try:
         wait(lambda: len(clocks) >= 20 and beats and epochs and len(state) == 8)
         if not args.performance_only:
@@ -248,10 +249,7 @@ def main():
                '<collision name="c"><geometry><box><size>.5 2 2</size></box></geometry></collision>'
                '<visual name="v"><geometry><box><size>.5 2 2</size></box></geometry></visual>'
                '</link></model></sdf>')
-        request = SpawnEntity.Request(name=name, xml=sdf, reference_frame='world')
-        request.initial_pose.position.x, request.initial_pose.position.y, request.initial_pose.position.z = center
-        request.initial_pose.orientation.w = 1.
-        call(spawn, request)
+        call(spawn, sim_services.spawn_request(name, sdf, center))
         entities.append(name)
         boxes.append(('probe', center, size))
         base, cloud = stopped_cloud()
@@ -282,7 +280,7 @@ def main():
         cleanup_errors = []
         for name in reversed(entities):
             try:
-                call(delete, DeleteEntity.Request(name=name))
+                call(delete, sim_services.delete_request(name))
             except Exception as error:
                 cleanup_errors.append(repr(error))
         results['temporary_entities_removed'] = not cleanup_errors

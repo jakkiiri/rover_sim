@@ -2,7 +2,7 @@
 """Validate Classic LiDAR against analytic terrain and temporary measured boxes.
 
 Requires a dedicated rover launch, an isolated ROS_DOMAIN_ID and
-GAZEBO_MASTER_URI, and no other /cmd_vel publisher. Uses Gazebo ground truth
+IGN_PARTITION, and no other /cmd_vel publisher. Uses Gazebo ground truth
 only for validation; it does not add odometry or a world TF broadcaster. The
 temporary obstacle entities are deleted in finally, including failed checks.
 Use --performance-only for matched sensor-disabled performance measurements.
@@ -20,7 +20,9 @@ import xml.etree.ElementTree as ET
 
 import rclpy
 from ament_index_python.packages import get_package_share_directory
-from gazebo_msgs.srv import DeleteEntity, SpawnEntity
+from ros_gz_interfaces.srv import DeleteEntity, SpawnEntity
+
+from rover_sim import sim_services
 from geometry_msgs.msg import Twist
 from rclpy.clock import Clock, ClockType
 from rclpy.node import Node
@@ -144,8 +146,7 @@ def main():
     parser.add_argument('--windows', type=int, default=3)
     parser.add_argument('--watchdog', type=float, default=.3, help='Configured actuator wall timeout')
     args = parser.parse_args()
-    if not os.environ.get('ROS_DOMAIN_ID') or not os.environ.get('GAZEBO_MASTER_URI'):
-        parser.error('Set an isolated ROS_DOMAIN_ID and GAZEBO_MASTER_URI first')
+    sim_services.require_isolation(parser)
     if not math.isfinite(args.duration) or args.duration < 2 or args.windows < 1:
         parser.error('Performance duration must be finite and at least 2 seconds; windows must be positive')
     if not math.isfinite(args.watchdog) or args.watchdog <= 0:
@@ -314,8 +315,8 @@ def main():
                pose_sim_stamp=measured_at, scan_sim_stamp=stamp_seconds(scan.header.stamp),
                tolerance_metres=.06, comparisons=comparisons)
 
-    spawn = node.create_client(SpawnEntity, '/spawn_entity')
-    delete = node.create_client(DeleteEntity, '/delete_entity')
+    spawn = node.create_client(SpawnEntity, sim_services.SPAWN)
+    delete = node.create_client(DeleteEntity, sim_services.DELETE)
     try:
         wait_for(lambda: len(clocks) >= 20 and epochs and heartbeats)
         if not args.performance_only:
@@ -426,10 +427,7 @@ def main():
                    '<collision name="collision"><geometry><box><size>'+dimensions+
                    '</size></box></geometry></collision><visual name="visual"><geometry>'
                    '<box><size>'+dimensions+'</size></box></geometry></visual></link></model></sdf>')
-            request = SpawnEntity.Request(name=name, xml=sdf, reference_frame='world')
-            request.initial_pose.position.x, request.initial_pose.position.y, request.initial_pose.position.z = center
-            request.initial_pose.orientation.w = 1.
-            call(spawn, request)
+            call(spawn, sim_services.spawn_request(name, sdf, center))
             entities.append(name)
             boxes.append((name, center, size))
         set_stage('known_probes')
@@ -475,7 +473,7 @@ def main():
         cleanup_errors = []
         for name in reversed(entities):
             try:
-                call(delete, DeleteEntity.Request(name=name))
+                call(delete, sim_services.delete_request(name))
             except Exception as error:
                 cleanup_errors.append(name+': '+repr(error))
         results['temporary_entities_removed'] = not cleanup_errors

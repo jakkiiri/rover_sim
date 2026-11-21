@@ -1,4 +1,4 @@
-"""Spawn the swerve-controlled rover in a Gazebo Classic world.
+"""Spawn the swerve-controlled rover in a Gazebo Fortress world.
 
 robot:=real (default: the real rover from its Onshape CAD, rocker suspension,
 stowed arm, 3D LiDAR on a 1 m pole) or robot:=proxy (the original box rover).
@@ -8,8 +8,9 @@ lidar_profile:=airy (default: RoboSense Airy-style 48-beam hemispherical dome
 mounted upside down, horizon to straight down) or lite|standard|high|dense
 (16-64 beam spinning LiDARs centred on the horizon);
 lidar_rate (Hz) and lidar_range (m) set its sweep rate and maximum range;
-lidar_samples overrides the profile's samples per beam per sweep (fewer is
-faster: the 3D LiDAR is the sim's biggest cost).
+lidar_samples overrides the profile's samples per beam per sweep (on
+Fortress fewer samples also means less accurate ranges: docs/fortress.md).
+gui:=false runs Gazebo headless (sensors still render).
 """
 import os
 import math
@@ -25,6 +26,19 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 from rover_sim import stereo_launch
+
+
+def _load_world_launch():
+    """The sibling desert.launch.py (world resolution, Gazebo and bridge)."""
+    import importlib.util
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'desert.launch.py')
+    spec = importlib.util.spec_from_file_location('rover_sim_world_launch', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+world_launch = _load_world_launch()
 
 # 3D LiDAR profiles: (channels, lowest beam deg, highest beam deg, minimum
 # range m). Must match urdf/upstream/mars_lidar3d.urdf.xacro.
@@ -104,6 +118,21 @@ def lidar3d_samples(samples):
     return str(value)
 
 
+# Entity name kept as proxy_rover for both robots: validators move it by name.
+ENTITY = 'proxy_rover'
+
+
+def spawn_arguments(world, context):
+    """ros_gz_sim create arguments: the robot_description topic at the launch pose."""
+    arguments = ['-world', world, '-name', ENTITY, '-topic', 'robot_description']
+    for flag, name in [('x', 'x'), ('y', 'y'), ('z', 'z'), ('R', 'roll'), ('P', 'pitch'), ('Y', 'yaw')]:
+        value = float(LaunchConfiguration(name).perform(context))
+        if not math.isfinite(value):
+            raise ValueError(f'{name} must be finite')
+        arguments += ['-' + flag, repr(value)]
+    return arguments
+
+
 def rviz_config(stereo, mode):
     if stereo:
         return 'rover_sensors_3d.rviz' if mode == '3d' else 'rover_sensors.rviz'
@@ -117,11 +146,11 @@ def generate_launch_description():
             DeclareLaunchArgument('gui', default_value='true'),
             DeclareLaunchArgument('world', default_value='mars',
                                   description='mars, desert, or a path to a .world file'),
-            DeclareLaunchArgument('lidar', default_value='true', description='Enable the Classic ray LiDAR'),
+            DeclareLaunchArgument('lidar', default_value='true', description='Enable the LiDAR (gpu_lidar)'),
             DeclareLaunchArgument('lidar_mode', default_value='3d', choices=['2d', '3d']),
             DeclareLaunchArgument('lidar_profile', default_value='airy', choices=list(LIDAR3D_PROFILES)),
             DeclareLaunchArgument('lidar_rate', default_value='5',
-                                  description='3D LiDAR sweeps per second (5 keeps the sim near half real time)'),
+                                  description='3D LiDAR sweeps per second'),
             DeclareLaunchArgument('lidar_range', default_value='100.0', description='3D LiDAR maximum range (m)'),
             DeclareLaunchArgument('lidar_samples', default_value='',
                                   description="3D LiDAR samples per beam per sweep ('' = the profile's)"),
@@ -135,12 +164,6 @@ def generate_launch_description():
     for name, value in [('x', '0'), ('y', '0'), ('z', '0.36'),
                         ('roll', '0'), ('pitch', '0'), ('yaw', '0')]:
         args.append(DeclareLaunchArgument(name, default_value=value))
-    # Entity name kept as proxy_rover for both robots: validators move it by name.
-    spawn_args = ['-entity', 'proxy_rover', '-topic', 'robot_description',
-                  '-timeout', '60']
-    for option, name in [('x', 'x'), ('y', 'y'), ('z', 'z'),
-                         ('R', 'roll'), ('P', 'pitch'), ('Y', 'yaw')]:
-        spawn_args.extend(['-' + option, LaunchConfiguration(name)])
 
     def robot_nodes(context):
         watchdog = float(LaunchConfiguration('actuator_watchdog').perform(context))
@@ -155,6 +178,7 @@ def generate_launch_description():
         rate, max_range = lidar3d_rate_and_range(LaunchConfiguration('lidar_rate').perform(context),
                                                  LaunchConfiguration('lidar_range').perform(context))
         robot = robot_config(LaunchConfiguration('robot').perform(context), share)
+        world = world_launch.world_name(world_launch.world_path(LaunchConfiguration('world').perform(context)))
         extra = {}
         if robot['min_beam_deg'] is not None:
             extra['lidar_min_beam_deg'] = f"{robot['min_beam_deg']:.3f}"
@@ -175,9 +199,10 @@ def generate_launch_description():
             Node(package='robot_state_publisher', executable='robot_state_publisher',
                  parameters=[{'robot_description': description, 'use_sim_time': True}],
                  output='screen'),
-            # spawn_entity waits for the factory service; no fixed startup delay.
-            Node(package='gazebo_ros', executable='spawn_entity.py',
-                 arguments=spawn_args, output='screen'),
+            # create waits for robot_description (latched) and the world's create
+            # service; no fixed startup delay.
+            Node(package='ros_gz_sim', executable='create',
+                 arguments=spawn_arguments(world, context), output='screen'),
             # With stereo on, RViz opens the combined LiDAR + stereo view.
             Node(package='rviz2', executable='rviz2', name='rviz2',
                  arguments=['-d', os.path.join(share, 'rviz', rviz_config(stereo, mode))],

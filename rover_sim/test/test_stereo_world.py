@@ -114,9 +114,10 @@ def test_ground_texture_is_visual_only():
     assert (materials / 'materials' / 'textures' / 'rover_sand.png').read_bytes()[:8] == b'\x89PNG\r\n\x1a\n'
 
 
-def test_only_a_model_path_is_exported_for_gazebo():
-    # A gazebo_media_path export makes gazebo_ros replace GAZEBO_RESOURCE_PATH,
-    # which hid Gazebo's own materials and broke camera rendering.
+def test_no_gazebo_classic_exports():
+    # Fortress paths are set by launch/desert.launch.py, not gazebo_ros exports.
     package = ET.parse(PACKAGE / 'package.xml').getroot()
-    exports = package.findall('export/gazebo_ros')
-    assert [dict(e.attrib) for e in exports] == [{'gazebo_model_path': '${prefix}/models'}]
+    assert package.findall('export/gazebo_ros') == []
+    depends = {e.text for e in package if e.tag.endswith('depend')}
+    assert not depends & {'gazebo_ros', 'gazebo_plugins', 'gazebo_msgs', 'gazebo_dev'}
+    assert {'ros_gz_sim', 'ros_gz_bridge', 'ros_gz_interfaces'} <= depends

@@ -23,7 +23,8 @@ from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 
-from validate_swerve import pose
+from validate_swerve import RESET_Z, pose
+from rover_sim import sim_services
 
 ZERO = (0.0, 0.0, 0.0)
 CASES = [('W', (.4, 0., 0.)), ('S', (-.4, 0., 0.)),
@@ -122,9 +123,7 @@ def main():
             terminal.key = None
             terminal.send(b' ')
             wait_for(lambda: messages[-1][1] == ZERO and wheel_speed() < .05)
-            subprocess.run(['gz', 'model', '-m', 'proxy_rover', '-x', '0', '-y', '0',
-                            '-z', '0.34', '-R', '0', '-P', '0', '-Y', '0'],
-                           check=True, timeout=10)
+            sim_services.teleport((0., 0., RESET_Z))
             terminal.key = key
             wait_for(lambda: messages[-1][1] == command)
             time.sleep(2.5)  # steering and acceleration transient

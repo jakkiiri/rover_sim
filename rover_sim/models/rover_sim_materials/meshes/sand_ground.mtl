@@ -1,0 +1,5 @@
+# Placeholder; desert.world overrides it with a PBR albedo map (rover_sand.png).
+newmtl sand
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0

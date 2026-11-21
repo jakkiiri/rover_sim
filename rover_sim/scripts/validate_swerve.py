@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Explicit Gazebo Classic motion check; requires the rover launch running.
+"""Explicit Gazebo Fortress motion check; requires the rover launch running.
 
 Uses simulator ground truth and joint feedback for validation, not rover sensors.
 Resets only the named proxy rover between cases. Normal cases use forward/yaw
@@ -9,9 +9,7 @@ only when an output path is explicitly supplied.
 """
 import argparse
 import json
-import re
 import math
-import subprocess
 import time
 import threading
 from pathlib import Path
@@ -21,6 +19,11 @@ from rclpy.node import Node
 from rclpy.parameter import Parameter
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
+
+from rover_sim import sim_services
+
+# Reset height of base_root: both rovers rest at about 0.345 m.
+RESET_Z = 0.36
 
 CASES = [('forward', .4, 0, 0), ('backward', -.4, 0, 0),
          ('rotate_left', 0, 0, .5), ('rotate_right', 0, 0, -.5),
@@ -32,30 +35,8 @@ BLOCKED_LATERAL_CASES = [('blocked_lateral_left', 0, .35, 0),
 
 
 def pose():
-    """Read model pose and its timestamp from the same Gazebo Pose_V packet."""
-    stream = subprocess.check_output(
-        ['gz', 'topic', '-e', '/gazebo/desert/pose/info', '-d', '1'],
-        text=True, timeout=10)
-    latest = None
-    for packet in re.split(r'\ntime \{', '\n'+stream)[1:]:
-        match = re.search(r'pose \{\s*name: "proxy_rover"[^{}]*'
-                          r'position \{([^{}]+)\}\s*orientation \{([^{}]+)\}', packet)
-        if match is None:
-            continue
-        def fields(text):
-            return {key: float(value) for key, value in
-                    re.findall(r'(\w+):\s*([-+0-9.eE]+)', text)}
-        stamp = fields(packet.split('}', 1)[0])
-        pos, q = fields(match[1]), fields(match[2])
-        x, y, z, w = q['x'], q['y'], q['z'], q['w']
-        roll = math.atan2(2*(w*x+y*z), 1-2*(x*x+y*y))
-        pitch = math.asin(max(-1, min(1, 2*(w*y-z*x))))
-        yaw = math.atan2(2*(w*z+x*y), 1-2*(y*y+z*z))
-        latest = ([pos['x'], pos['y'], pos['z'], roll, pitch, yaw],
-                  stamp.get('sec', 0)+stamp.get('nsec', 0)/1e9)
-    if latest is None:
-        raise RuntimeError('No proxy_rover pose in Gazebo pose stream')
-    return latest
+    """Rover pose and its sim stamp from /ground_truth/odom (shared by the other validators)."""
+    return sim_services.ground_truth_pose()
 
 
 def main():
@@ -106,8 +87,7 @@ def main():
             if args.cases and name not in args.cases:
                 continue
             run(.5, (0., 0., 0.))
-            subprocess.run(['gz', 'model', '-m', 'proxy_rover', '-x', '0', '-y', '0',
-                            '-z', '0.34', '-R', '0', '-P', '0', '-Y', '0'], check=True, timeout=10)
+            sim_services.teleport((0., 0., RESET_Z))
             run(2.0, (vx, vy, wz))
             a, t0 = pose()
             run(3.0, (vx, vy, wz))

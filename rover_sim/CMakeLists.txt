@@ -49,13 +49,15 @@ if(BUILD_TESTING)
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
   ament_add_pytest_test(fortress_worlds test/test_fortress_worlds.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
+  ament_add_pytest_test(fortress_launch test/test_fortress_launch.py
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 install(DIRECTORY launch worlds urdf LICENSES docs config rviz
   DESTINATION share/${PROJECT_NAME}
 )
 
-# Material resource folder; found through the gazebo_model_path export in package.xml.
+# Model/material resource folder; launch/desert.launch.py puts it on IGN_GAZEBO_RESOURCE_PATH.
 install(DIRECTORY models DESTINATION share/${PROJECT_NAME})
 
 # Real rover meshes (scripts/generate_real_rover.py); urdf/real_rover.urdf.xacro uses file:// URIs.

@@ -2,7 +2,7 @@
 <package format="3">
   <name>rover_sim</name>
   <version>0.1.0</version>
-  <description>Gazebo Classic desert environment for a rover simulation.</description>
+  <description>Gazebo Fortress (gz-sim 6) Mars/desert environment for a swerve rover simulation.</description>
   <maintainer email="leokarras@users.noreply.github.com">Leo Karras</maintainer>
   <license>Apache-2.0</license>
   <license>BSD-3-Clause</license>
@@ -17,12 +17,12 @@
   <depend>ignition-plugin</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
-  <depend>gazebo_ros</depend>
-  <exec_depend>gazebo_plugins</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>ros_gz_interfaces</exec_depend>
   <exec_depend>rviz2</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>tf2_msgs</exec_depend>
-  <exec_depend>gazebo_msgs</exec_depend>
   <exec_depend>rosgraph_msgs</exec_depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
@@ -39,9 +39,5 @@
   <test_depend>python3-yaml</test_depend>
   <export>
     <build_type>ament_cmake</build_type>
-    <!-- Lets worlds use model://rover_sim_materials/... (ground/rock textures).
-         Do not export gazebo_media_path: gazebo_ros would then replace
-         GAZEBO_RESOURCE_PATH and hide Gazebo's built-in materials. -->
-    <gazebo_ros gazebo_model_path="${prefix}/models"/>
   </export>
 </package>

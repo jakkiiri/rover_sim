@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Validate the stereo camera against a dedicated headless Gazebo Classic launch.
+"""Validate the stereo camera against a dedicated headless Gazebo Fortress launch.
 
-Requires an isolated ROS_DOMAIN_ID and GAZEBO_MASTER_URI and no other /cmd_vel
-publisher. Like validate_swerve.py it moves only proxy_rover with `gz model`
+Requires an isolated ROS_DOMAIN_ID and IGN_PARTITION and no other /cmd_vel
+publisher. Like validate_swerve.py it moves only proxy_rover (/sim/set_entity_pose)
 (between viewpoints) and uses Gazebo ground truth only for checking; nothing
 here is a rover sensor or a TF broadcaster.
 
@@ -49,7 +49,8 @@ from tf2_ros import Buffer, TransformListener
 from rover_sim.stereo_geometry import LEFT_FRAME, RIGHT_FRAME, baseline_from_urdf, link_transforms
 from rover_sim.stereo_truth import depth_tolerance, error_bins, expected_depth, world_primitives
 from validate_lidar import json_safe, rotation, stamp_seconds
-from validate_swerve import pose
+from validate_swerve import RESET_Z, pose
+from rover_sim import sim_services
 
 EDGES = [0.4, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 15.0]
 MIN_BIN_SAMPLES = 30
@@ -111,8 +112,7 @@ def main():
     parser.add_argument('--windows', type=int, default=3)
     parser.add_argument('--watchdog', type=float, default=.3, help='Configured actuator wall timeout')
     args = parser.parse_args()
-    if not os.environ.get('ROS_DOMAIN_ID') or not os.environ.get('GAZEBO_MASTER_URI'):
-        parser.error('Set an isolated ROS_DOMAIN_ID and GAZEBO_MASTER_URI first')
+    sim_services.require_isolation(parser)
     if not math.isfinite(args.duration) or args.duration < 2 or args.windows < 1:
         parser.error('Performance duration must be finite and at least 2 seconds; windows must be positive')
     if not math.isfinite(args.watchdog) or args.watchdog <= 0:
@@ -391,8 +391,7 @@ def main():
         intrinsics = dict(fx=li.p[0], fy=li.p[5], cx=li.p[2], cy=li.p[6])
         samples, per_model, sky, cloud_checks, views = [], {}, [0, 0], [], []
         for label, x, y, yaw in VIEWPOINTS:
-            subprocess.run(['gz', 'model', '-m', 'proxy_rover', '-x', str(x), '-y', str(y), '-z', '0.34',
-                            '-R', '0', '-P', '0', '-Y', str(yaw)], check=True, timeout=10)
+            sim_services.teleport((x, y, RESET_Z), (0., 0., yaw))
             run_sim(1.5)
             stopped()
             measured_pose, at = pose()
@@ -479,8 +478,7 @@ def main():
             and c['ground_points_checked'] >= 50 and c['median_ground_height_m'] < .03 for c in cloud_checks),
             clouds=cloud_checks)
 
-        subprocess.run(['gz', 'model', '-m', 'proxy_rover', '-x', '0', '-y', '0', '-z', '0.34',
-                        '-R', '0', '-P', '0', '-Y', '0'], check=True, timeout=10)
+        sim_services.teleport((0., 0., RESET_Z))
         run_sim(1.5)
         record('no_watchdog_trip_during_stereo_validation', len(epoch_values(started_all)) == 1,
                epochs=epoch_values(started_all))

@@ -163,8 +163,8 @@ def main(argv=None):
 
 def run_tests(angles, tests):
     import rclpy
-    from gazebo_msgs.msg import EntityState
-    from gazebo_msgs.srv import SetEntityState
+    from ros_gz_interfaces.srv import SetEntityPose
+    from rover_sim import sim_services
     from geometry_msgs.msg import Twist
     from nav_msgs.msg import Odometry
 
@@ -179,9 +179,9 @@ def run_tests(angles, tests):
 
     node.create_subscription(Odometry, '/ground_truth/odom', on_odom, 10)
     cmd = node.create_publisher(Twist, '/cmd_vel', 10)
-    teleport = node.create_client(SetEntityState, '/gazebo/set_entity_state')
+    teleport = node.create_client(SetEntityPose, sim_services.SET_POSE)
     if not teleport.wait_for_service(timeout_sec=30):
-        sys.exit('no /gazebo/set_entity_state: start the sim with the slope test world')
+        sys.exit(f'no {sim_services.SET_POSE}: start rover_sim rover_desert.launch.py with the slope test world')
 
     def spin_for(sim_seconds, twist=None, sample=None):
         """Spin for a span of simulation time, publishing twist at 10 Hz."""
@@ -204,16 +204,14 @@ def run_tests(angles, tests):
             cmd.publish(Twist())
 
     def place(position, quat):
-        request = SetEntityState.Request()
-        request.state = EntityState(name='proxy_rover', reference_frame='world')
-        p = request.state.pose.position
-        p.x, p.y, p.z = position[0], position[1], position[2] + 0.01
-        o = request.state.pose.orientation
-        o.w, o.x, o.y, o.z = quat
+        # Fortress set_pose moves the model but keeps its velocity (Classic's
+        # set_entity_state zeroed it); the 2 s settle below absorbs it.
+        request = sim_services.set_pose_request(
+            sim_services.ROVER, (position[0], position[1], position[2] + 0.01), quat)
         future = teleport.call_async(request)
         rclpy.spin_until_future_complete(node, future, timeout_sec=10)
-        if not future.result() or not future.result().success:
-            raise RuntimeError('set_entity_state failed')
+        if not sim_services.succeeded(future.result()):
+            raise RuntimeError('set_entity_pose failed')
         state.pop('stamp', None)
         spin_for(2.0)          # settle on the wheels with no command
 

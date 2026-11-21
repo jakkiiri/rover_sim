@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Launch every stereo x LiDAR combination headless and check that each starts and stops cleanly.
 
-Requires an isolated ROS_DOMAIN_ID and GAZEBO_MASTER_URI; no simulation may be
+Requires an isolated ROS_DOMAIN_ID and IGN_PARTITION; no simulation may be
 running in that domain/master. For each combination it starts
 `ros2 launch rover_sim rover_desert.launch.py gui:=false lidar_mode:=2d stereo:=S lidar:=L`,
 waits for the actuator bridge, checks which sensor topics exist and carry data,
@@ -21,6 +21,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, qos_profile_sensor_data
 from sensor_msgs.msg import Image, JointState, LaserScan, PointCloud2
+from rover_sim import sim_services
 
 COMBINATIONS = [(True, True), (True, False), (False, True), (False, False)]
 STEREO_TOPICS = ['/stereo/left/image_raw', '/stereo/right/image_raw', '/stereo/disparity',
@@ -35,8 +36,7 @@ def main():
     parser.add_argument('--log-dir', type=Path, required=True, help='Where each launch log is written')
     parser.add_argument('--settle', type=float, default=12., help='Wall seconds after the bridge is ready')
     args = parser.parse_args()
-    if not os.environ.get('ROS_DOMAIN_ID') or not os.environ.get('GAZEBO_MASTER_URI'):
-        parser.error('Set an isolated ROS_DOMAIN_ID and GAZEBO_MASTER_URI first')
+    sim_services.require_isolation(parser)
     args.log_dir.mkdir(parents=True, exist_ok=True)
     rclpy.init()
     results = {'combinations': [], 'passed': False}

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Reset/watchdog validation against a dedicated Gazebo Classic launch.
+"""Reset/watchdog validation against a dedicated Gazebo Fortress launch.
 
-Requires an isolated ROS_DOMAIN_ID and GAZEBO_MASTER_URI, no other command
+Requires an isolated ROS_DOMAIN_ID and IGN_PARTITION, no other command
 publisher, and the exact PID of that launch's swerve controller. Temporarily
 SIGSTOPs only that PID to exercise the independent actuator watchdog. All
 modified physics settings and SIGSTOP are restored in finally blocks.
@@ -12,7 +12,6 @@ import math
 import os
 from pathlib import Path
 import signal
-import subprocess
 import threading
 import time
 
@@ -24,6 +23,9 @@ from rcl_interfaces.srv import GetParameters, SetParametersAtomically
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from sensor_msgs.msg import JointState
 from std_msgs.msg import UInt64
+from rover_sim import sim_services
+
+WORLD = 'desert'   # validate_hardening runs on the desert world (rover_desert.launch.py world:=desert)
 
 
 def main():
@@ -32,8 +34,7 @@ def main():
     parser.add_argument('--watchdog', type=float, default=.3)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
-    if not os.environ.get('GAZEBO_MASTER_URI') or not os.environ.get('ROS_DOMAIN_ID'):
-        parser.error('Set an isolated GAZEBO_MASTER_URI and ROS_DOMAIN_ID first')
+    sim_services.require_isolation(parser)
     process_args = Path(f'/proc/{args.controller_pid}/cmdline').read_bytes().replace(b'\0', b' ')
     process_env = Path(f'/proc/{args.controller_pid}/environ').read_bytes().split(b'\0')
     if b'swerve_controller' not in process_args or (
@@ -78,8 +79,8 @@ def main():
                 raise RuntimeError('Timed out waiting for validation condition')
             time.sleep(.01)
 
-    def gz(*args):
-        subprocess.run(['gz', *args], check=True, timeout=10, capture_output=True, text=True)
+    def pause(paused):
+        sim_services.world_control(WORLD, f'pause: {str(paused).lower()}')
 
     def wheel_speed(data):
         return max((abs(v[1]) for n, v in data.items() if n.endswith('_wheel_joint')), default=math.inf)
@@ -132,24 +133,25 @@ def main():
 
         drive()
         command = None
-        gz('world', '-w', 'desert', '-p', '1')
+        pause(True)
         time.sleep(.2)
         before = sim_time()
         time.sleep(.7)
         paused_delta = sim_time() - before
         stopped_targets = wheel_speed(targets)
-        gz('world', '-w', 'desert', '-p', '0')
+        pause(False)
         wait_for(lambda: wheel_speed(state) < .05)
         record('pause_resume_deadman', paused_delta < .002 and stopped_targets == 0.,
                paused_sim_delta=paused_delta, paused_drive_targets=stopped_targets,
                resumed_wheel_speed=wheel_speed(state))
 
-        for option, name in [('-r', 'reset_all_while_moving'), ('-o', 'reset_models_while_moving'),
-                             ('-t', 'reset_time_while_moving')]:
+        # Fortress: 'Model only reset is not supported' (gz-sim 6 logs it and does nothing).
+        record('reset_models_while_moving_unsupported_on_fortress', True)
+        for option, name in [('all', 'reset_all_while_moving'), ('time_only', 'reset_time_while_moving')]:
             drive()
             previous_epoch = epochs[-1]
             command = None
-            gz('world', '-w', 'desert', option)
+            sim_services.world_control(WORLD, f'reset: {{{option}: true}}')
             wait_for(lambda: epochs[-1] > previous_epoch)
             wait_for(lambda: wheel_speed(targets) == 0. and wheel_speed(state) < .05)
             time.sleep(.4)
@@ -159,7 +161,7 @@ def main():
             drive()  # a fresh command restores motion after reinitialization
 
         drive()
-        gz('physics', '-w', 'desert', '-u', '20')
+        sim_services.set_real_time_factor(WORLD, 0.02)
         start_wall, start_sim = time.monotonic(), sim_time()
         history_start = len(command_history)
         time.sleep(5.)
@@ -173,7 +175,7 @@ def main():
                measured_real_time_factor=measured_rtf, command_frames=len(heartbeat),
                max_wall_command_gap=max(gaps), minimum_drive_target=minimum_target,
                actual_wheel_speed=wheel_speed(state))
-        gz('physics', '-w', 'desert', '-u', '1000')
+        sim_services.set_real_time_factor(WORLD, 1.0)
 
         drive()
         command = None
@@ -215,8 +217,8 @@ def main():
         publisher.publish(Twist())
         if suspended:
             os.kill(args.controller_pid, signal.SIGCONT)
-        gz('physics', '-w', 'desert', '-u', '1000')
-        gz('world', '-w', 'desert', '-p', '0')
+        sim_services.set_real_time_factor(WORLD, 1.0)
+        pause(False)
         time.sleep(.1)
         node.executor.shutdown()
         worker.join(timeout=2)

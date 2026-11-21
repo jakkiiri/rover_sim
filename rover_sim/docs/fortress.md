@@ -12,7 +12,7 @@ simulator at a time) before it is committed. Measurements below are from
 | 1 | Swerve actuators as a gz-sim System, parking hold, ground truth | done |
 | 2 | Worlds: DART physics, gz-sim systems, GUI, PBR materials | done |
 | 3 | Sensors: gpu_lidar 3D/2D LiDAR, two camera sensors, ros_gz_bridge | done |
-| 4 | Launch files (ros_gz_sim, spawn, bridge), validators' Gazebo services | pending |
+| 4 | Launch files (ros_gz_sim, spawn, bridge), validators' Gazebo services | done |
 | 5 | Full validation: tests, slope, planner drives, stereo/LiDAR validators | pending |
 
 ## 1. Swerve actuators (`src/swerve_gz_system.cpp`)
@@ -92,3 +92,38 @@ material used 16× anisotropic filtering, which ogre2 PBR materials do not
 expose, so the ground texture blurs at grazing angles. To revisit in step 5.
 The real rover's stowed arm also covers the right ~25% of the left image
 (the Classic stereo results were measured on the proxy rover).
+
+## 4. Launch files and Gazebo services (`rover_sim/sim_services.py`)
+
+`desert.launch.py` runs `ign gazebo` (`gui:=false` adds `-s --headless-rendering`)
+with this package's models and plugin library on the IGN_GAZEBO_* paths, and
+one `ros_gz_bridge` for the topics in `config/ros_gz_bridge.yaml` plus the
+world's services under fixed names, whatever the world is called:
+
+| ROS service | gz service | Classic equivalent |
+| --- | --- | --- |
+| `/sim/spawn_entity` | `/world/<w>/create` | `/spawn_entity` (gazebo_ros) |
+| `/sim/delete_entity` | `/world/<w>/remove` | `/delete_entity` |
+| `/sim/set_entity_pose` | `/world/<w>/set_pose` | `/gazebo/set_entity_state`, `gz model -m` |
+| `/sim/control` | `/world/<w>/control` | `gz world -p/-r/-t` |
+
+`rover_desert.launch.py` spawns the robot with `ros_gz_sim create` from
+`robot_description`. The validators and `slope_test` use the helpers in
+`rover_sim/sim_services.py`; rover pose comes from `/ground_truth/odom`
+instead of `gz topic -e .../pose/info`. Pause, reset and the slow-simulation
+test call `/world/<w>/control` and `set_physics` (real-time factor 0.02 instead
+of Classic's update rate 20 Hz) with `ign service`.
+
+Isolation for validation runs is now `ROS_DOMAIN_ID` plus `IGN_PARTITION`
+(was `GAZEBO_MASTER_URI`); every validator refuses to start without both.
+
+Differences from Classic found while porting:
+- `reset: {model_only: true}` is not supported by gz-sim 6 (it logs a warning
+  and does nothing), so validate_hardening checks only full and time-only resets.
+- `remove` answers true even for a model that does not exist (the request is
+  queued; the error appears only in the Gazebo log).
+- `set_pose` keeps the model's velocity; the validators settle after a teleport.
+
+Checked live on desert.world headless: spawn/delete/teleport through the
+bridge, all six default `validate_swerve` cases pass (translation and heading
+errors under 1 mm / 1 mrad), and the launch shuts every process down cleanly.
