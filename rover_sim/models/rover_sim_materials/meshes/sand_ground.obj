@@ -1,0 +1,15 @@
+# 100 m x 100 m ground plane at z = 0, normal +z, for desert.world's sand_ground visual.
+# UVs repeat every 8 m (12.5 repeats), as the Classic RoverSim/Sand material's
+# "scale 0.08" did; ogre2 primitive boxes have no UV scaling.
+o sand_ground
+v -50 -50 0
+v 50 -50 0
+v 50 50 0
+v -50 50 0
+vt 0 0
+vt 12.5 0
+vt 12.5 12.5
+vt 0 12.5
+vn 0 0 1
+f 1/1/1 2/2/1 3/3/1
+f 1/1/1 3/3/1 4/4/1

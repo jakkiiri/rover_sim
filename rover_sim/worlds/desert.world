@@ -1,15 +1,24 @@
 <?xml version="1.0"?>
-<sdf version="1.6">
+<!-- Gazebo Fortress world. Header blocks (physics, systems, GUI) come from
+     rover_sim/fortress_world.py; test/test_fortress_worlds.py checks they match. -->
+<sdf version="1.8">
   <world name="desert">
     <gravity>0 0 -9.81</gravity>
-    <physics name="default_physics" type="ode">
+    <physics name="1ms" type="dart">
       <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
       <real_time_update_rate>1000</real_time_update_rate>
-      <!-- Improve convergence of unpowered articulated wheel contacts. -->
-      <ode>
-        <solver><type>quick</type><iters>150</iters><sor>1.0</sor></solver>
-      </ode>
+      <dart><collision_detector>bullet</collision_detector></dart>
     </physics>
+    <plugin filename="ignition-gazebo-physics-system" name="ignition::gazebo::systems::Physics">
+      <engine><filename>ignition-physics-dartsim-plugin</filename></engine>
+    </plugin>
+    <plugin filename="ignition-gazebo-user-commands-system" name="ignition::gazebo::systems::UserCommands"/>
+    <plugin filename="ignition-gazebo-scene-broadcaster-system" name="ignition::gazebo::systems::SceneBroadcaster"/>
+    <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="ignition-gazebo-imu-system" name="ignition::gazebo::systems::Imu"/>
     <scene>
       <ambient>0.65 0.58 0.45 1</ambient>
       <background>0.70 0.82 0.92 1</background>
@@ -23,10 +32,73 @@
       <direction>-0.5 0.3 -1</direction>
     </light>
     <gui fullscreen="0">
-      <camera name="overview">
-        <pose>25 -30 24 0 0.55 2.2</pose>
-        <view_controller>orbit</view_controller>
-      </camera>
+      <plugin filename="MinimalScene" name="3D View">
+        <ignition-gui><title>3D View</title><property type="bool" key="showTitleBar">false</property>
+          <property type="string" key="state">docked</property></ignition-gui>
+        <engine>ogre2</engine><scene>scene</scene>
+        <ambient_light>0.6 0.55 0.5</ambient_light><background_color>0.70 0.82 0.92</background_color>
+        <camera_pose>25 -30 24 0 0.55 2.2</camera_pose>
+      </plugin>
+      <plugin filename="GzSceneManager" name="Scene Manager">
+        <ignition-gui><property key="state" type="string">floating</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="showTitleBar" type="bool">false</property>
+          <property key="resizable" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="InteractiveViewControl" name="Interactive view control">
+        <ignition-gui><property key="state" type="string">floating</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="showTitleBar" type="bool">false</property>
+          <property key="resizable" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="CameraTracking" name="Camera Tracking">
+        <ignition-gui><property key="state" type="string">floating</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="showTitleBar" type="bool">false</property>
+          <property key="resizable" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="MarkerManager" name="Marker manager">
+        <ignition-gui><property key="state" type="string">floating</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="showTitleBar" type="bool">false</property>
+          <property key="resizable" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="SelectEntities" name="Select Entities">
+        <ignition-gui><property key="state" type="string">floating</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="showTitleBar" type="bool">false</property>
+          <property key="resizable" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="VisualizationCapabilities" name="Visualization Capabilities">
+        <ignition-gui><property key="state" type="string">floating</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="showTitleBar" type="bool">false</property>
+          <property key="resizable" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="EntityContextMenuPlugin" name="Entity context menu">
+        <ignition-gui><property key="state" type="string">floating</property><property key="width" type="double">5</property>
+          <property key="height" type="double">5</property><property key="showTitleBar" type="bool">false</property>
+          <property key="resizable" type="bool">false</property></ignition-gui>
+      </plugin>
+      <plugin filename="WorldControl" name="World control">
+        <ignition-gui><title>World control</title><property type="bool" key="showTitleBar">false</property>
+          <property type="bool" key="resizable">false</property><property type="double" key="height">72</property>
+          <property type="double" key="width">121</property><property type="double" key="z">1</property>
+          <property type="string" key="state">floating</property>
+          <anchors target="3D View"><line own="left" target="left"/><line own="bottom" target="bottom"/></anchors></ignition-gui>
+        <play_pause>true</play_pause><step>true</step><start_paused>false</start_paused>
+      </plugin>
+      <plugin filename="WorldStats" name="World stats">
+        <ignition-gui><title>World stats</title><property type="bool" key="showTitleBar">false</property>
+          <property type="bool" key="resizable">false</property><property type="double" key="height">110</property>
+          <property type="double" key="width">290</property><property type="double" key="z">1</property>
+          <property type="string" key="state">floating</property>
+          <anchors target="3D View"><line own="right" target="right"/><line own="bottom" target="bottom"/></anchors></ignition-gui>
+        <sim_time>true</sim_time><real_time>true</real_time><real_time_factor>true</real_time_factor><iterations>true</iterations>
+      </plugin>
+      <plugin filename="EntityTree" name="Entity tree">
+        <ignition-gui><property type="string" key="state">docked_collapsed</property></ignition-gui>
+      </plugin>
+      <!-- gz-sim's Teleop panel publishes ignition.msgs.Twist on /cmd_vel (bridged
+           to ROS by the launch file). Tick "Keyboard" and hold W/A/S/D. -->
+      <plugin filename="Teleop" name="Teleop">
+        <ignition-gui><title>Rover teleop</title><property type="string" key="state">docked_collapsed</property></ignition-gui>
+        <topic>/cmd_vel</topic>
+      </plugin>
     </gui>
 
     <!-- Ground surface at z=0; no external models or textures required. -->
@@ -38,17 +110,13 @@
           <geometry><box><size>100 100 0.5</size></box></geometry>
           <surface><friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction></surface>
         </collision>
+        <!-- Visual only: textured sand gives stereo something to match. A mesh
+             plane on the box top (z = 0) carries UVs that repeat every 8 m.
+             Collision and friction are the box. -->
         <visual name="visual">
-          <geometry><box><size>100 100 0.5</size></box></geometry>
-          <!-- Visual only: textured sand gives stereo something to match.
-               Collision, friction and LiDAR returns are unchanged. -->
-          <material>
-            <script>
-              <uri>model://rover_sim_materials/materials/scripts</uri>
-              <uri>model://rover_sim_materials/materials/textures</uri>
-              <name>RoverSim/Sand</name>
-            </script>
-          </material>
+          <pose>0 0 0.25 0 0 0</pose>
+          <geometry><mesh><uri>model://rover_sim_materials/meshes/sand_ground.obj</uri></mesh></geometry>
+          <material><diffuse>1 1 1 1</diffuse><specular>0.05 0.05 0.05 1</specular><pbr><metal><albedo_map>model://rover_sim_materials/materials/textures/rover_sand.png</albedo_map><roughness>0.95</roughness><metalness>0</metalness></metal></pbr></material>
         </visual>
       </link>
     </model>
@@ -127,7 +195,7 @@
         <collision name="collision"><geometry><box><size>0.5 0.5 0.35</size></box></geometry></collision>
         <visual name="visual">
           <geometry><box><size>0.5 0.5 0.35</size></box></geometry>
-          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/WoodPallet</name></script></material>
+          <material><diffuse>1 1 1 1</diffuse><specular>0.05 0.05 0.05 1</specular><pbr><metal><albedo_map>model://rover_sim_materials/materials/textures/WoodPallet.png</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr></material>
         </visual>
       </link>
     </model>
@@ -138,7 +206,7 @@
         <collision name="collision"><geometry><box><size>0.6 0.4 0.25</size></box></geometry></collision>
         <visual name="visual">
           <geometry><box><size>0.6 0.4 0.25</size></box></geometry>
-          <material><script><uri>model://rover_sim_materials/materials/scripts</uri><uri>model://rover_sim_materials/materials/textures</uri><name>RoverSim/Rock</name></script></material>
+          <material><diffuse>1 1 1 1</diffuse><specular>0.05 0.05 0.05 1</specular><pbr><metal><albedo_map>model://rover_sim_materials/materials/textures/granite.jpg</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr></material>
         </visual>
       </link>
     </model>
@@ -149,7 +217,7 @@
         <collision name="collision"><geometry><box><size>0.4 0.4 0.3</size></box></geometry></collision>
         <visual name="visual">
           <geometry><box><size>0.4 0.4 0.3</size></box></geometry>
-          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Bricks</name></script></material>
+          <material><diffuse>1 1 1 1</diffuse><specular>0.05 0.05 0.05 1</specular><pbr><metal><albedo_map>model://rover_sim_materials/materials/textures/bricks.png</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr></material>
         </visual>
       </link>
     </model>
@@ -160,7 +228,7 @@
         <collision name="collision"><geometry><cylinder><radius>0.2</radius><length>0.3</length></cylinder></geometry></collision>
         <visual name="visual">
           <geometry><cylinder><radius>0.2</radius><length>0.3</length></cylinder></geometry>
-          <material><script><uri>model://rover_sim_materials/materials/scripts</uri><uri>model://rover_sim_materials/materials/textures</uri><name>RoverSim/Rock</name></script></material>
+          <material><diffuse>1 1 1 1</diffuse><specular>0.05 0.05 0.05 1</specular><pbr><metal><albedo_map>model://rover_sim_materials/materials/textures/granite.jpg</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr></material>
         </visual>
       </link>
     </model>
@@ -171,7 +239,7 @@
         <collision name="collision"><geometry><cylinder><radius>0.25</radius><length>0.2</length></cylinder></geometry></collision>
         <visual name="visual">
           <geometry><cylinder><radius>0.25</radius><length>0.2</length></cylinder></geometry>
-          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/WoodPallet</name></script></material>
+          <material><diffuse>1 1 1 1</diffuse><specular>0.05 0.05 0.05 1</specular><pbr><metal><albedo_map>model://rover_sim_materials/materials/textures/WoodPallet.png</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr></material>
         </visual>
       </link>
     </model>

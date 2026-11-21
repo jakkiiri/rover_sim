@@ -98,18 +98,20 @@ def test_features_are_in_front_of_the_rover_and_unique(features):
 def test_ground_texture_is_visual_only():
     root = ET.parse(WORLD).getroot()
     ground = root.find("world/model[@name='sand_ground']/link")
-    assert ground.find('visual/material/script/name').text == 'RoverSim/Sand'
     assert ground.find('collision/geometry/box/size').text == '100 100 0.5'
-    for script in root.iter('script'):
-        uri = script.findtext('uri')
-        uris = [u.text for u in script.findall('uri')]
-        assert uris in (['file://media/materials/scripts/gazebo.material'],
-                        ['model://rover_sim_materials/materials/scripts',
-                         'model://rover_sim_materials/materials/textures'])
-    materials = PACKAGE / 'models' / 'rover_sim_materials' / 'materials'
-    material = (materials / 'scripts' / 'rover_sim.material').read_text()
-    assert 'material RoverSim/Sand' in material and 'material RoverSim/Rock' in material
-    assert (materials / 'textures' / 'rover_sand.png').read_bytes()[:8] == b'\x89PNG\r\n\x1a\n'
+    # Fortress (ogre2) has no material scripts: the sand is a PBR albedo map on
+    # a tiled mesh plane at the top of the collision box.
+    visual = ground.find('visual')
+    assert visual.findtext('geometry/mesh/uri') == 'model://rover_sim_materials/meshes/sand_ground.obj'
+    assert visual.findtext('pose') == '0 0 0.25 0 0 0'
+    assert visual.findtext('material/pbr/metal/albedo_map').endswith('/rover_sand.png')
+    assert not list(root.iter('script'))
+    materials = PACKAGE / 'models' / 'rover_sim_materials'
+    for albedo in root.iter('albedo_map'):
+        prefix = 'model://rover_sim_materials/'
+        assert albedo.text.startswith(prefix), albedo.text
+        assert (materials / albedo.text[len(prefix):]).is_file(), albedo.text
+    assert (materials / 'materials' / 'textures' / 'rover_sand.png').read_bytes()[:8] == b'\x89PNG\r\n\x1a\n'
 
 
 def test_only_a_model_path_is_exported_for_gazebo():

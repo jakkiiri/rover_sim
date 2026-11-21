@@ -139,3 +139,14 @@ validator are local additions. The existing 2D RViz config is the starting
 point for the new local config; no upstream odometry/accumulation settings
 are imported. No Mars drivetrain/controller, IMU, terrain generation,
 ground-truth TF, Fortress plugin or `ros_gz` code is imported.
+
+## Gazebo Classic textures (Apache-2.0)
+
+`models/rover_sim_materials/materials/textures/{granite.jpg,WoodPallet.png,bricks.png,wood.jpg}`
+are copied unchanged from Gazebo Classic 11.10.2's media folder
+(`/usr/share/gazebo-11/media/materials/textures/`), source
+https://github.com/gazebosim/gazebo-classic (Apache-2.0, Open Source Robotics
+Foundation; see `LICENSES/Apache-2.0.txt`). The Classic worlds referenced them
+through `Gazebo/WoodPallet`, `Gazebo/Bricks`, `Gazebo/Wood` and the
+`RoverSim/Rock` material script; Fortress's ogre2 renderer cannot read those
+scripts, so the worlds now use the image files as PBR albedo maps.
