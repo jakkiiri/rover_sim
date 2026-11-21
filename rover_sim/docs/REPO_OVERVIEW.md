@@ -377,7 +377,7 @@ tests parse the expanded xacro and RViz config.
 `ROS_DOMAIN_ID` + `IGN_PARTITION`, and no other `/cmd_vel` publisher):
 
 ```bash
-ROS_DOMAIN_ID=45 GAZEBO_MASTER_URI=http://127.0.0.1:11355 \
+ROS_DOMAIN_ID=45 IGN_PARTITION=rover_validation \
   ros2 launch rover_sim rover_desert.launch.py world:=desert gui:=false
 # other terminal, same env:
 ros2 run rover_sim validate_swerve.py   --output .../local_motion.json [--cases ... blocked_lateral_*]
