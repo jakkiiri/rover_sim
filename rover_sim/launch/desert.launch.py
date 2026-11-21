@@ -1,7 +1,7 @@
 """Launch a rover_sim world in Gazebo Fortress (gz-sim 6) with its ROS bridge.
 
-world: a name in this package's worlds/ folder (mars, desert) or a path to a
-.world/.sdf file. Default: mars.
+world: a name in this package's worlds/ folder (usgs, mars, desert) or a path
+to a .world/.sdf file. Default: usgs, the imported USGS Utah survey terrain.
 gui:=false runs the server only, with EGL headless rendering so the GPU
 LiDAR and cameras still work.
 
@@ -148,8 +148,8 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('gui', default_value='true', description='Open the Gazebo Fortress GUI.'),
         DeclareLaunchArgument(
-            'world', default_value='mars',
-            description='World name in rover_sim/worlds (mars, desert) or a world file path.'),
+            'world', default_value='usgs',
+            description='World name in rover_sim/worlds (usgs, mars, desert) or a world file path.'),
         # Declared again (same names) by rover_desert.launch.py, whose values win.
         DeclareLaunchArgument('lidar', default_value='true', description='Bridge the LiDAR topics.'),
         DeclareLaunchArgument('lidar_mode', default_value='3d', description='Which LiDAR to bridge: 3d or 2d.'),

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset>
+  <library_images><image id="tex"><init_from>ground.png</init_from></image></library_images>
+  <library_effects><effect id="fx"><profile_COMMON>
+    <newparam sid="surf"><surface type="2D"><init_from>tex</init_from></surface></newparam>
+    <newparam sid="samp"><sampler2D><source>surf</source></sampler2D></newparam>
+    <technique sid="common"><lambert>
+      <ambient><color>0.7 0.7 0.7 1</color></ambient>
+      <diffuse><texture texture="samp" texcoord="uv"/></diffuse>
+    </lambert></technique>
+  </profile_COMMON></effect></library_effects>
+  <library_materials><material id="mat"><instance_effect url="#fx"/></material></library_materials>
+  <library_geometries><geometry id="terrain_13_20"><mesh>
+    <source id="pos"><float_array id="pos-a" count="63">96.00000 0.00000 -0.58781 100.00000 0.00000 -0.66183 104.00000 0.00000 -0.63240 108.00000 0.00000 -0.82983 112.00000 0.00000 -0.74759 116.00000 0.00000 -0.70707 120.00000 0.00000 -0.67786 124.00000 0.00000 -0.66821 128.00000 0.00000 -0.62177 96.00000 4.00000 -0.73303 100.00000 4.00000 -0.28160 104.00000 4.00000 -0.35786 108.00000 4.00000 -0.53097 112.00000 4.00000 -0.36919 116.00000 4.00000 -0.42949 120.00000 4.00000 -0.38151 124.00000 4.00000 -0.39637 128.00000 4.00000 -0.32127 120.00000 8.00000 -0.38151 124.00000 8.00000 -0.37464 128.00000 8.00000 -0.00056</float_array>
+      <technique_common><accessor source="#pos-a" count="21" stride="3">
+        <param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/>
+      </accessor></technique_common></source>
+    <source id="nrm"><float_array id="nrm-a" count="63">0.01849 0.03628 0.99917 -0.03384 -0.05117 0.99812 0.02029 -0.07720 0.99681 0.02396 -0.07248 0.99708 -0.02361 -0.08761 0.99588 -0.00078 -0.07756 0.99699 -0.00722 -0.07233 0.99735 -0.00343 -0.06983 0.99755 -0.01515 -0.07135 0.99734 -0.04710 -0.02933 0.99846 -0.03357 -0.08588 0.99574 0.03711 -0.07044 0.99683 -0.00589 -0.08107 0.99669 -0.01179 -0.08587 0.99624 -0.00140 -0.07078 0.99749 -0.00174 -0.05396 0.99854 -0.00724 -0.03696 0.99929 -0.04358 -0.05345 0.99762 0.00100 -0.00272 1.00000 -0.03796 -0.03031 0.99882 -0.09282 -0.07958 0.99250</float_array>
+      <technique_common><accessor source="#nrm-a" count="21" stride="3">
+        <param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/>
+      </accessor></technique_common></source>
+    <source id="uv"><float_array id="uv-a" count="42">12.00000 0.00000 12.50000 0.00000 13.00000 0.00000 13.50000 0.00000 14.00000 0.00000 14.50000 0.00000 15.00000 0.00000 15.50000 0.00000 16.00000 0.00000 12.00000 0.50000 12.50000 0.50000 13.00000 0.50000 13.50000 0.50000 14.00000 0.50000 14.50000 0.50000 15.00000 0.50000 15.50000 0.50000 16.00000 0.50000 15.00000 1.00000 15.50000 1.00000 16.00000 1.00000</float_array>
+      <technique_common><accessor source="#uv-a" count="21" stride="2">
+        <param name="S" type="float"/><param name="T" type="float"/>
+      </accessor></technique_common></source>
+    <vertices id="vtx"><input semantic="POSITION" source="#pos"/></vertices>
+    <triangles material="m" count="20">
+      <input semantic="VERTEX" source="#vtx" offset="0"/>
+      <input semantic="NORMAL" source="#nrm" offset="1"/>
+      <input semantic="TEXCOORD" source="#uv" offset="2" set="0"/>
+      <p>0 0 0 1 1 1 9 9 9 1 1 1 2 2 2 10 10 10 2 2 2 3 3 3 11 11 11 3 3 3 4 4 4 12 12 12 4 4 4 5 5 5 13 13 13 5 5 5 6 6 6 14 14 14 6 6 6 7 7 7 15 15 15 7 7 7 8 8 8 16 16 16 15 15 15 16 16 16 18 18 18 16 16 16 17 17 17 19 19 19 1 1 1 10 10 10 9 9 9 2 2 2 11 11 11 10 10 10 3 3 3 12 12 12 11 11 11 4 4 4 13 13 13 12 12 12 5 5 5 14 14 14 13 13 13 6 6 6 15 15 15 14 14 14 7 7 7 16 16 16 15 15 15 8 8 8 17 17 17 16 16 16 16 16 16 19 19 19 18 18 18 17 17 17 20 20 20 19 19 19</p>
+    </triangles>
+  </mesh></geometry></library_geometries>
+  <library_visual_scenes><visual_scene id="scene"><node id="terrain_13_20-node">
+    <instance_geometry url="#terrain_13_20"><bind_material><technique_common>
+      <instance_material symbol="m" target="#mat"><bind_vertex_input semantic="uv" input_semantic="TEXCOORD" input_set="0"/></instance_material>
+    </technique_common></bind_material></instance_geometry>
+  </node></visual_scene></library_visual_scenes>
+  <scene><instance_visual_scene url="#scene"/></scene>
+</COLLADA>

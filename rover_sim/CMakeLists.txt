@@ -24,7 +24,7 @@ install(PROGRAMS scripts/swerve_controller scripts/validate_swerve.py
   scripts/validate_lidar3d.py DESTINATION lib/${PROJECT_NAME})
 install(PROGRAMS scripts/stereo_camera_relay scripts/stereo_processor scripts/generate_sand_texture.py
   scripts/validate_stereo.py scripts/validate_launch_matrix.py scripts/generate_mars_world.py
-  scripts/generate_real_rover.py
+  scripts/generate_real_rover.py scripts/import_usgs_terrain.py scripts/validate_survey_terrain.py
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
@@ -53,6 +53,8 @@ if(BUILD_TESTING)
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
   ament_add_pytest_test(fortress_launch test/test_fortress_launch.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
+  ament_add_pytest_test(survey_terrain test/test_survey_terrain.py
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 install(DIRECTORY launch worlds urdf LICENSES docs config rviz
@@ -65,7 +67,7 @@ install(DIRECTORY models DESTINATION share/${PROJECT_NAME})
 # Real rover meshes (scripts/generate_real_rover.py); urdf/real_rover.urdf.xacro uses file:// URIs.
 install(DIRECTORY meshes DESTINATION share/${PROJECT_NAME})
 
-install(FILES THIRD_PARTY_NOTICES.md README.md
+install(FILES THIRD_PARTY_NOTICES.md README.md requirements-terrain.txt
   DESTINATION share/${PROJECT_NAME}
 )
 

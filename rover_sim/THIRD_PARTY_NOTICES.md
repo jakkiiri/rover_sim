@@ -1,5 +1,19 @@
 # Upstream model provenance
 
+## User-provided USGS survey terrain
+
+The six `USGS_LPC_UT_Southern_QL1_2018_12SWH*_LAS_2019.laz` files supplied
+by the user are converted into `models/usgs_terrain/` and `worlds/usgs.world`.
+All six basenames, SHA-256 values, point counts, embedded CRS and the local
+coordinate translation are recorded in `worlds/usgs.terrain.json`.
+Only non-withheld class-2 ground contributes to elevation; no non-ground
+object geometry or aerial photography is copied. Raw input files are unchanged.
+The mesh texture reuses this package's synthetic Mars regolith texture.
+The converter and runtime height helper are local additions; they do not
+copy external software source. Optional laspy/lazrs/pyproj dependencies are
+installed separately and pinned in `requirements-terrain.txt`.
+See `docs/usgs_terrain.md` for reconstruction, resolution and limitations.
+
 Repository: https://github.com/Kettenhoax/gazebo_ros_four_wheel_steering
 
 Exact commit: `9802a276510915126a706df640cb90c42d1b2788`
