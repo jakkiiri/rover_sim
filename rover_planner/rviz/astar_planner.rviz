@@ -15,7 +15,7 @@ Visualization Manager:
       Plane Cell Count: 40
       Color: 95; 95; 95
       Alpha: 0.4
-      Reference Frame: odom
+      Reference Frame: goal_plane
       Offset:
         X: 0
         Y: 0
@@ -142,7 +142,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 24; 28; 34
-    Fixed Frame: odom
+    Fixed Frame: goal_plane
     Frame Rate: 30
   Name: root
   Tools:

@@ -151,6 +151,7 @@ class AStarPlanner(Node):
         self.terrain = None
 
         self.pose = None          # (x, y, yaw) in the global frame
+        self.pose_z = 0.0         # base height in the global frame (drawing only)
         self.goal = None          # (x, y) in the global frame
         self.snapped_goal = None  # safe point used instead of a blocked goal
         self.last_cloud_s = -math.inf
@@ -196,6 +197,7 @@ class AStarPlanner(Node):
     def on_odom(self, msg):
         q = msg.pose.pose.orientation
         self.pose = (msg.pose.pose.position.x, msg.pose.pose.position.y, yaw_of(q))
+        self.pose_z = msg.pose.pose.position.z
 
     def on_cloud(self, msg):
         """Stereo cloud: terrain, obstacles and drop-off views (at most cloud_rate Hz)."""
@@ -615,13 +617,20 @@ class AStarPlanner(Node):
         msg.header.frame_id = self.frame
         msg.header.stamp = now.to_msg()
         points = [window.grid_to_world(gx, gy) for gx, gy in cells]
+        # Unseen cells reuse the last known ground height (before any, the first
+        # seen cell's, else just below the base), so on terrain far from z = 0
+        # the path is not drawn in the air.
+        known = [float(terrain.ground[gy, gx]) + 0.05 for gx, gy in cells
+                 if terrain is not None and terrain.ground_ok[gy, gx]]
+        z = known[0] if known else self.pose_z - 0.3
         for i, (x, y) in enumerate(points):
             pose = PoseStamped()
             pose.header = msg.header
             pose.pose.position.x, pose.pose.position.y = x, y
             gx, gy = cells[i]
             if terrain is not None and terrain.ground_ok[gy, gx]:
-                pose.pose.position.z = float(terrain.ground[gy, gx]) + 0.05  # drawn on the ground
+                z = float(terrain.ground[gy, gx]) + 0.05  # drawn on the ground
+            pose.pose.position.z = z
             # Face the next point; the last pose keeps the final segment's heading.
             if i + 1 < len(points):
                 (ax, ay), (bx, by) = (x, y), points[i + 1]
