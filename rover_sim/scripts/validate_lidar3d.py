@@ -20,7 +20,10 @@ import rclpy
 from ament_index_python.packages import get_package_share_directory
 from ros_gz_interfaces.srv import DeleteEntity, SpawnEntity
 
-from rover_sim import sim_services
+from rover_sim import gpu_lidar_check, sim_services
+from rover_sim.stereo_truth import ray_cylinder, world_primitives
+
+FEATURE = 'world feature'
 from geometry_msgs.msg import Twist
 from rclpy.clock import Clock, ClockType
 from rclpy.executors import ExternalShutdownException
@@ -151,13 +154,27 @@ def main():
 
     share = Path(get_package_share_directory('rover_sim'))
     spheres = world_spheres(share / 'worlds/desert.world')
+    # The world's other static objects (stereo features) block beams; points on them are
+    # not scored, but without them a beam stopped by the crate would count as a probe-box miss.
+    features = [(kind, c, dims) for name, kind, c, dims in world_primitives(share / 'worlds/desert.world')
+                if kind in ('box', 'cylinder') and name != 'sand_ground']
     boxes = []
 
     def geometry(case, base, cloud, require_box=False):
+        """Compare the cloud with analytic geometry using the gpu_lidar rule (rover_sim/gpu_lidar_check.py)."""
         array = cloud_to_array(cloud)
         xyz = np.stack([array[k] for k in ('x', 'y', 'z')], axis=1).astype(float)
         xyz = xyz[np.all(np.isfinite(xyz), axis=1)]
         origin, matrix = sensor_geometry(base, mount)
+
+        def first_hit(direction):
+            hits = [(ray_sphere(origin, direction, c, r), name, ('sphere', c, r)) for name, c, r in spheres]
+            hits += [(ray_box(origin, direction, c, size), name, ('box', c, size)) for name, c, size in boxes]
+            hits += [(ray_box(origin, direction, c, dims) if kind == 'box' else ray_cylinder(origin, direction, c, *dims),
+                      FEATURE, None) for kind, c, dims in features]
+            hits.append((ray_box(origin, direction, (0., 0., -.25), (100., 100., .5)), 'ground', ('plane',)))
+            return min(hits, key=lambda h: h[0])
+
         grouped = {}
         self_hits = 0
         for point in xyz:
@@ -165,22 +182,39 @@ def main():
             if not .5 <= length <= 100:
                 continue
             direction = tuple(sum(matrix[i][j] * point[j] / length for j in range(3)) for i in range(3))
-            intersections = [(ray_sphere(origin, direction, c, r), name) for name, c, r in spheres]
-            intersections += [(ray_box(origin, direction, c, size), name) for name, c, size in boxes]
-            intersections.append((ray_box(origin, direction, (0., 0., -.25), (100., 100., .5)), 'ground'))
-            expected, name = min(intersections)
+            expected, name, shape = first_hit(direction)
+            if name == FEATURE:     # stereo texture objects: in the world, not scored here
+                continue
             if math.isfinite(expected) and .5 <= expected < 99.9:
-                grouped.setdefault(name, []).append(abs(length - expected))
+                hit = [origin[i] + expected * direction[i] for i in range(3)]
+                gap = 0.
+                if shape[0] == 'sphere':
+                    normal = [(hit[i] - shape[1][i]) / shape[2] for i in range(3)]
+                    gap = gpu_lidar_check.sphere_gap(shape[2])
+                elif shape[0] == 'box':
+                    normal = gpu_lidar_check.box_normal(hit, shape[1], shape[2])
+                else:
+                    normal = [0., 0., 1.]
+                incidence = abs(sum(direction[i] * normal[i] for i in range(3)))
+                low, high = gpu_lidar_check.error_bounds(expected, incidence, noise_sigma, angle_step, gap)
+                error = length - expected
+                entry = grouped.setdefault(name, dict(errors=[], within=[], edges=0, gap=gap))
+                if not low <= error <= high and gpu_lidar_check.is_edge(
+                        direction, angle_step, lambda d: first_hit(d)[1]):
+                    entry['edges'] += 1
+                    continue
+                entry['errors'].append(error)
+                entry['within'].append(low <= error <= high)
             body = point + np.asarray(mount)
             self_hits += int(abs(body[0]) < .55 and abs(body[1]) < .55 and -.35 < body[2] < .11)
-        summary = {name: dict(count=len(values), median_error_m=float(np.median(values)),
-                              p95_error_m=float(np.percentile(values, 95))) for name, values in grouped.items()}
+        summary = {name: gpu_lidar_check.summarize(e['errors'], e['within'], e['edges'], e['gap'])
+                   for name, e in grouped.items()}
         selected = [summary[name] for name in (['probe'] if require_box else ['ground'] + [s[0] for s in spheres])
                     if name in summary]
         needed = 1 if require_box else 4
-        record(case, len(selected) == needed and self_hits == 0 and all(
-            v['count'] >= 5 and v['median_error_m'] < .04 and v['p95_error_m'] < .09 for v in selected),
-            base_pose=base, sensor_world_origin=list(origin), self_hits=self_hits, objects=summary)
+        record(case, len(selected) == needed and self_hits == 0 and all(v['passed'] for v in selected),
+               base_pose=base, sensor_world_origin=list(origin), self_hits=self_hits,
+               noise_sigma_m=noise_sigma, angle_step_rad=angle_step, objects=summary)
         return xyz
 
     spawn = node.create_client(SpawnEntity, sim_services.SPAWN)
@@ -195,6 +229,9 @@ def main():
         if not args.performance_only and len(lidars) != 1:
             raise RuntimeError('robot_description has no 3D LiDAR (launch with lidar_mode:=3d)')
         expected_rate = lidars[0]['rate'] if lidars else None
+        # Tolerance inputs for gpu_lidar_check: configured range noise and one horizontal sample spacing.
+        noise_sigma = lidars[0]['noise_stddev'] if lidars else None
+        angle_step = lidars[0]['horizontal_step'] if lidars else None
         results['expected_rate_hz'] = expected_rate
         steady = time.monotonic()
         for w in range(args.windows):

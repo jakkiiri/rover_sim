@@ -49,6 +49,8 @@ if(BUILD_TESTING)
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
   ament_add_pytest_test(fortress_worlds test/test_fortress_worlds.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
+  ament_add_pytest_test(gpu_lidar_check test/test_gpu_lidar_check.py
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
   ament_add_pytest_test(fortress_launch test/test_fortress_launch.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
 endif()

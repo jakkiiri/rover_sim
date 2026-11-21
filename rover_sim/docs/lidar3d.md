@@ -124,18 +124,21 @@ host awake. Terminal 1, after building as above:
 source /opt/ros/humble/setup.bash
 source ~/rover_ws/install/setup.bash
 export ROS_DOMAIN_ID=55
-export GAZEBO_MASTER_URI=http://127.0.0.1:11365
+export IGN_PARTITION=rover_validation
 ros2 launch rover_sim rover_desert.launch.py \
   gui:=false rviz:=false lidar_mode:=3d lidar_profile:=lite
 ```
 
 Terminal 2:
 
+> Fortress: the geometry checks use the gpu_lidar rule in `rover_sim/gpu_lidar_check.py`
+> (see docs/fortress.md, step 5); the Classic CPU-ray limits below are kept for history.
+
 ```bash
 source /opt/ros/humble/setup.bash
 source ~/rover_ws/install/setup.bash
 export ROS_DOMAIN_ID=55
-export GAZEBO_MASTER_URI=http://127.0.0.1:11365
+export IGN_PARTITION=rover_validation
 ros2 run rover_sim validate_lidar3d.py --profile lite --duration 5 --windows 2 \
   --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_lidar3d.json
 ```

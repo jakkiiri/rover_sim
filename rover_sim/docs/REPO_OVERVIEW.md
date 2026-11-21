@@ -374,7 +374,7 @@ exercise `ControlState` with explicit clocks and the ROS node with mocks; LiDAR
 tests parse the expanded xacro and RViz config.
 
 **Integration validators** (need a running launch; use an isolated
-`ROS_DOMAIN_ID` + `GAZEBO_MASTER_URI`, and no other `/cmd_vel` publisher):
+`ROS_DOMAIN_ID` + `IGN_PARTITION`, and no other `/cmd_vel` publisher):
 
 ```bash
 ROS_DOMAIN_ID=45 GAZEBO_MASTER_URI=http://127.0.0.1:11355 \

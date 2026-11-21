@@ -260,7 +260,7 @@ Terminal 1, the stereo-off baseline (needed for the non-interference comparison)
 ```bash
 source /opt/ros/humble/setup.bash
 source ~/rover_ws/install/setup.bash
-export ROS_DOMAIN_ID=47 GAZEBO_MASTER_URI=http://127.0.0.1:11357
+export ROS_DOMAIN_ID=47 IGN_PARTITION=rover_validation
 ros2 launch rover_sim rover_desert.launch.py world:=desert gui:=false lidar_mode:=2d stereo:=false actuator_watchdog:=0.3
 ```
 

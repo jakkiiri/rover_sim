@@ -13,7 +13,7 @@ simulator at a time) before it is committed. Measurements below are from
 | 2 | Worlds: DART physics, gz-sim systems, GUI, PBR materials | done |
 | 3 | Sensors: gpu_lidar 3D/2D LiDAR, two camera sensors, ros_gz_bridge | done |
 | 4 | Launch files (ros_gz_sim, spawn, bridge), validators' Gazebo services | done |
-| 5 | Full validation: tests, slope, planner drives, stereo/LiDAR validators | run; 4 open items below |
+| 5 | Full validation: tests, slope, planner drives, stereo/LiDAR validators | run; 3 open items below |
 
 ## 1. Swerve actuators (`src/swerve_gz_system.cpp`)
 
@@ -143,7 +143,7 @@ rover_sim + 71 rover_planner pass.
 | validate_shutdown | pass |
 | validate_launch_matrix | 4/4 topics, data, clean exits, no leftovers; 2/4 logged the shutdown race below |
 | validate_teleop | 13/14; Space stop: wheel jitter 0.068 rad/s (limit 0.05) |
-| validate_lidar3d (lite, default 5 Hz) | performance, interface, timestamps, TF pass; ground/hill accuracy fails |
+| validate_lidar3d (lite, default 5 Hz) | pass (12/12) at 450, 900 and 1800 samples, with the gpu_lidar accuracy rule below |
 | validate_stereo | rates, sync, camera_info, TF pass; usable depth range 2 m (required 4 m) |
 | slope_test | climbs, descends, parks, crosses and turns up to 35°; fails at 40° (Classic: slid at 39°) |
 | validate_terrain hill / mesa / crater | goals reached 0.20–0.24 / 0.215 / 0.22 m off (Classic 0.23 / 0.22 / 0.20–0.26) |
@@ -160,24 +160,44 @@ advertised `/scan` and the stereo topics even when those sensors were off
 (desert.launch.py now bridges only enabled sensors); slope_test's world had
 `--` inside an XML comment, which strict parsers reject.
 
+### 3D LiDAR accuracy rule (`rover_sim/gpu_lidar_check.py`)
+
+Classic's limits (median error < 4 cm, 95th percentile < 9 cm per object)
+were set for the exact CPU `ray` sensor; Classic's own GPU sensor failed
+them, and Fortress has only the GPU sensor (lite at 450 samples: ground
+median 0.10 m, 95th percentile 6.2 m; hills 7-10 cm). Captures at 450, 900
+and 1800 samples per beam separated two GPU effects:
+
+| Effect | Measured | Allowance per point |
+| --- | --- | --- |
+| Beam direction quantised by the cube map | 99th percentile 0.43-0.47 horizontal sample spacings, at all three counts | R x one spacing / tan(grazing angle) |
+| Spheres drawn as a mesh inside the surface | hills read long by 0.7-0.8% of the radius, independent of samples (a ~16-segment mesh) | up to r(1 - cos(pi/16)) / sin(incidence), long side only |
+| Range noise (URDF) | sigma 0.02 m | 3 sigma |
+
+An object passes when >= 95% of its points are within their allowance and
+its median signed error is in [-4 cm, 4 cm + mesh gap]. Points outside it
+whose beam, turned by one spacing, lands on another object are edge points
+(a box against the ground behind) and are counted but not scored; points on
+the world's stereo features are not scored either (before, beams stopped by
+the crate counted as probe-box misses). The spacing and noise come from
+`/robot_description`, so the rule follows `lidar_samples`.
+
+Checked offline on the three captures with deliberate faults: a mount 3 cm
+low or 5 cm high fails on the ground, a 3 deg yaw on the boxes and hills, at
+every sample count (a 1 deg yaw, about one spacing at 450 samples, can pass;
+the TF check covers the exact mount). Live: 12/12 at 450, 900 and 1800
+samples, >= 99.6% of points within for every object, probe-box bias <= 2 mm.
+
 ### Open items
 
-1. **3D LiDAR range accuracy.** gpu_lidar's angular quantisation gives range
-   errors that grow at grazing angles (lite profile, 450 samples: ground
-   median 0.10 m, 95th percentile 6.2 m; 1800 samples: 0.03 / 1.9 m) and
-   ogre2's tessellated spheres put hills 7–10 cm off (limits: median 4 cm,
-   95th percentile 9 cm). Classic's GPU sensor failed these same limits
-   (0.023 / 0.60 m, hills 7–10 cm), which is why Classic used the CPU `ray`
-   sensor; Fortress has no CPU LiDAR. The planner drives, using the Airy
-   profile, are unaffected.
-2. **Stereo depth beyond 2 m.** 2–3 m is 48% valid (needs 50%) and 4–5 m has
+1. **Stereo depth beyond 2 m.** 2–3 m is 48% valid (needs 50%) and 4–5 m has
    a 0.378 m median against a 0.372 m tolerance; 0.4–2 m matches Classic
    (2 mm and 7 mm medians). ogre2 exposes no anisotropic filtering.
    In validate_planner the rock post 5.4 m ahead, beyond stereo range, got
    0–1 grid cells from the LiDAR alone (1 cell passes).
-3. **Wheel jitter after a stop.** The parking hold leaves 0.01–0.07 rad/s of
+2. **Wheel jitter after a stop.** The parking hold leaves 0.01–0.07 rad/s of
    wheel-joint jitter for about 1 s (Classic ~0); the body does not move.
-4. **Shutdown race.** Ctrl+C delivers SIGINT twice (process group, then
+3. **Shutdown race.** Ctrl+C delivers SIGINT twice (process group, then
    launch); robot_state_publisher sometimes exits on the second one (exit −2)
    after its own shutdown. Classic hit the same race (swerve_controller).
 

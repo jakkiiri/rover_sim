@@ -134,7 +134,7 @@ and Gazebo GUI are excluded from sensor performance measurement. Wait for
 source /opt/ros/humble/setup.bash
 source ~/rover_ws/install/setup.bash
 export ROS_DOMAIN_ID=45
-export GAZEBO_MASTER_URI=http://127.0.0.1:11355
+export IGN_PARTITION=rover_validation
 ros2 launch rover_sim rover_desert.launch.py \
   world:=desert gui:=false lidar:=true lidar_mode:=2d rviz:=false actuator_watchdog:=0.3
 ```
@@ -148,7 +148,7 @@ the safety watchdog uses wall time even if simulation slows or the host suspends
 source /opt/ros/humble/setup.bash
 source ~/rover_ws/install/setup.bash
 export ROS_DOMAIN_ID=45
-export GAZEBO_MASTER_URI=http://127.0.0.1:11355
+export IGN_PARTITION=rover_validation
 ros2 run rover_sim validate_lidar.py \
   --duration 10 --windows 3 --watchdog 0.3 \
   --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_lidar.json
@@ -171,7 +171,7 @@ After the validator finishes, RViz can inspect this same simulation. Terminal 3:
 source /opt/ros/humble/setup.bash
 source ~/rover_ws/install/setup.bash
 export ROS_DOMAIN_ID=45
-export GAZEBO_MASTER_URI=http://127.0.0.1:11355
+export IGN_PARTITION=rover_validation
 rviz2 -d "$(ros2 pkg prefix --share rover_sim)/rviz/rover_lidar.rviz" \
   --ros-args -p use_sim_time:=true
 ```
@@ -180,7 +180,7 @@ Confirm Fixed Frame `base_link`, RobotModel and LaserScan status OK, `/scan`
 selected, and zero scan decay. World-stable accumulation is intentionally
 unavailable. Stop RViz and the simulation with Ctrl+C in their terminals when
 finished. Close these isolated terminals, or unset `ROS_DOMAIN_ID` and
-`GAZEBO_MASTER_URI` in each before using the normal default-domain workflow.
+`IGN_PARTITION` in each before using the normal default-domain workflow.
 
 ### Optional matched sensor-disabled baseline
 

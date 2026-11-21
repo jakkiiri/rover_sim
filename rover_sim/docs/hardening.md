@@ -195,7 +195,7 @@ cd ~/rover_ws
 source /opt/ros/humble/setup.bash
 colcon build --packages-select rover_sim
 source ~/rover_ws/install/setup.bash
-ROS_DOMAIN_ID=45 GAZEBO_MASTER_URI=http://127.0.0.1:11355 \
+ROS_DOMAIN_ID=45 IGN_PARTITION=rover_validation \
   ros2 launch rover_sim rover_desert.launch.py world:=desert gui:=false actuator_watchdog:=0.3
 ```
 
@@ -203,7 +203,7 @@ Use the exact `swerve_controller` PID printed by that launch in another sourced
 terminal, with the same domain/master:
 
 ```bash
-ROS_DOMAIN_ID=45 GAZEBO_MASTER_URI=http://127.0.0.1:11355 \
+ROS_DOMAIN_ID=45 IGN_PARTITION=rover_validation \
   ros2 run rover_sim validate_hardening.py --controller-pid PID --watchdog 0.3 \
   --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_hardening.json
 ```

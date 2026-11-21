@@ -160,7 +160,7 @@ def robot_description(timeout=10.0):
 
 
 def description_sensors(urdf):
-    """Gazebo sensors in a URDF: {name: {'type', 'topic', 'rate', 'frame'}}.
+    """Gazebo sensors in a URDF: {name: {type, topic, rate, frame, samples, horizontal_step, noise_stddev}}.
 
     Validators take expected sensor rates from here, so they follow the launch
     arguments (lidar_rate, stereo_rate) instead of hard-coded numbers.
@@ -169,11 +169,23 @@ def description_sensors(urdf):
     sensors = {}
     for sensor in ET.fromstring(urdf).iter('sensor'):
         rate = sensor.findtext('update_rate')
+        samples = sensor.findtext('.//scan/horizontal/samples')
+        noise = sensor.findtext('.//noise/stddev')
         sensors[sensor.get('name')] = {
             'type': sensor.get('type'), 'topic': (sensor.findtext('topic') or '').strip(),
             'rate': float(rate) if rate else None,
-            'frame': (sensor.findtext('ignition_frame_id') or '').strip()}
+            'frame': (sensor.findtext('ignition_frame_id') or '').strip(),
+            'samples': int(samples) if samples else None,       # LiDAR horizontal samples
+            'horizontal_step': _horizontal_step(sensor, samples),  # rad between samples
+            'noise_stddev': float(noise) if noise else None}
     return sensors
+
+
+def _horizontal_step(sensor, samples):
+    lo, hi = sensor.findtext('.//scan/horizontal/min_angle'), sensor.findtext('.//scan/horizontal/max_angle')
+    if not samples or lo is None or hi is None:
+        return None
+    return (float(hi) - float(lo)) / int(samples)
 
 
 def gz_world_service(world, service, request_type, request, timeout_ms=5000):
