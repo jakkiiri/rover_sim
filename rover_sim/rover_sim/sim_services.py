@@ -140,6 +140,42 @@ def teleport(position, rpy=(0.0, 0.0, 0.0), name=ROVER, timeout=10.0):
     _one_shot(work, timeout)
 
 
+def robot_description(timeout=10.0):
+    """The running robot's URDF from /robot_description (latched by robot_state_publisher)."""
+    from rclpy.qos import DurabilityPolicy, QoSProfile
+    from std_msgs.msg import String
+
+    def work(node, executor, timeout):
+        import time
+        got = []
+        node.create_subscription(String, '/robot_description', lambda m: got.append(m.data),
+                                 QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
+        deadline = time.monotonic() + timeout
+        while not got and time.monotonic() < deadline:
+            executor.spin_once(timeout_sec=0.05)
+        if not got:
+            raise RuntimeError('No /robot_description; is the rover launch running?')
+        return got[0]
+    return _one_shot(work, timeout)
+
+
+def description_sensors(urdf):
+    """Gazebo sensors in a URDF: {name: {'type', 'topic', 'rate', 'frame'}}.
+
+    Validators take expected sensor rates from here, so they follow the launch
+    arguments (lidar_rate, stereo_rate) instead of hard-coded numbers.
+    """
+    import xml.etree.ElementTree as ET
+    sensors = {}
+    for sensor in ET.fromstring(urdf).iter('sensor'):
+        rate = sensor.findtext('update_rate')
+        sensors[sensor.get('name')] = {
+            'type': sensor.get('type'), 'topic': (sensor.findtext('topic') or '').strip(),
+            'rate': float(rate) if rate else None,
+            'frame': (sensor.findtext('ignition_frame_id') or '').strip()}
+    return sensors
+
+
 def gz_world_service(world, service, request_type, request, timeout_ms=5000):
     """Call a gz world service with the `ign service` CLI (respects IGN_PARTITION).
 

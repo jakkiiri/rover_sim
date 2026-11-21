@@ -143,11 +143,11 @@ rover_sim + 71 rover_planner pass.
 | validate_shutdown | pass |
 | validate_launch_matrix | 4/4 topics, data, clean exits, no leftovers; 2/4 logged the shutdown race below |
 | validate_teleop | 13/14; Space stop: wheel jitter 0.068 rad/s (limit 0.05) |
-| validate_lidar3d (lite, 10 Hz) | performance, interface, timestamps, TF pass; ground/hill accuracy fails |
+| validate_lidar3d (lite, default 5 Hz) | performance, interface, timestamps, TF pass; ground/hill accuracy fails |
 | validate_stereo | rates, sync, camera_info, TF pass; usable depth range 2 m (required 4 m) |
 | slope_test | climbs, descends, parks, crosses and turns up to 35°; fails at 40° (Classic: slid at 39°) |
 | validate_terrain hill / mesa / crater | goals reached 0.20–0.24 / 0.215 / 0.22 m off (Classic 0.23 / 0.22 / 0.20–0.26) |
-| validate_planner | grid, path and drive checks pass; nominal-rate checks stale (below) |
+| validate_planner | rates (stereo 2 Hz, /points 5 Hz, unchanged with the planner), path and drive pass; grid found 4–5 of 5 obstacles (rock post, see item 2) |
 
 **Parking.** On the 25–35° ramps the parked rover moves 2–3 mm in 5 s
 (Classic crept at 25° and above); descending, it stops within 0.04–0.10 m.
@@ -173,16 +173,24 @@ advertised `/scan` and the stereo topics even when those sensors were off
 2. **Stereo depth beyond 2 m.** 2–3 m is 48% valid (needs 50%) and 4–5 m has
    a 0.378 m median against a 0.372 m tolerance; 0.4–2 m matches Classic
    (2 mm and 7 mm medians). ogre2 exposes no anisotropic filtering.
+   In validate_planner the rock post 5.4 m ahead, beyond stereo range, got
+   0–1 grid cells from the LiDAR alone (1 cell passes).
 3. **Wheel jitter after a stop.** The parking hold leaves 0.01–0.07 rad/s of
    wheel-joint jitter for about 1 s (Classic ~0); the body does not move.
 4. **Shutdown race.** Ctrl+C delivers SIGINT twice (process group, then
    launch); robot_state_publisher sometimes exits on the second one (exit −2)
    after its own shutdown. Classic hit the same race (swerve_controller).
 
-Pre-existing (also wrong on `classic-final`): validate_lidar3d expects
-9–11 Hz but the default `lidar_rate` is 5 (run it with `lidar_rate:=10`);
-validate_planner expects stereo at 15 Hz and a 2D `/scan`, but the defaults
-are 2 Hz stereo and the 3D LiDAR. The hill drive's "gentle cells marked too
+**Validator rates follow the launch.** validate_lidar3d and validate_planner
+read the expected sensor rates from `/robot_description` (`sim_services.
+description_sensors`) instead of fixed 10/15 Hz, which `classic-final`'s
+5 Hz LiDAR / 2 Hz stereo defaults had already broken. validate_planner checks
+`/points` (3D) or `/scan` (2D), whichever LiDAR the robot has, and subscribes
+to it reliably as the planner does: best effort measured 3 Hz of 5 because
+one lost fragment drops a whole ~1 MB sweep. lidar_postprocess itself keeps
+5 Hz at 360–1800 samples (44–65% of one core).
+
+The hill drive's "gentle cells marked too
 steep" check fails at the summit (19–23%, limit 10%); the cells are on the
 rim of the large rock east of the summit, which the truth slope map (terrain
 mesh only) counts as gentle.

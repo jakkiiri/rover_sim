@@ -5,8 +5,10 @@ Run with the sim (and, unless --rates-only, the planner) already up:
   ros2 run rover_planner validate_planner --compare baseline.json --output result.json
 
 Checks, using the obstacle boxes listed in rover_sim's desert.world:
-  sensors  /stereo/points2, /stereo/left/image_raw and /scan keep their frames and
-           their sim-time rates (and, with --compare, match the no-planner baseline)
+  sensors  /stereo/points2, /stereo/left/image_raw and the LiDAR (/points in 3D
+           mode, /scan in 2D) keep their frames and the sim-time rates set in
+           /robot_description (stereo_rate, lidar_rate), and with --compare
+           match the no-planner baseline
   grid     every world obstacle in the camera's view has obstacle cells on it, and
            obstacle cells away from known obstacles and hills are rare
   path     for a goal behind the brick block (the straight line to it drives the
@@ -35,7 +37,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 from rclpy.parameter import Parameter
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy, qos_profile_sensor_data
 from rclpy.time import Time
 from sensor_msgs.msg import Image, LaserScan, PointCloud2
 
@@ -57,11 +59,27 @@ def configure_robot(robot):
 # rover's left side ends at atan(160 / 240) = 33.7 deg (rover_sim stereo.yaml).
 CAMERA_BEARINGS = (math.radians(-45.0), math.atan2(240 - 80, 240))
 DEPTH_ERROR_K = 0.0087  # planner's stereo depth sigma = k * range^2
-SENSORS = {
-    '/stereo/points2': (PointCloud2, 'stereo_left_optical_frame', 15.0),
-    '/stereo/left/image_raw': (Image, 'stereo_left_optical_frame', 15.0),
-    '/scan': (LaserScan, 'lidar_link', 10.0),
-}
+LIDAR_QOS = QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=5, reliability=ReliabilityPolicy.RELIABLE)
+# gz topic of each LiDAR sensor -> the ROS topic the planner side sees.
+LIDAR_TOPICS = {'rover/lidar3d': ('/points', PointCloud2), 'rover/scan': ('/scan', LaserScan)}
+
+
+def expected_sensors(sensors):
+    """{topic: (type, frame, nominal Hz)} from rover_sim's description_sensors().
+
+    The rates are the robot's configured ones (launch arguments stereo_rate and
+    lidar_rate), not fixed numbers. Sensors the robot lacks are not checked.
+    """
+    expected = {}
+    left = sensors.get('stereo_left')
+    if left is not None:
+        expected['/stereo/points2'] = (PointCloud2, 'stereo_left_optical_frame', left['rate'])
+        expected['/stereo/left/image_raw'] = (Image, 'stereo_left_optical_frame', left['rate'])
+    for sensor in sensors.values():
+        if sensor['type'] == 'gpu_lidar' and sensor['topic'] in LIDAR_TOPICS:
+            topic, kind = LIDAR_TOPICS[sensor['topic']]
+            expected[topic] = (kind, sensor['frame'], sensor['rate'])
+    return expected
 
 
 def load_world():
@@ -113,13 +131,18 @@ def footprint_hits(x, y, yaw, box):
 
 
 class Probe(Node):
-    def __init__(self):
+    def __init__(self, sensors):
         super().__init__('planner_validation', parameter_overrides=[
             Parameter('use_sim_time', value=True)])
-        self.stamps = {topic: [] for topic in SENSORS}
-        self.frames = {topic: set() for topic in SENSORS}
-        for topic, (kind, _, _) in SENSORS.items():
-            self.create_subscription(kind, topic, self.keeper(topic), qos_profile_sensor_data)
+        self.sensors = sensors
+        self.stamps = {topic: [] for topic in sensors}
+        self.frames = {topic: set() for topic in sensors}
+        lidar_topics = {topic for topic, _ in LIDAR_TOPICS.values()}
+        for topic, (kind, _, _) in sensors.items():
+            # LiDAR as the planner subscribes to it (reliable): its sweeps are
+            # fragmented on the wire, and best effort here measured 3 Hz of 5.
+            qos = LIDAR_QOS if topic in lidar_topics else qos_profile_sensor_data
+            self.create_subscription(kind, topic, self.keeper(topic), qos)
         self.odom = self.grid = self.path = None
         self.create_subscription(Odometry, '/odom', lambda m: setattr(self, 'odom', m), 10)
         self.create_subscription(OccupancyGrid, '/planner/grid', lambda m: setattr(self, 'grid', m), 1)
@@ -224,12 +247,12 @@ def drive_check(probe, boxes, goal, timeout, record, results):
 
 
 def sensor_rates(probe, seconds):
-    for topic in SENSORS:
+    for topic in probe.sensors:
         probe.stamps[topic].clear()
         probe.frames[topic].clear()
     probe.spin_for(seconds)
     rates = {}
-    for topic, (_, frame, nominal) in SENSORS.items():
+    for topic, (_, frame, nominal) in probe.sensors.items():
         stamps = sorted(set(probe.stamps[topic]))
         rate = (len(stamps) - 1) / (stamps[-1] - stamps[0]) if len(stamps) > 2 else 0.0
         rates[topic] = {'rate_hz': round(rate, 2), 'nominal_hz': nominal,
@@ -255,7 +278,8 @@ def main():
     configure_robot(args.robot)
 
     rclpy.init()
-    probe = Probe()
+    from rover_sim import sim_services
+    probe = Probe(expected_sensors(sim_services.description_sensors(sim_services.robot_description())))
     results = {}
     failures = []
 

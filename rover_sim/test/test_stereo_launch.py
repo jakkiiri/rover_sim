@@ -244,3 +244,18 @@ def test_dome_self_box_covers_wheels_steered_any_way():
     assert xmax >= 0.38 + reach and -xmin >= 0.38 + reach
     assert ymax >= 0.45 + reach and -ymin >= 0.45 + reach
     assert zmin <= -(0.40 + 0.33) and zmax <= 0.0          # down to the ground, never above the sensor
+
+
+@pytest.mark.parametrize('mode', ['3d', '2d'])
+def test_validators_read_the_launch_sensor_rates_from_the_description(mode):
+    """sim_services.description_sensors (used by validate_lidar3d and validate_planner)."""
+    from rover_sim.sim_services import description_sensors
+    _, nodes, _ = evaluate(lidar_mode=mode, lidar_rate='7', stereo_rate='3')
+    urdf = ET.tostring(robot_description(nodes), encoding='unicode')
+    sensors = description_sensors(urdf)
+    lidar = [s for s in sensors.values() if s['type'] == 'gpu_lidar']
+    assert len(lidar) == 1 and lidar[0]['frame'] == 'lidar_link'
+    assert lidar[0]['topic'] == ('rover/lidar3d' if mode == '3d' else 'rover/scan')
+    if mode == '3d':
+        assert lidar[0]['rate'] == 7.0
+    assert sensors['stereo_left']['rate'] == sensors['stereo_right']['rate'] == 3.0

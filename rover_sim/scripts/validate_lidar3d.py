@@ -189,6 +189,13 @@ def main():
         wait(lambda: len(clocks) >= 20 and beats and epochs and len(state) == 8)
         if not args.performance_only:
             wait(lambda: len(raw) >= 10 and len(clouds) >= 10 and fixed)
+        # The launch's lidar_rate (default 5 Hz), as written into the sensor.
+        lidars = [v for v in sim_services.description_sensors(sim_services.robot_description()).values()
+                  if v['type'] == 'gpu_lidar' and v['topic'] == 'rover/lidar3d']
+        if not args.performance_only and len(lidars) != 1:
+            raise RuntimeError('robot_description has no 3D LiDAR (launch with lidar_mode:=3d)')
+        expected_rate = lidars[0]['rate'] if lidars else None
+        results['expected_rate_hz'] = expected_rate
         steady = time.monotonic()
         for w in range(args.windows):
             start = time.monotonic()
@@ -206,7 +213,9 @@ def main():
                                scan_rate_wall_hz=rate_wall, maximum_heartbeat_wall_gap=gap, epochs=values)
             results['performance'].append(measurement)
             record('performance_window_' + str(w+1), rtf > 0 and len(values) == 1 and gap < args.watchdog
-                   and (args.performance_only or rate_sim is not None and 9 <= rate_sim <= 11), **measurement)
+                   and (args.performance_only or rate_sim is not None
+                        and abs(rate_sim - expected_rate) <= .1 * expected_rate),
+                   expected_rate_hz=expected_rate, **measurement)
         results['median_real_time_factor'] = statistics.median(v['real_time_factor'] for v in results['performance'])
         if args.performance_only:
             record('no_watchdog_false_trip', len(epoch_values(steady)) == 1)
@@ -223,7 +232,7 @@ def main():
                and msg.header.frame_id == raw_msg.header.frame_id == 'lidar_link'
                and {'x', 'y', 'z', 'intensity', 'ring', 'time'} <= set(array.dtype.names)
                and len(xyz) > 100 and np.all(np.isfinite(xyz)) and np.all((ranges >= .49999) & (ranges <= 100.00001))
-               and np.all(array['ring'] < channels) and np.all((array['time'] >= 0) & (array['time'] <= .10001)),
+               and np.all(array['ring'] < channels) and np.all((array['time'] >= 0) & (array['time'] <= 1 / expected_rate + 1e-5)),
                fields=list(array.dtype.names), points=len(xyz), frame_id=msg.header.frame_id,
                rings_present=[int(v) for v in np.unique(array['ring'])])
         stamps = [stamp_seconds(m.header.stamp) for _, m in list(raw)]
