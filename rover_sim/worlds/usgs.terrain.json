@@ -1,0 +1,3457 @@
+{
+  "schema": 1,
+  "source": "Six user-provided USGS LPC Southern Utah 2018 tiles (LAS 2019)",
+  "crs_wkt": "COMPOUNDCRS[\"NAD83(2011) / UTM zone 12N + NAVD88 height - Geoid12B (Metres)\",PROJCRS[\"NAD83(2011) / UTM zone 12N\",BASEGEOGCRS[\"NAD83(2011)\",DATUM[\"NAD83 (National Spatial Reference System 2011)\",ELLIPSOID[\"GRS 1980\",6378137,298.257222101,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],ID[\"EPSG\",6318]],CONVERSION[\"UTM zone 12N\",METHOD[\"Transverse Mercator\",ID[\"EPSG\",9807]],PARAMETER[\"Latitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8801]],PARAMETER[\"Longitude of natural origin\",-111,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8802]],PARAMETER[\"Scale factor at natural origin\",0.9996,SCALEUNIT[\"unity\",1],ID[\"EPSG\",8805]],PARAMETER[\"False easting\",500000,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8806]],PARAMETER[\"False northing\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8807]]],CS[Cartesian,2],AXIS[\"x\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"y\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],ID[\"EPSG\",6341]],VERTCRS[\"NAVD88 height\",VDATUM[\"North American Vertical Datum 1988\"],CS[vertical,1],AXIS[\"up\",up,LENGTHUNIT[\"metre\",1]],GEOIDMODEL[\"GEOID12B\"],ID[\"EPSG\",5703]]]",
+  "horizontal_epsg": 6341,
+  "vertical_datum": "NAVD88 / Geoid12B, metres",
+  "origin_projected_m": [
+    519472.0,
+    4252088.0,
+    1394.0079999999998
+  ],
+  "axes": {
+    "x": "easting",
+    "y": "northing",
+    "z": "up"
+  },
+  "inputs": [
+    {
+      "filename": "USGS_LPC_UT_Southern_QL1_2018_12SWH1851_LAS_2019.laz",
+      "sha256": "285256c5348c72e3a8ef4ec29d1dbeadcb6820999d5e6140ff6c6209a010f4e7",
+      "point_count": 9803613,
+      "min": [
+        518000.0,
+        4251000.0,
+        1367.5
+      ],
+      "max": [
+        518999.99,
+        4251999.99,
+        1432.3700000000001
+      ],
+      "ground_points": 7630936,
+      "withheld_points": 3160,
+      "classifications": {
+        "1": 2169517,
+        "2": 7630936,
+        "7": 3151,
+        "18": 9
+      }
+    },
+    {
+      "filename": "USGS_LPC_UT_Southern_QL1_2018_12SWH1852_LAS_2019.laz",
+      "sha256": "15fb277da4050035a7e4ef84ca91dfd85c8258fbadc8acbc518d109bdd6895a7",
+      "point_count": 5084646,
+      "min": [
+        518000.0,
+        4252000.0,
+        1374.56
+      ],
+      "max": [
+        518999.99,
+        4252407.39,
+        1405.6000000000001
+      ],
+      "ground_points": 2726779,
+      "withheld_points": 474,
+      "classifications": {
+        "1": 2357393,
+        "2": 2726779,
+        "7": 474
+      }
+    },
+    {
+      "filename": "USGS_LPC_UT_Southern_QL1_2018_12SWH1951_LAS_2019.laz",
+      "sha256": "3649adbc5ea4fe4fb43c61b4169002cdeb3eb209699c90426181e34df076c83f",
+      "point_count": 9453186,
+      "min": [
+        519000.0,
+        4251000.0,
+        1358.1000000000001
+      ],
+      "max": [
+        519999.99,
+        4251999.99,
+        1406.25
+      ],
+      "ground_points": 7397394,
+      "withheld_points": 2165,
+      "classifications": {
+        "1": 2053627,
+        "2": 7397394,
+        "7": 2162,
+        "18": 3
+      }
+    },
+    {
+      "filename": "USGS_LPC_UT_Southern_QL1_2018_12SWH1952_LAS_2019.laz",
+      "sha256": "70d17ee06529cfbcfd5568293a094e175e8fdd52734693ec7f26edb3ba355822",
+      "point_count": 6407653,
+      "min": [
+        519000.0,
+        4252000.0,
+        1373.54
+      ],
+      "max": [
+        519999.99,
+        4252563.7,
+        1402.68
+      ],
+      "ground_points": 3900926,
+      "withheld_points": 221,
+      "classifications": {
+        "1": 2506506,
+        "2": 3900926,
+        "7": 219,
+        "18": 2
+      }
+    },
+    {
+      "filename": "USGS_LPC_UT_Southern_QL1_2018_12SWH2051_LAS_2019.laz",
+      "sha256": "276764e31f34736ed765bcdf6f0c9717417450185584fc6b562c4c46b283c97b",
+      "point_count": 9926262,
+      "min": [
+        520000.0,
+        4251000.0,
+        1337.49
+      ],
+      "max": [
+        520999.99,
+        4251999.99,
+        1403.21
+      ],
+      "ground_points": 7334409,
+      "withheld_points": 3498,
+      "classifications": {
+        "1": 2588355,
+        "2": 7334409,
+        "7": 3494,
+        "18": 4
+      }
+    },
+    {
+      "filename": "USGS_LPC_UT_Southern_QL1_2018_12SWH2052_LAS_2019.laz",
+      "sha256": "8feaaa72bde436e1577ab6af01827526630343b3bfab363cc73c7126d4460cbd",
+      "point_count": 7218339,
+      "min": [
+        520000.0,
+        4252000.0,
+        1370.27
+      ],
+      "max": [
+        520999.99,
+        4252719.91,
+        1406.6000000000001
+      ],
+      "ground_points": 4736519,
+      "withheld_points": 110,
+      "classifications": {
+        "1": 2481710,
+        "2": 4736519,
+        "7": 110
+      }
+    }
+  ],
+  "source_bounds_m": [
+    518000.0,
+    4251000.0,
+    521000.0,
+    4252720.0
+  ],
+  "local_bounds_m": [
+    -1472.0,
+    -1088.0,
+    1528.0,
+    632.0
+  ],
+  "source_ground_elevation_m": [
+    1337.573672932122,
+    1430.6057597807394
+  ],
+  "spawn": {
+    "x": 0.0,
+    "y": 0.0,
+    "ground_z": 0.0,
+    "coarse_slope_deg": 0.594939637615545,
+    "maximum_nearby_coarse_slope_deg": 1.2277615647175624
+  },
+  "grids": [
+    {
+      "path": "../models/usgs_terrain/coarse.npz",
+      "spacing": 4.0,
+      "origin": [
+        -1472.0,
+        -1088.0
+      ],
+      "shape": [
+        431,
+        751
+      ],
+      "ground_nodes": 279705,
+      "filled_nodes": 8,
+      "unsupported_nodes": 43968
+    },
+    {
+      "path": "../models/usgs_terrain/spawn.npz",
+      "spacing": 1.0,
+      "origin": [
+        -64.0,
+        -64.0
+      ],
+      "shape": [
+        129,
+        129
+      ],
+      "ground_nodes": 16639,
+      "filled_nodes": 2,
+      "unsupported_nodes": 0
+    }
+  ],
+  "tiles": [
+    {
+      "name": "terrain_00_00",
+      "mesh": "terrain_00_00.dae",
+      "origin": [
+        -1472.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e542b4fbbe3678e2805eb3c0397c201a5bca00ed7b48c70eb721c2fdc45cca44"
+    },
+    {
+      "name": "terrain_00_01",
+      "mesh": "terrain_00_01.dae",
+      "origin": [
+        -1344.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "1fb599e3df6073fb5bd7fe434759d7ba91f514266123139e8949778d40b054b5"
+    },
+    {
+      "name": "terrain_00_02",
+      "mesh": "terrain_00_02.dae",
+      "origin": [
+        -1216.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "9f43759114fae400e52f6a8e812b824fce39f6d3509ad17615af2f6660c6df48"
+    },
+    {
+      "name": "terrain_00_03",
+      "mesh": "terrain_00_03.dae",
+      "origin": [
+        -1088.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "fc6d9e0a69bf3c64ac01080b06252880a861a2e5e857c437f53d05db48be5861"
+    },
+    {
+      "name": "terrain_00_04",
+      "mesh": "terrain_00_04.dae",
+      "origin": [
+        -960.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "773793479e896dd7519e4fc8d027b01b4fabfe4c285b8c04723c42ca43c893f7"
+    },
+    {
+      "name": "terrain_00_05",
+      "mesh": "terrain_00_05.dae",
+      "origin": [
+        -832.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "199190587d98d2a9410d0769e0b7ee32f13f025c33ae9c9f9ca8e98d801f90dd"
+    },
+    {
+      "name": "terrain_00_06",
+      "mesh": "terrain_00_06.dae",
+      "origin": [
+        -704.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "5cf4e028b9a8dcde088e809cbd913f9ef2ac473440b60e1418d5cca6e52e6e02"
+    },
+    {
+      "name": "terrain_00_07",
+      "mesh": "terrain_00_07.dae",
+      "origin": [
+        -576.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "f09f1510e80b02e79b0e82dec08d0509bb414e641820c61f9bb5456713c730ad"
+    },
+    {
+      "name": "terrain_00_08",
+      "mesh": "terrain_00_08.dae",
+      "origin": [
+        -448.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "22ba69ca8545e84a558f2c4343b64501d3c109fcb1f79a7c363641884fc1b4c5"
+    },
+    {
+      "name": "terrain_00_09",
+      "mesh": "terrain_00_09.dae",
+      "origin": [
+        -320.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "021e7db8c87f8d36265f3fd7eb8cf5a61a8a6eb27a34fe54c76128303c92a048"
+    },
+    {
+      "name": "terrain_00_10",
+      "mesh": "terrain_00_10.dae",
+      "origin": [
+        -192.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "8c1b6700bd2674ec2d3caa81ea2217b3412d8b29f95012d358b1ca782fbd0d18"
+    },
+    {
+      "name": "terrain_00_11",
+      "mesh": "terrain_00_11.dae",
+      "origin": [
+        -64.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e43187f9d620c1042f2bec6c8bbe79878264dbe181ec52d04c9cd8e37a1ac369"
+    },
+    {
+      "name": "terrain_00_12",
+      "mesh": "terrain_00_12.dae",
+      "origin": [
+        64.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e4d8c6b3bafed2a4334055b4dfac1f35b852aeaabf30ac0a5201442e6e5f9cfa"
+    },
+    {
+      "name": "terrain_00_13",
+      "mesh": "terrain_00_13.dae",
+      "origin": [
+        192.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "8c4fd7ae3f1223f4374e44504e7d909766f7a13c2065cfa5429f4896b3d2fabb"
+    },
+    {
+      "name": "terrain_00_14",
+      "mesh": "terrain_00_14.dae",
+      "origin": [
+        320.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "8071729917fc0116980e8f29bd54bc4ab7d1c15ec284990cdb16af0773294155"
+    },
+    {
+      "name": "terrain_00_15",
+      "mesh": "terrain_00_15.dae",
+      "origin": [
+        448.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "7ab353fc8321437da5a2c4182f4db59c41bdf8df17478e9667193993d087c681"
+    },
+    {
+      "name": "terrain_00_16",
+      "mesh": "terrain_00_16.dae",
+      "origin": [
+        576.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "b7b88322109040e9dd1422455e2af1a921d23afffa44ac28d9b2d2ca7e21de5e"
+    },
+    {
+      "name": "terrain_00_17",
+      "mesh": "terrain_00_17.dae",
+      "origin": [
+        704.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "26b63e1e6100fd0552568d917ca172717e039a420e792118acd2afe1f351fab2"
+    },
+    {
+      "name": "terrain_00_18",
+      "mesh": "terrain_00_18.dae",
+      "origin": [
+        832.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e9f8cfdbe8557c01f0a770e33d54ebb77af4345afe9f32c53fff11c2351bea0e"
+    },
+    {
+      "name": "terrain_00_19",
+      "mesh": "terrain_00_19.dae",
+      "origin": [
+        960.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "7538bdd005c8074e756494b45488b12a3ef2116ec3db7515a30eb7a4227ba0a3"
+    },
+    {
+      "name": "terrain_00_20",
+      "mesh": "terrain_00_20.dae",
+      "origin": [
+        1088.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "b0911615211f48d3db7a3ecfcfab54736be6fb914ad9afc08c20d5c75a842e1f"
+    },
+    {
+      "name": "terrain_00_21",
+      "mesh": "terrain_00_21.dae",
+      "origin": [
+        1216.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "54db56328b649b4edb71378c27ec14204597240cd79ada9ba7d66ec45b09c05c"
+    },
+    {
+      "name": "terrain_00_22",
+      "mesh": "terrain_00_22.dae",
+      "origin": [
+        1344.0,
+        -1088.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "14e02df84345b66d09845d6c95e5ab9c06ddc53b55296fabae015131da641320"
+    },
+    {
+      "name": "terrain_00_23",
+      "mesh": "terrain_00_23.dae",
+      "origin": [
+        1472.0,
+        -1088.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "03f1a9c750742e38f8e9c1172411e8bfff7502edbf2eecbdba6e3fb49e6c41e2"
+    },
+    {
+      "name": "terrain_01_00",
+      "mesh": "terrain_01_00.dae",
+      "origin": [
+        -1472.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "cf5ddb846cbe73c1a1e682ee7dd4882cd2170b1d8344fe59704ba774cd5ca3c7"
+    },
+    {
+      "name": "terrain_01_01",
+      "mesh": "terrain_01_01.dae",
+      "origin": [
+        -1344.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "28213dd6a4db75f44997fd8e86919c44d7ac9ecc7f9b571106b926b0e1e22e1d"
+    },
+    {
+      "name": "terrain_01_02",
+      "mesh": "terrain_01_02.dae",
+      "origin": [
+        -1216.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "a37ca04d87e2939f953f894b1dd11b2426940e734fe2d1cf909c8367e50347a3"
+    },
+    {
+      "name": "terrain_01_03",
+      "mesh": "terrain_01_03.dae",
+      "origin": [
+        -1088.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "dfc449999df7db3400c46db51ddab8d13611a9299295362f6cfc6b5dde13e197"
+    },
+    {
+      "name": "terrain_01_04",
+      "mesh": "terrain_01_04.dae",
+      "origin": [
+        -960.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "cfda9505b531dcfe7bbee83715e38abc808079e79230e11d6c315b2f545da0bf"
+    },
+    {
+      "name": "terrain_01_05",
+      "mesh": "terrain_01_05.dae",
+      "origin": [
+        -832.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "23aa9792e4f600553f83ae490f94b54eba0a6db2e6ea1e8eb021368b4e7150eb"
+    },
+    {
+      "name": "terrain_01_06",
+      "mesh": "terrain_01_06.dae",
+      "origin": [
+        -704.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "67a4f523c06ac4283accbe37fd56a45dd28aacf766cd257bfd4687f192f3897b"
+    },
+    {
+      "name": "terrain_01_07",
+      "mesh": "terrain_01_07.dae",
+      "origin": [
+        -576.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "c09fde8f813b4befc60e128f5cd712741d0d8bc9f682e659e5dff3eb8018e81d"
+    },
+    {
+      "name": "terrain_01_08",
+      "mesh": "terrain_01_08.dae",
+      "origin": [
+        -448.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "22f3f2ffa1b5b243fa57b2c5de873159a3b16f1a234954e846938fbc7f295a2f"
+    },
+    {
+      "name": "terrain_01_09",
+      "mesh": "terrain_01_09.dae",
+      "origin": [
+        -320.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "3f67c80d50003e310413d8c1607f1899488baf48c222780c4944153ee0ece1da"
+    },
+    {
+      "name": "terrain_01_10",
+      "mesh": "terrain_01_10.dae",
+      "origin": [
+        -192.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "3c59f8e474a92d59c4744beebf71a1db036156e230a2b26f2ea62f564998b70f"
+    },
+    {
+      "name": "terrain_01_11",
+      "mesh": "terrain_01_11.dae",
+      "origin": [
+        -64.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "b0aa0e234c822464b9626656a95be6e226b6d4607a632c168008e58b129fe81f"
+    },
+    {
+      "name": "terrain_01_12",
+      "mesh": "terrain_01_12.dae",
+      "origin": [
+        64.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "87fd79b25a0b0bda8b2d5ccfaca516c3a0747a49e65121ac4e1ca8cfa73e7b7b"
+    },
+    {
+      "name": "terrain_01_13",
+      "mesh": "terrain_01_13.dae",
+      "origin": [
+        192.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "89970de27a5018a938e9f9e069772c44ea19d0a21772657093a6581b5bbbf5d2"
+    },
+    {
+      "name": "terrain_01_14",
+      "mesh": "terrain_01_14.dae",
+      "origin": [
+        320.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "141670f882eb5d1c44776a20bfdc6eb288b72c7c57ce33ae03d04b1af2b8b591"
+    },
+    {
+      "name": "terrain_01_15",
+      "mesh": "terrain_01_15.dae",
+      "origin": [
+        448.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "fd41aea24862d2c7aaf4763b33f6f01b4aa8d368255b30797c850aa4ab0c0e76"
+    },
+    {
+      "name": "terrain_01_16",
+      "mesh": "terrain_01_16.dae",
+      "origin": [
+        576.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "5fcfb1b64b82840afdb61b2f0c9b0dff848093f2f3cb0bc244289443ba97d39a"
+    },
+    {
+      "name": "terrain_01_17",
+      "mesh": "terrain_01_17.dae",
+      "origin": [
+        704.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "787ad9eb6e9f10c4b61af69af5b2fa646ad4e34fe7f83c69ef5ecf72d573e0d5"
+    },
+    {
+      "name": "terrain_01_18",
+      "mesh": "terrain_01_18.dae",
+      "origin": [
+        832.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "adefe10ada9b732b49b6473f7e78742d86b2e7defd0879cab8e66126bbbc113a"
+    },
+    {
+      "name": "terrain_01_19",
+      "mesh": "terrain_01_19.dae",
+      "origin": [
+        960.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "9e8f22287ae6ec0eec34eb2de70f8378ca85806216b91a087633424ae12a1c02"
+    },
+    {
+      "name": "terrain_01_20",
+      "mesh": "terrain_01_20.dae",
+      "origin": [
+        1088.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "a73cf977f5ea55bfa60c81ad04ad9a906cff225043afcb9ea1a770cb1b69863e"
+    },
+    {
+      "name": "terrain_01_21",
+      "mesh": "terrain_01_21.dae",
+      "origin": [
+        1216.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "4031bad6ab773170b7ec66ce492df70534848eab5dcfdb341e0d7c71a410d52c"
+    },
+    {
+      "name": "terrain_01_22",
+      "mesh": "terrain_01_22.dae",
+      "origin": [
+        1344.0,
+        -960.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "b9bcdf22f233cdcdc51d5ca591bd537a7a530738647ff5749bda05390584f1f1"
+    },
+    {
+      "name": "terrain_01_23",
+      "mesh": "terrain_01_23.dae",
+      "origin": [
+        1472.0,
+        -960.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "9a3f1a7d374acb764a072084258df3447d5ea28c4ee38ffcbb8e854b29dc82c2"
+    },
+    {
+      "name": "terrain_02_00",
+      "mesh": "terrain_02_00.dae",
+      "origin": [
+        -1472.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "863ab923ad02bfc256b1f7de194e230bf68e71236691960e6c7724e8a4ccb269"
+    },
+    {
+      "name": "terrain_02_01",
+      "mesh": "terrain_02_01.dae",
+      "origin": [
+        -1344.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "c3a24dc1c32c20b11b5e1f5c067a959e7aa2c12e111094726b66f65c25e93b98"
+    },
+    {
+      "name": "terrain_02_02",
+      "mesh": "terrain_02_02.dae",
+      "origin": [
+        -1216.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "476ebd27cca931f27468c7e942a88887453b35a17c1da4815646819f3e7ac4cf"
+    },
+    {
+      "name": "terrain_02_03",
+      "mesh": "terrain_02_03.dae",
+      "origin": [
+        -1088.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "4a4a51e408aed023aeb3d6b5a775c39588d882105d6901ad571071cde3dc4955"
+    },
+    {
+      "name": "terrain_02_04",
+      "mesh": "terrain_02_04.dae",
+      "origin": [
+        -960.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "a7a33bef1bed421c4f8f6af0a55c769a73558f9ec27995f46cef9ee5bd35de75"
+    },
+    {
+      "name": "terrain_02_05",
+      "mesh": "terrain_02_05.dae",
+      "origin": [
+        -832.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "af7b797e21b7d13c2e4fe43af2d41351a9d11f06860d5cc0a94802d682d9dbaa"
+    },
+    {
+      "name": "terrain_02_06",
+      "mesh": "terrain_02_06.dae",
+      "origin": [
+        -704.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "9ffb0027545705c98c607d56431b091b6ee49d5c68d15c1b9af3101dbfc03e58"
+    },
+    {
+      "name": "terrain_02_07",
+      "mesh": "terrain_02_07.dae",
+      "origin": [
+        -576.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "52555ee188abeb9779b5597bb57322ec1769d60f9147c611972ba981e3e22396"
+    },
+    {
+      "name": "terrain_02_08",
+      "mesh": "terrain_02_08.dae",
+      "origin": [
+        -448.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "3c81680f953ba08a9efa4fb434305bbb1039725eb13c371f53101552d44d3a14"
+    },
+    {
+      "name": "terrain_02_09",
+      "mesh": "terrain_02_09.dae",
+      "origin": [
+        -320.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "952b7a4d7c9b98fca69437debcf67bfb3f2dcb92b13a3136ae3f9213e44ea18e"
+    },
+    {
+      "name": "terrain_02_10",
+      "mesh": "terrain_02_10.dae",
+      "origin": [
+        -192.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "bc49b95d193b333d1608c8e444d82101de06f62b9e31cfecfb4fd5cb0b5e44d2"
+    },
+    {
+      "name": "terrain_02_11",
+      "mesh": "terrain_02_11.dae",
+      "origin": [
+        -64.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "6368135ae191c68eb7249c97672cfbefd53b078a47bbd8631c796b2a9d6e6746"
+    },
+    {
+      "name": "terrain_02_12",
+      "mesh": "terrain_02_12.dae",
+      "origin": [
+        64.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e1a3d8959ff67d5ced49984a560f15c0e32a81a071bdb49ca3f0379b369bf6a9"
+    },
+    {
+      "name": "terrain_02_13",
+      "mesh": "terrain_02_13.dae",
+      "origin": [
+        192.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "41c96ceaf808ca787779f0428cfa0727ad1ebc85dc9e394327a8251daf2b29a7"
+    },
+    {
+      "name": "terrain_02_14",
+      "mesh": "terrain_02_14.dae",
+      "origin": [
+        320.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "748087f7a62a66b0679880269c3155466c859c80b0526d8c573d79379c735b84"
+    },
+    {
+      "name": "terrain_02_15",
+      "mesh": "terrain_02_15.dae",
+      "origin": [
+        448.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "9055ff4a29ae26033d76c736bd8f967037ed0f819b10bf27f6431de99969a509"
+    },
+    {
+      "name": "terrain_02_16",
+      "mesh": "terrain_02_16.dae",
+      "origin": [
+        576.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "f2fe270b264036c227ba027ad10f4d03655ec7cf7240b8b55bb99024da4a174a"
+    },
+    {
+      "name": "terrain_02_17",
+      "mesh": "terrain_02_17.dae",
+      "origin": [
+        704.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "41c85ebe22e36b84b45bd1cce95502bfb7df27f823b556db87edaa6e10a0e75f"
+    },
+    {
+      "name": "terrain_02_18",
+      "mesh": "terrain_02_18.dae",
+      "origin": [
+        832.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "6c6a471f1435a587ce21cfb85a4935488a606dfb51c375cb79c9b210ed40ca5f"
+    },
+    {
+      "name": "terrain_02_19",
+      "mesh": "terrain_02_19.dae",
+      "origin": [
+        960.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "db1be00feb6d12d255157702efcd80f7077db808f3cf6ee74a6920a2d87ffa16"
+    },
+    {
+      "name": "terrain_02_20",
+      "mesh": "terrain_02_20.dae",
+      "origin": [
+        1088.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "f4e175bbcc3b06196f2b5ce95891e5b52f5212eed57eba9e1ab4a4a493207d5d"
+    },
+    {
+      "name": "terrain_02_21",
+      "mesh": "terrain_02_21.dae",
+      "origin": [
+        1216.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "c90521bc8770bcb0751c562eaa5483ded991215126b679c28b838f695ce7e6f3"
+    },
+    {
+      "name": "terrain_02_22",
+      "mesh": "terrain_02_22.dae",
+      "origin": [
+        1344.0,
+        -832.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "3a2e4dd9cfd78fb2ed8e0b88487676241c30cca6a4916e26a37af250085deb5a"
+    },
+    {
+      "name": "terrain_02_23",
+      "mesh": "terrain_02_23.dae",
+      "origin": [
+        1472.0,
+        -832.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "ac655de8bd29ef930d5510686ac4263f346c086337bdab0248b9a07dc717df80"
+    },
+    {
+      "name": "terrain_03_00",
+      "mesh": "terrain_03_00.dae",
+      "origin": [
+        -1472.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "1b2579bc98cde35b49f8229cbc700fa52e82e9aaabe23e9a93a815d5f2825ee9"
+    },
+    {
+      "name": "terrain_03_01",
+      "mesh": "terrain_03_01.dae",
+      "origin": [
+        -1344.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "90f0f3432fcba65cfaeed37eab77aa7bb78621d963d642f383a39e9dec30788b"
+    },
+    {
+      "name": "terrain_03_02",
+      "mesh": "terrain_03_02.dae",
+      "origin": [
+        -1216.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "49ad9cfc4d5439c40cf8e38ae8339a88d86a874c20df1ae4b25792ef89234b43"
+    },
+    {
+      "name": "terrain_03_03",
+      "mesh": "terrain_03_03.dae",
+      "origin": [
+        -1088.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "863a49b3f730ed72e64f49787900c2ad6db91b0fb75f036282ef09393c70960e"
+    },
+    {
+      "name": "terrain_03_04",
+      "mesh": "terrain_03_04.dae",
+      "origin": [
+        -960.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "c724d7d3ba7675d260e60ac9b718076c2dca7e5375408a8ce97b321a3456a743"
+    },
+    {
+      "name": "terrain_03_05",
+      "mesh": "terrain_03_05.dae",
+      "origin": [
+        -832.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "937e071e1c593341b6d4d7aec7504fec9cc4d378ee60788e9e1905a4b8be2464"
+    },
+    {
+      "name": "terrain_03_06",
+      "mesh": "terrain_03_06.dae",
+      "origin": [
+        -704.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "0f9c0096f835acfb94f5a3ceb406eaad7651d6d51f83dd567d864f58c4adb2ca"
+    },
+    {
+      "name": "terrain_03_07",
+      "mesh": "terrain_03_07.dae",
+      "origin": [
+        -576.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "3b11a89a1c34eec816721430be809fb82beae98368d6d9217eb5269eeda5c26a"
+    },
+    {
+      "name": "terrain_03_08",
+      "mesh": "terrain_03_08.dae",
+      "origin": [
+        -448.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "1c3775df3f98d9c12b6397f1478960e22b9cb7e2064b36a90e9482524c9dd5a0"
+    },
+    {
+      "name": "terrain_03_09",
+      "mesh": "terrain_03_09.dae",
+      "origin": [
+        -320.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "224dae951abc66362ab83004a67daa78dbc03c52c30223d74b442699e62ee42e"
+    },
+    {
+      "name": "terrain_03_10",
+      "mesh": "terrain_03_10.dae",
+      "origin": [
+        -192.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "bd7f93ff41c651be6dc10ea46c468cfb0365d6c4336ef0f97e1b17fc0a15f5ec"
+    },
+    {
+      "name": "terrain_03_11",
+      "mesh": "terrain_03_11.dae",
+      "origin": [
+        -64.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "5a0a73fc14b99205591d750514de1a71b08c954f07f22a721d083980e11b5bc2"
+    },
+    {
+      "name": "terrain_03_12",
+      "mesh": "terrain_03_12.dae",
+      "origin": [
+        64.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "0f9dc16600e4ecf051be4bf594e3c8ab3d84047361d09a40be77a83d9aa7f089"
+    },
+    {
+      "name": "terrain_03_13",
+      "mesh": "terrain_03_13.dae",
+      "origin": [
+        192.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "6cbc156371cc0f4bd3ea4d67d6e3d78ea9b8114a0f4ce491be56893915d4bf04"
+    },
+    {
+      "name": "terrain_03_14",
+      "mesh": "terrain_03_14.dae",
+      "origin": [
+        320.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "d737e39031bfa116022a485c438c87446ad9adf6a18bdd9378abfa417fd8598a"
+    },
+    {
+      "name": "terrain_03_15",
+      "mesh": "terrain_03_15.dae",
+      "origin": [
+        448.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "44672027b2b42134b79f4668bd642d7b17a6bb5003bc648a2c6c533aacc54d9f"
+    },
+    {
+      "name": "terrain_03_16",
+      "mesh": "terrain_03_16.dae",
+      "origin": [
+        576.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "0245070289d0bf2f607e5fb1c16bb8efd5b3617377acd93b1113864c48180e26"
+    },
+    {
+      "name": "terrain_03_17",
+      "mesh": "terrain_03_17.dae",
+      "origin": [
+        704.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "de7b8e333e6ef4eb9a2dd324d40759be9232a8771a4990b238c5e65753405e32"
+    },
+    {
+      "name": "terrain_03_18",
+      "mesh": "terrain_03_18.dae",
+      "origin": [
+        832.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "8a477edefa1a2c8bdb134651783f95223b15d0b48633b4daea2d97c57a7b6244"
+    },
+    {
+      "name": "terrain_03_19",
+      "mesh": "terrain_03_19.dae",
+      "origin": [
+        960.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "8451a18b7262e1447c77e68a751779df4e5f6793e7bc7ee3b2a8620ef7ab43ca"
+    },
+    {
+      "name": "terrain_03_20",
+      "mesh": "terrain_03_20.dae",
+      "origin": [
+        1088.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "c217b3d9f878904de732fbd5d40748e29dd2226c9acbeb93a72e4ed8aba6a257"
+    },
+    {
+      "name": "terrain_03_21",
+      "mesh": "terrain_03_21.dae",
+      "origin": [
+        1216.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "f38d957bb1c8f353f574c6be1d34a88389ea8eb0f225d62d2e8341b502d628ec"
+    },
+    {
+      "name": "terrain_03_22",
+      "mesh": "terrain_03_22.dae",
+      "origin": [
+        1344.0,
+        -704.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "041098044c5e78656c1b1c3d13555715bd47be28e2425cd33f32bbd127854e48"
+    },
+    {
+      "name": "terrain_03_23",
+      "mesh": "terrain_03_23.dae",
+      "origin": [
+        1472.0,
+        -704.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "6ddd499bfc2e35ed9b3b613b50bc76b8b7286c9b4b515c4c8f5df84b7c953e53"
+    },
+    {
+      "name": "terrain_04_00",
+      "mesh": "terrain_04_00.dae",
+      "origin": [
+        -1472.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "19db4a74e4f80ab08c4acf6b69facc315b404984b73ce9b5e647ec129b5d043d"
+    },
+    {
+      "name": "terrain_04_01",
+      "mesh": "terrain_04_01.dae",
+      "origin": [
+        -1344.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "6c2d6e9f61b0031f44d92917344eec5dcdb50dfb0c56827f1869e4264f60df64"
+    },
+    {
+      "name": "terrain_04_02",
+      "mesh": "terrain_04_02.dae",
+      "origin": [
+        -1216.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "67878c5cdb7e8c5468d3eb4a9c089f7bc16d1ced71755a23ce4e8ffbb86b6244"
+    },
+    {
+      "name": "terrain_04_03",
+      "mesh": "terrain_04_03.dae",
+      "origin": [
+        -1088.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "988193767f705770f3b1494b7a9800d9baeb4ebb0afb512f1d9c8e4c5c7a294b"
+    },
+    {
+      "name": "terrain_04_04",
+      "mesh": "terrain_04_04.dae",
+      "origin": [
+        -960.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e819fe2e9aa805f638d453cf752c50360cd6d2d3c994dd44c414dc5478da411f"
+    },
+    {
+      "name": "terrain_04_05",
+      "mesh": "terrain_04_05.dae",
+      "origin": [
+        -832.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "961398765c41efca23e7c7adc9c59408a636bdcd87464984b5a7b0be2639a7c3"
+    },
+    {
+      "name": "terrain_04_06",
+      "mesh": "terrain_04_06.dae",
+      "origin": [
+        -704.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "85e781cf585a9452089b97c0525ea630218a1c5877030f50a96121f81fc950bf"
+    },
+    {
+      "name": "terrain_04_07",
+      "mesh": "terrain_04_07.dae",
+      "origin": [
+        -576.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "f6ebc857068cbddfe6dfe37dbf4f9521bf630fb65f88c34459bc655bb2f5a92a"
+    },
+    {
+      "name": "terrain_04_08",
+      "mesh": "terrain_04_08.dae",
+      "origin": [
+        -448.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "1d34a910867b1b665b6ddbe7408fa5011ae520dafb973fc411cce74b91cf20cd"
+    },
+    {
+      "name": "terrain_04_09",
+      "mesh": "terrain_04_09.dae",
+      "origin": [
+        -320.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "3eb7ded4a9dc94913abcd6bc6466e58b27cb6258664dbc088e57ea9e54c60278"
+    },
+    {
+      "name": "terrain_04_10",
+      "mesh": "terrain_04_10.dae",
+      "origin": [
+        -192.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "ac193edd1b2bb9d3dd4675f72e3c3c01f609e1c487abc1120434b216bd7147d7"
+    },
+    {
+      "name": "terrain_04_11",
+      "mesh": "terrain_04_11.dae",
+      "origin": [
+        -64.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "5aee2989399ed152726192a37e2ebab97b4a3fd361ea59dbf02e74cbde282441"
+    },
+    {
+      "name": "terrain_04_12",
+      "mesh": "terrain_04_12.dae",
+      "origin": [
+        64.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "614ea45d83b34bf5ea7e0bf6bba6fb43b59808bf04d5f72524e409f0182b5779"
+    },
+    {
+      "name": "terrain_04_13",
+      "mesh": "terrain_04_13.dae",
+      "origin": [
+        192.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "9ee9dc3c7cfdb312c13bfafd65ebccae509f6f2b97da4a241477004b779e1f16"
+    },
+    {
+      "name": "terrain_04_14",
+      "mesh": "terrain_04_14.dae",
+      "origin": [
+        320.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "c08bfc082fcea4492a7cdf27f69bbee0713f72271fac32c37b9e60d6b6d35a84"
+    },
+    {
+      "name": "terrain_04_15",
+      "mesh": "terrain_04_15.dae",
+      "origin": [
+        448.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "6310649ad180fddbfef2bb99899a86fc5ac6e6c635c5c5a0b8682c4f40941a91"
+    },
+    {
+      "name": "terrain_04_16",
+      "mesh": "terrain_04_16.dae",
+      "origin": [
+        576.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "6ce06acb0133349f950e9a416581dd6e4cd740e479030de7d00fd0acd98215ad"
+    },
+    {
+      "name": "terrain_04_17",
+      "mesh": "terrain_04_17.dae",
+      "origin": [
+        704.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "3061711179c2d59dc0dff560b1387b0336db85e2cdba49985b6403da29fb5b4e"
+    },
+    {
+      "name": "terrain_04_18",
+      "mesh": "terrain_04_18.dae",
+      "origin": [
+        832.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "205e720db44e4be00d6c1f5a160dacc54f4ce6319b69c1505aa1d13158c84a6b"
+    },
+    {
+      "name": "terrain_04_19",
+      "mesh": "terrain_04_19.dae",
+      "origin": [
+        960.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "04aafc0e563c7ffa767e987922fc7497991963db187750575155bf9bdbbc38d4"
+    },
+    {
+      "name": "terrain_04_20",
+      "mesh": "terrain_04_20.dae",
+      "origin": [
+        1088.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "3d1f7bcb8200f65197614f577efbdeb2f4a7bcf45b981193e501f64f84b021eb"
+    },
+    {
+      "name": "terrain_04_21",
+      "mesh": "terrain_04_21.dae",
+      "origin": [
+        1216.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "a1eb0af30d6892ccb03d7ac11956e1bc259580afe7a49fca840cb7bfe94d2811"
+    },
+    {
+      "name": "terrain_04_22",
+      "mesh": "terrain_04_22.dae",
+      "origin": [
+        1344.0,
+        -576.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "a287e5c1eb10aa9f5c483e3373a6fe9ebfb5383241cde7cdaa9a7e7771d245dc"
+    },
+    {
+      "name": "terrain_04_23",
+      "mesh": "terrain_04_23.dae",
+      "origin": [
+        1472.0,
+        -576.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "0910d99594af0e0f18163c9df2eb3f08d7a9bd51d8c6200c371719d646d3c409"
+    },
+    {
+      "name": "terrain_05_00",
+      "mesh": "terrain_05_00.dae",
+      "origin": [
+        -1472.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "801b7e369f81460829132695809ae5753f2c749fd9518ced3e6ae89c726e0ed8"
+    },
+    {
+      "name": "terrain_05_01",
+      "mesh": "terrain_05_01.dae",
+      "origin": [
+        -1344.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "d591f9523f1785e12ad4806e8704513fd3074a8a5246d282e2c1960eb2ffcaa0"
+    },
+    {
+      "name": "terrain_05_02",
+      "mesh": "terrain_05_02.dae",
+      "origin": [
+        -1216.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "88bf69196a2ffd6c08a7c3fb6e7d3f58fd6ef64af40a75a05ce6d5b0b8227460"
+    },
+    {
+      "name": "terrain_05_03",
+      "mesh": "terrain_05_03.dae",
+      "origin": [
+        -1088.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "fc29a2c396e8c82b0f55e3362b28bf7c49d23eeb065255236af1999901aecdcf"
+    },
+    {
+      "name": "terrain_05_04",
+      "mesh": "terrain_05_04.dae",
+      "origin": [
+        -960.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "edc14cf73563ec328516d892ae2319810a76befa08f7156a9cd489451e7687df"
+    },
+    {
+      "name": "terrain_05_05",
+      "mesh": "terrain_05_05.dae",
+      "origin": [
+        -832.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "d2d27d47ce69ed9c4bc033d2bbf9dcc82fe24c9fdba213a7839cc64db6809e85"
+    },
+    {
+      "name": "terrain_05_06",
+      "mesh": "terrain_05_06.dae",
+      "origin": [
+        -704.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "b0133f08190024d1148e087d6da998bd378f5a22dc0625fb186729623149942d"
+    },
+    {
+      "name": "terrain_05_07",
+      "mesh": "terrain_05_07.dae",
+      "origin": [
+        -576.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e77612145fc24ff3092353443798f2e30c05afb7dcee158ab48e85ab0ce1404c"
+    },
+    {
+      "name": "terrain_05_08",
+      "mesh": "terrain_05_08.dae",
+      "origin": [
+        -448.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "b193553e519d68422d598ea0586d20d729d17fbc27a1bafd45117f3d226edf01"
+    },
+    {
+      "name": "terrain_05_09",
+      "mesh": "terrain_05_09.dae",
+      "origin": [
+        -320.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "c6929728097f43ba1fc4973cb0d31ddfe32e57271beb6c0c66798de0bcd73bd3"
+    },
+    {
+      "name": "terrain_05_10",
+      "mesh": "terrain_05_10.dae",
+      "origin": [
+        -192.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "b23d1d9eb6a945c8f354027f349f16b2e8117347e3d60c75b61c35e77b4270ac"
+    },
+    {
+      "name": "terrain_05_11",
+      "mesh": "terrain_05_11.dae",
+      "origin": [
+        -64.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "b6e2fd5c2ab887d03e74c8404b6dd579ac657e1b911f69c9ce54db5ff9fb0c70"
+    },
+    {
+      "name": "terrain_05_12",
+      "mesh": "terrain_05_12.dae",
+      "origin": [
+        64.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "9164371bfa8b5a8bcac79c56c4ec3211fa2c66af166b85a526863306837acd46"
+    },
+    {
+      "name": "terrain_05_13",
+      "mesh": "terrain_05_13.dae",
+      "origin": [
+        192.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "95c8650ba7a70ac1c19afdb4e0a46e2296d5a8a56dd60d368811439f6b781daf"
+    },
+    {
+      "name": "terrain_05_14",
+      "mesh": "terrain_05_14.dae",
+      "origin": [
+        320.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "6bb1f87b6d8bdaa52d90804a8eb99a75c4628c911670e514c7b4020a3858b5d8"
+    },
+    {
+      "name": "terrain_05_15",
+      "mesh": "terrain_05_15.dae",
+      "origin": [
+        448.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "5333c5e54a694af7530acd7cbea291405d3564bd239ea0deb7096b294fc89b8d"
+    },
+    {
+      "name": "terrain_05_16",
+      "mesh": "terrain_05_16.dae",
+      "origin": [
+        576.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "93b7020829b0ee5d03c7a160bd4607da64935734828fb231179c73cf09d053c2"
+    },
+    {
+      "name": "terrain_05_17",
+      "mesh": "terrain_05_17.dae",
+      "origin": [
+        704.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "03adb969f8888125e9b21206db9c893c94f0b024caa56e31ca9b4deedfed65be"
+    },
+    {
+      "name": "terrain_05_18",
+      "mesh": "terrain_05_18.dae",
+      "origin": [
+        832.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "384fa11fb3832a9e05f637385da23d645877df01c52bce62829f1ef1ddd6059f"
+    },
+    {
+      "name": "terrain_05_19",
+      "mesh": "terrain_05_19.dae",
+      "origin": [
+        960.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "4cfc9295fc3ee4c6536ff9ce759fc1cc97deabf844d8c30f5fc372b134e99766"
+    },
+    {
+      "name": "terrain_05_20",
+      "mesh": "terrain_05_20.dae",
+      "origin": [
+        1088.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "a05bdc72e108d11026a708eb92d11988f624efeb80f15bb99ff0ff7a85176320"
+    },
+    {
+      "name": "terrain_05_21",
+      "mesh": "terrain_05_21.dae",
+      "origin": [
+        1216.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "36e934435146ea95bc862333c58e2b5db2383966b9504abc5e88ba66e03ae0cd"
+    },
+    {
+      "name": "terrain_05_22",
+      "mesh": "terrain_05_22.dae",
+      "origin": [
+        1344.0,
+        -448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "1e43a7027c82dd78eeebca1ceef2f6da46565adc1503c1eeae80cf0cdf3a7a92"
+    },
+    {
+      "name": "terrain_05_23",
+      "mesh": "terrain_05_23.dae",
+      "origin": [
+        1472.0,
+        -448.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "c0cd8d5ab98b4ebc903c4f39bff6ab40025e5b6a8985b2dde8609fa1ea44c5c3"
+    },
+    {
+      "name": "terrain_06_00",
+      "mesh": "terrain_06_00.dae",
+      "origin": [
+        -1472.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e1adf05401673de391994d4e11fd3c4bfb26798d783c756cbd82772b1b97848d"
+    },
+    {
+      "name": "terrain_06_01",
+      "mesh": "terrain_06_01.dae",
+      "origin": [
+        -1344.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "f3a71a21d2c80e8394019ef34b17234b8752dd8471b40b18fa227bab5f290e3e"
+    },
+    {
+      "name": "terrain_06_02",
+      "mesh": "terrain_06_02.dae",
+      "origin": [
+        -1216.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "9e52c362ecda07ef9becbcaf348fb8ccd610951a2f464e82ebf4ec3b424af30b"
+    },
+    {
+      "name": "terrain_06_03",
+      "mesh": "terrain_06_03.dae",
+      "origin": [
+        -1088.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "90bfeba0c22257d1ad3a44ddbba4b548cb1a7e3b5f30827a6588a7d1245dbb82"
+    },
+    {
+      "name": "terrain_06_04",
+      "mesh": "terrain_06_04.dae",
+      "origin": [
+        -960.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "564d47bce8e35f7469f50de6ce0a74298496486394012c26f75e33aedf266c30"
+    },
+    {
+      "name": "terrain_06_05",
+      "mesh": "terrain_06_05.dae",
+      "origin": [
+        -832.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "f34f3471b9186ced6028aede1e18c46498497bb68dc6ba233ee498563e3feb4f"
+    },
+    {
+      "name": "terrain_06_06",
+      "mesh": "terrain_06_06.dae",
+      "origin": [
+        -704.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "ee74c3726413b7046686c4f2db588128030fbcbfc54264db290950f01dc996f2"
+    },
+    {
+      "name": "terrain_06_07",
+      "mesh": "terrain_06_07.dae",
+      "origin": [
+        -576.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "25d6b3c978629d12c8186093c6b02242f55230185e4666777a54886b526d369b"
+    },
+    {
+      "name": "terrain_06_08",
+      "mesh": "terrain_06_08.dae",
+      "origin": [
+        -448.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "43e5c78bf12d05482addb7edb3ac0e70b08c47d4379faef9b620e563afc35c8e"
+    },
+    {
+      "name": "terrain_06_09",
+      "mesh": "terrain_06_09.dae",
+      "origin": [
+        -320.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "6901c2fe07f51dd2259a954a5d9eb5f0103cf90899f313142173333e0dff6d25"
+    },
+    {
+      "name": "terrain_06_10",
+      "mesh": "terrain_06_10.dae",
+      "origin": [
+        -192.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "ffbbd3f3a2f6be748efc55819a1301a77c3a7f7522affbc6f8da64fcfb1ddd50"
+    },
+    {
+      "name": "terrain_06_11",
+      "mesh": "terrain_06_11.dae",
+      "origin": [
+        -64.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "b7e75e4d3cb6bd15e8787e65aae4db9c34edbbb4f9ecac1f4b9c919f69b7b77e"
+    },
+    {
+      "name": "terrain_06_12",
+      "mesh": "terrain_06_12.dae",
+      "origin": [
+        64.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "a056d4d0103062a98e0b2974a184d850e2859356153111872bfaf7d50b69c772"
+    },
+    {
+      "name": "terrain_06_13",
+      "mesh": "terrain_06_13.dae",
+      "origin": [
+        192.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "675e6015a3d7ec7ccc9dd0f5fdd0061a4641a6d15f078a18b341f3c8498d0347"
+    },
+    {
+      "name": "terrain_06_14",
+      "mesh": "terrain_06_14.dae",
+      "origin": [
+        320.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e99f1873e2e5c928a298a77600f41560c25f6925f82e60a02dc4c144da924233"
+    },
+    {
+      "name": "terrain_06_15",
+      "mesh": "terrain_06_15.dae",
+      "origin": [
+        448.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "cd68b4c9623ac69289a29bea1d4aca0efeaf73139d6410a5a8648a53437ca75e"
+    },
+    {
+      "name": "terrain_06_16",
+      "mesh": "terrain_06_16.dae",
+      "origin": [
+        576.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "fa73802747fe25c025c572ceb6e5feb487a33d617ea900cf98b830615e5875c5"
+    },
+    {
+      "name": "terrain_06_17",
+      "mesh": "terrain_06_17.dae",
+      "origin": [
+        704.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "cf2d733c7d2d0805ce367352d0a959dc7b4ada4633baee5a4ead8ba330d7ebd8"
+    },
+    {
+      "name": "terrain_06_18",
+      "mesh": "terrain_06_18.dae",
+      "origin": [
+        832.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e9805d4a2ae99a550d7d9059b2647f4742383b7d780bcaa9466e9f46b683a66f"
+    },
+    {
+      "name": "terrain_06_19",
+      "mesh": "terrain_06_19.dae",
+      "origin": [
+        960.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "8fd0d7b1cc82d6bac234ddb0a19832cb2c4253259434240c0e4314cbd25dc57c"
+    },
+    {
+      "name": "terrain_06_20",
+      "mesh": "terrain_06_20.dae",
+      "origin": [
+        1088.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "2b9b546e8f37b8e3768d75ddcc29bfae75037fdfa7b8e96b6fc3490361b66ac0"
+    },
+    {
+      "name": "terrain_06_21",
+      "mesh": "terrain_06_21.dae",
+      "origin": [
+        1216.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "95e92b82979f39e5fd1dfb695a18236212d25419d451a7846aba0a2e8ad760e1"
+    },
+    {
+      "name": "terrain_06_22",
+      "mesh": "terrain_06_22.dae",
+      "origin": [
+        1344.0,
+        -320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "bf14bd0d2a582c1f2711689e8c6f70e3cbfc6986db64ecfe2ad6d17da53c7949"
+    },
+    {
+      "name": "terrain_06_23",
+      "mesh": "terrain_06_23.dae",
+      "origin": [
+        1472.0,
+        -320.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "df9541c683735126f145b3d1a92bc40c9a95509a8209927abd66a21175949b83"
+    },
+    {
+      "name": "terrain_07_00",
+      "mesh": "terrain_07_00.dae",
+      "origin": [
+        -1472.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "957c035717279df41b9f536d4100502b82c338c8291ed931e0e325dceff28ff5"
+    },
+    {
+      "name": "terrain_07_01",
+      "mesh": "terrain_07_01.dae",
+      "origin": [
+        -1344.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "bf8006de89a8915635caf9e5d19978aca3a6055da6643ef2c17032d192db06e5"
+    },
+    {
+      "name": "terrain_07_02",
+      "mesh": "terrain_07_02.dae",
+      "origin": [
+        -1216.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "72e5baa13c88c7b16cb0e69d0756445a60161cef90c61f84348c2e767351c241"
+    },
+    {
+      "name": "terrain_07_03",
+      "mesh": "terrain_07_03.dae",
+      "origin": [
+        -1088.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "faa685e7a45e4710c3aeb83bfdfb7d4d884955a3237c68ec47562a758189f736"
+    },
+    {
+      "name": "terrain_07_04",
+      "mesh": "terrain_07_04.dae",
+      "origin": [
+        -960.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "c2954cfed4216550d85efd2f827def50d541a5bf150516c24ee48ea8136ae95e"
+    },
+    {
+      "name": "terrain_07_05",
+      "mesh": "terrain_07_05.dae",
+      "origin": [
+        -832.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "ed58d22f6aa1d96c0d362ef1bbfb2e8d4f35204426b5d5391f28a4c3bf545c10"
+    },
+    {
+      "name": "terrain_07_06",
+      "mesh": "terrain_07_06.dae",
+      "origin": [
+        -704.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "efb24e47b1620d62295d4e3fef0362e71da0d1427232b05481f944fc6ec36a9b"
+    },
+    {
+      "name": "terrain_07_07",
+      "mesh": "terrain_07_07.dae",
+      "origin": [
+        -576.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "c56ab486164041830bf7acfc96ee867fa62483a0c7ca224be3750e74aa053058"
+    },
+    {
+      "name": "terrain_07_08",
+      "mesh": "terrain_07_08.dae",
+      "origin": [
+        -448.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "2c66705da085e6ab5e6ae765e13c81f11e7f1e618bd0639d1397b09dee3413f1"
+    },
+    {
+      "name": "terrain_07_09",
+      "mesh": "terrain_07_09.dae",
+      "origin": [
+        -320.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "22b1f85c1835e50f3fcff20158b700b8c15f12521c8f67f66aa48af0be45bea7"
+    },
+    {
+      "name": "terrain_07_10",
+      "mesh": "terrain_07_10.dae",
+      "origin": [
+        -192.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "9f642005367180dce85665fee4966e128bab1378c2dd1ea8e064147dbd35aa6f"
+    },
+    {
+      "name": "terrain_07_11",
+      "mesh": "terrain_07_11.dae",
+      "origin": [
+        -64.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "4172b36f5fd15ad7b5372b10ed37bcec805b03964a10f6581c5dcda6f52341e7"
+    },
+    {
+      "name": "terrain_07_12",
+      "mesh": "terrain_07_12.dae",
+      "origin": [
+        64.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "99968e98b8ad588b4a7b0ddc58dcd53e6b3396cb5d9f23ec066066d2bfbc49ae"
+    },
+    {
+      "name": "terrain_07_13",
+      "mesh": "terrain_07_13.dae",
+      "origin": [
+        192.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "06a51b476361e2ed1bb25514d0417ce306dfa27a3cd80130a0f77240c7983ce5"
+    },
+    {
+      "name": "terrain_07_14",
+      "mesh": "terrain_07_14.dae",
+      "origin": [
+        320.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "76dac230b9a5f0b760d0acff51199ec745b8f366f7cdcc05178a426f4e3b8092"
+    },
+    {
+      "name": "terrain_07_15",
+      "mesh": "terrain_07_15.dae",
+      "origin": [
+        448.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "2e136893010dcc98a8059430f5ade4f25f06cb8ace62b0d4ca092fd02ba80f5f"
+    },
+    {
+      "name": "terrain_07_16",
+      "mesh": "terrain_07_16.dae",
+      "origin": [
+        576.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "1567a5af99d1dcb6532657d8df625d86775a31744e0db4e2b0766e847ba04cd6"
+    },
+    {
+      "name": "terrain_07_17",
+      "mesh": "terrain_07_17.dae",
+      "origin": [
+        704.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "1ea7651bdc1f0369e0740173310f6fba6f87e17e166f3bc97b93c4eca8fed371"
+    },
+    {
+      "name": "terrain_07_18",
+      "mesh": "terrain_07_18.dae",
+      "origin": [
+        832.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "200c5c88fc89f9ffc0bba59ba50e81bedb034fb06c7aa56f8de8c86bf49543c9"
+    },
+    {
+      "name": "terrain_07_19",
+      "mesh": "terrain_07_19.dae",
+      "origin": [
+        960.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "87a981207672b96934f035df6caa0744068898720f572dacf8259365dbb7f8d0"
+    },
+    {
+      "name": "terrain_07_20",
+      "mesh": "terrain_07_20.dae",
+      "origin": [
+        1088.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "db38dac40999785cd54c45db582c4df5cb4991c7049e8c04c55f434ed3222a22"
+    },
+    {
+      "name": "terrain_07_21",
+      "mesh": "terrain_07_21.dae",
+      "origin": [
+        1216.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e0d44d796986c0b1c5ac50c8f7f309c709a513dfa72f0bf4ed3ac65c2666a9b7"
+    },
+    {
+      "name": "terrain_07_22",
+      "mesh": "terrain_07_22.dae",
+      "origin": [
+        1344.0,
+        -192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "f4307f35a429c7ec7a262fa980cb6a0034491fcfe8f3a22df294e5514d7098ad"
+    },
+    {
+      "name": "terrain_07_23",
+      "mesh": "terrain_07_23.dae",
+      "origin": [
+        1472.0,
+        -192.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "82bc409aee927cfc2292053bebf8c7f32c9e78c8bf2af51b6a60e49603e7adb6"
+    },
+    {
+      "name": "terrain_08_00",
+      "mesh": "terrain_08_00.dae",
+      "origin": [
+        -1472.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "0d2689bdd0b117fd78b92b1104bb13ea53c2366e572c9c317798e82b0e0e1085"
+    },
+    {
+      "name": "terrain_08_01",
+      "mesh": "terrain_08_01.dae",
+      "origin": [
+        -1344.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "dab89ef5188fef8e32c5be2d2decd8b113f23fe5677675fbac81dd627470bfc4"
+    },
+    {
+      "name": "terrain_08_02",
+      "mesh": "terrain_08_02.dae",
+      "origin": [
+        -1216.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "66abd2528018846baab6331c59d007f03fadb2972fc3861b53ece43fdd394ab0"
+    },
+    {
+      "name": "terrain_08_03",
+      "mesh": "terrain_08_03.dae",
+      "origin": [
+        -1088.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "5f4850cc5184f703e0d0e1024b107d8eda11b9db976ea4d6aec22fd64504ae50"
+    },
+    {
+      "name": "terrain_08_04",
+      "mesh": "terrain_08_04.dae",
+      "origin": [
+        -960.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "35e9287dc64d80c6fb147d07c1a3936fa98ccace013027e3cd2efe19062d57d7"
+    },
+    {
+      "name": "terrain_08_05",
+      "mesh": "terrain_08_05.dae",
+      "origin": [
+        -832.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "8633a1a5ca1961e08ce05d2923111cb10f1757eeb6ef528825db41cb2a209176"
+    },
+    {
+      "name": "terrain_08_06",
+      "mesh": "terrain_08_06.dae",
+      "origin": [
+        -704.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e70331411c1099db9ad19c6dfe2b54af87034bcd50fff869d65e5026097594fc"
+    },
+    {
+      "name": "terrain_08_07",
+      "mesh": "terrain_08_07.dae",
+      "origin": [
+        -576.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "786be2b9c76886f1b319d0c94f7e9a8c83ea9593643229422e9d8e3071d0959a"
+    },
+    {
+      "name": "terrain_08_08",
+      "mesh": "terrain_08_08.dae",
+      "origin": [
+        -448.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "aa9c9d33a8f75b20037f26a5e2422836129c568f9a06e3d6cfb488d3df448844"
+    },
+    {
+      "name": "terrain_08_09",
+      "mesh": "terrain_08_09.dae",
+      "origin": [
+        -320.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "21c53195b6fda5885a25fdf60960d163066876c03d34985e320f5d9bfb1ac304"
+    },
+    {
+      "name": "terrain_08_10",
+      "mesh": "terrain_08_10.dae",
+      "origin": [
+        -192.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "d3aa94af737363ed2a901901db996a5f362c5870b0e0068580775a07b4128511"
+    },
+    {
+      "name": "terrain_08_12",
+      "mesh": "terrain_08_12.dae",
+      "origin": [
+        64.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "819f1819b8c9cbe772d181cd2926fa3557b13de5e0e265cd3d1f417baca3218c"
+    },
+    {
+      "name": "terrain_08_13",
+      "mesh": "terrain_08_13.dae",
+      "origin": [
+        192.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "1776bcbcca780f6da06e877df3ddaf3b5b967f9d63ad732398c385085b0c2f64"
+    },
+    {
+      "name": "terrain_08_14",
+      "mesh": "terrain_08_14.dae",
+      "origin": [
+        320.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "ddfd7d0c915b4cbf1d4d1b2b15b91e3a02bbda366b4a842a706d9fcca7c27ecd"
+    },
+    {
+      "name": "terrain_08_15",
+      "mesh": "terrain_08_15.dae",
+      "origin": [
+        448.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "dbc8879ddd8cdd187b5b4d593804c06b42a88c8b1a075790ee311616b66f25bf"
+    },
+    {
+      "name": "terrain_08_16",
+      "mesh": "terrain_08_16.dae",
+      "origin": [
+        576.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "3b0d44dea350dd49fd34749382d78b81a19ffad169533c5413f238486f917955"
+    },
+    {
+      "name": "terrain_08_17",
+      "mesh": "terrain_08_17.dae",
+      "origin": [
+        704.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "5176f98be5320b1d96335e63f124b8c3c39e85d2e21b3e80bca169438914934f"
+    },
+    {
+      "name": "terrain_08_18",
+      "mesh": "terrain_08_18.dae",
+      "origin": [
+        832.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "16de958264e0e78079d584d7cbcc85796ed6fec9c007f43369f11ff14e1149ea"
+    },
+    {
+      "name": "terrain_08_19",
+      "mesh": "terrain_08_19.dae",
+      "origin": [
+        960.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e898631ff53e96949e70b4175567777f7e4a70aff18147bdd1c0952fd92b8de1"
+    },
+    {
+      "name": "terrain_08_20",
+      "mesh": "terrain_08_20.dae",
+      "origin": [
+        1088.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "eef8fc599a5eeab2621121af2f4b7e7957f24ac2e4bf7201266f57fd27f3d574"
+    },
+    {
+      "name": "terrain_08_21",
+      "mesh": "terrain_08_21.dae",
+      "origin": [
+        1216.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "f6ed7a8b4be048257dffb0ee1a68cdcd9036ceb149a3831459181f685ad42844"
+    },
+    {
+      "name": "terrain_08_22",
+      "mesh": "terrain_08_22.dae",
+      "origin": [
+        1344.0,
+        -64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "8fd3383f6fa9479cbe6e39a7835f6c93e676e365fe673dfbfde386f4748dd1a2"
+    },
+    {
+      "name": "terrain_08_23",
+      "mesh": "terrain_08_23.dae",
+      "origin": [
+        1472.0,
+        -64.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "7427e7c1eba67a3b78704f59446e5da1400f95abf473646dbe4a5659e0201887"
+    },
+    {
+      "name": "terrain_09_00",
+      "mesh": "terrain_09_00.dae",
+      "origin": [
+        -1472.0,
+        64.0
+      ],
+      "vertices": 935,
+      "triangles": 1744,
+      "sha256": "cec8a87726de272568d18c28a0ab0c0bf9d7034c1ab008402cbc05a411f838fb"
+    },
+    {
+      "name": "terrain_09_01",
+      "mesh": "terrain_09_01.dae",
+      "origin": [
+        -1344.0,
+        64.0
+      ],
+      "vertices": 1073,
+      "triangles": 2016,
+      "sha256": "8af9684de4b9c67cf691fd3b36a512af3930d8e4400990e1c857568ea88105a6"
+    },
+    {
+      "name": "terrain_09_02",
+      "mesh": "terrain_09_02.dae",
+      "origin": [
+        -1216.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "7b1814d53ca347f3e7c3f1b9ca9b52a9df0ff4e83d58b5f02a08afd72e473181"
+    },
+    {
+      "name": "terrain_09_03",
+      "mesh": "terrain_09_03.dae",
+      "origin": [
+        -1088.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "695ff3b7efe5c3393e9e07cb8fe3da9768c52c5acd11552a7fbdce22ead51c96"
+    },
+    {
+      "name": "terrain_09_04",
+      "mesh": "terrain_09_04.dae",
+      "origin": [
+        -960.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "b1d4edd11d2fefb3069a67b4ed878e73424cebe12b5c5db5dd2c67817fecf6f7"
+    },
+    {
+      "name": "terrain_09_05",
+      "mesh": "terrain_09_05.dae",
+      "origin": [
+        -832.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "b9813cb269454f7cc6dd3cae9f7fd10011e506040b9d95572a58ae80bd46d1c6"
+    },
+    {
+      "name": "terrain_09_06",
+      "mesh": "terrain_09_06.dae",
+      "origin": [
+        -704.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "6aad5d77801e6965bc2e4f2fc4aaec930a18edb902af32fb25c24918c7e60f91"
+    },
+    {
+      "name": "terrain_09_07",
+      "mesh": "terrain_09_07.dae",
+      "origin": [
+        -576.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "664d095cdd2d92e5c0413fb77a63385334eba44fafe4b578b2c50bf33032b7dd"
+    },
+    {
+      "name": "terrain_09_08",
+      "mesh": "terrain_09_08.dae",
+      "origin": [
+        -448.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "0af0f998cc0b7afcd65f0a896ff2f148e2c3152c145d3130c325b2293b50ec5d"
+    },
+    {
+      "name": "terrain_09_09",
+      "mesh": "terrain_09_09.dae",
+      "origin": [
+        -320.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "3ab5e5261226e50bd9fe58695c9d0a0b627fd5f54230e7ac2c88ded65efcbf40"
+    },
+    {
+      "name": "terrain_09_10",
+      "mesh": "terrain_09_10.dae",
+      "origin": [
+        -192.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "94a19a921e9b5c3eacd92b4ea7da1e986cb45513bc34f8224447f2e88a59455f"
+    },
+    {
+      "name": "terrain_09_11",
+      "mesh": "terrain_09_11.dae",
+      "origin": [
+        -64.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "75ca0b2084e1f35bbc31ee4dcf104e2bec2457e4888340cced2e10cc2868d80b"
+    },
+    {
+      "name": "terrain_09_12",
+      "mesh": "terrain_09_12.dae",
+      "origin": [
+        64.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "c7b64c6947b120bd786f7d4c5acee973748bcd3b0404b2c28eda02001bed2c91"
+    },
+    {
+      "name": "terrain_09_13",
+      "mesh": "terrain_09_13.dae",
+      "origin": [
+        192.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e6657ee7ddcce7e0d036810fc71e7f2dc453cc612986dfe5ff3c964a9875851f"
+    },
+    {
+      "name": "terrain_09_14",
+      "mesh": "terrain_09_14.dae",
+      "origin": [
+        320.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "ebe9e997f65392b61aaf5824efced16040ddb69aaa2470a9e2226fdbee4f0c0d"
+    },
+    {
+      "name": "terrain_09_15",
+      "mesh": "terrain_09_15.dae",
+      "origin": [
+        448.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "a7f106e2b7b3b5a13f76d7854b3a11f18245f7806103f16c6d00d5b9f15ce7f7"
+    },
+    {
+      "name": "terrain_09_16",
+      "mesh": "terrain_09_16.dae",
+      "origin": [
+        576.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "72f473ff5141da87f618d8e7e15ad01b02cc85eef996c5ebe975399019301b54"
+    },
+    {
+      "name": "terrain_09_17",
+      "mesh": "terrain_09_17.dae",
+      "origin": [
+        704.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "bf8ca1bc6c13b474c8d7176b0ce9b1b542a8dfc31a4959bbc075eed3ca9e90d8"
+    },
+    {
+      "name": "terrain_09_18",
+      "mesh": "terrain_09_18.dae",
+      "origin": [
+        832.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "a066ad1c16e1368da4901d64e74b395f0704cc92c86c03699eb34b85da049249"
+    },
+    {
+      "name": "terrain_09_19",
+      "mesh": "terrain_09_19.dae",
+      "origin": [
+        960.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "1a99d25553b2dd697b55cfeb8c39d3646ef3a5d991b72e0c02838a482e8a4a69"
+    },
+    {
+      "name": "terrain_09_20",
+      "mesh": "terrain_09_20.dae",
+      "origin": [
+        1088.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "0db6f74b173062b5aaa6057944a798e4337736dbb7894a461cc1c85ed74df939"
+    },
+    {
+      "name": "terrain_09_21",
+      "mesh": "terrain_09_21.dae",
+      "origin": [
+        1216.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "ba7c8bacd16e662b85cfa4d87f24e4df45a4d804443227bbfc64c2b8716b8986"
+    },
+    {
+      "name": "terrain_09_22",
+      "mesh": "terrain_09_22.dae",
+      "origin": [
+        1344.0,
+        64.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "fb0cb9b853fd748947653548f28ffd767ba1d153dbbeedff20c23ecc1c7a57c8"
+    },
+    {
+      "name": "terrain_09_23",
+      "mesh": "terrain_09_23.dae",
+      "origin": [
+        1472.0,
+        64.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "dae38d2db298cd853d3299a5b111bcd6caf2a4797cdeb73c00a410d79052cc78"
+    },
+    {
+      "name": "terrain_10_01",
+      "mesh": "terrain_10_01.dae",
+      "origin": [
+        -1344.0,
+        192.0
+      ],
+      "vertices": 44,
+      "triangles": 50,
+      "sha256": "0e3dfed7454f0142a05254862d8b58d7d4711fcf32f692d014415462ae9beb66"
+    },
+    {
+      "name": "terrain_10_02",
+      "mesh": "terrain_10_02.dae",
+      "origin": [
+        -1216.0,
+        192.0
+      ],
+      "vertices": 211,
+      "triangles": 340,
+      "sha256": "8517206e1e5817353366893ef05c6e6f3e30d79a4c7ba5a9d07690f010e78a53"
+    },
+    {
+      "name": "terrain_10_03",
+      "mesh": "terrain_10_03.dae",
+      "origin": [
+        -1088.0,
+        192.0
+      ],
+      "vertices": 375,
+      "triangles": 658,
+      "sha256": "6f5b68f11a1d06220df6413fe9924e01dd2dece415e99ef4a7aba05492a0ca51"
+    },
+    {
+      "name": "terrain_10_04",
+      "mesh": "terrain_10_04.dae",
+      "origin": [
+        -960.0,
+        192.0
+      ],
+      "vertices": 540,
+      "triangles": 978,
+      "sha256": "949ed8b391d4399d55231e94e27507780225a0d4187efe1f507d04882d3f9a66"
+    },
+    {
+      "name": "terrain_10_05",
+      "mesh": "terrain_10_05.dae",
+      "origin": [
+        -832.0,
+        192.0
+      ],
+      "vertices": 705,
+      "triangles": 1298,
+      "sha256": "dae2f50e33b58bb01daca749496c3c530dfaedd03a7a83df67c27086f50b4523"
+    },
+    {
+      "name": "terrain_10_06",
+      "mesh": "terrain_10_06.dae",
+      "origin": [
+        -704.0,
+        192.0
+      ],
+      "vertices": 871,
+      "triangles": 1620,
+      "sha256": "36e0d2209b2e6e0ad0c4f831a99ae025bd6dc8beec57492b21f8cfd533aa78d9"
+    },
+    {
+      "name": "terrain_10_07",
+      "mesh": "terrain_10_07.dae",
+      "origin": [
+        -576.0,
+        192.0
+      ],
+      "vertices": 1032,
+      "triangles": 1934,
+      "sha256": "7bb3b2ca3da9c03642fdea2727dc8351e37ec9a2e18b6a0b3c744c1056aa135a"
+    },
+    {
+      "name": "terrain_10_08",
+      "mesh": "terrain_10_08.dae",
+      "origin": [
+        -448.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "2eb6df1e847ae85ce018a459d1ed4df6a2f53eeb25422ee37526fb81a4c1c589"
+    },
+    {
+      "name": "terrain_10_09",
+      "mesh": "terrain_10_09.dae",
+      "origin": [
+        -320.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "3886452cb47688dec6a479bb39ce2b8805050ec502581511728330e50326ca14"
+    },
+    {
+      "name": "terrain_10_10",
+      "mesh": "terrain_10_10.dae",
+      "origin": [
+        -192.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "5bc26cd550a20a6cb5e203361534fb4354c4cd0d72f5c75ee9c41262efc53562"
+    },
+    {
+      "name": "terrain_10_11",
+      "mesh": "terrain_10_11.dae",
+      "origin": [
+        -64.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "f9f0e8a60c1f2585c9f17e7f46ebe342d3e78fcdbca26536f540f8019d64ac2c"
+    },
+    {
+      "name": "terrain_10_12",
+      "mesh": "terrain_10_12.dae",
+      "origin": [
+        64.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "5ac9d3c0930ffef3281792cdfda41f1762ea5a16e5625963e0f478a5ea60ce69"
+    },
+    {
+      "name": "terrain_10_13",
+      "mesh": "terrain_10_13.dae",
+      "origin": [
+        192.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "8703c34ff5a01677c4ae69d37c64916d4a72ecc0e385046c1a43b9293303b85e"
+    },
+    {
+      "name": "terrain_10_14",
+      "mesh": "terrain_10_14.dae",
+      "origin": [
+        320.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "ed43a4783f6773a4d7b67d82a1e7d70dd32ab580b8ee6005b1c050026ecdd7d5"
+    },
+    {
+      "name": "terrain_10_15",
+      "mesh": "terrain_10_15.dae",
+      "origin": [
+        448.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "a6127e8d3568777c56588412472acfcd9a480ae08615e62cb36131c71f4fe588"
+    },
+    {
+      "name": "terrain_10_16",
+      "mesh": "terrain_10_16.dae",
+      "origin": [
+        576.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "22729d52da402f00827c3ca72bfdf049912108f3e7fc86b1cc8b663d14cb817e"
+    },
+    {
+      "name": "terrain_10_17",
+      "mesh": "terrain_10_17.dae",
+      "origin": [
+        704.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "f2daf7ed7ef9a4af39478c0478072082cb6dc4d811023f6709efd020d2212958"
+    },
+    {
+      "name": "terrain_10_18",
+      "mesh": "terrain_10_18.dae",
+      "origin": [
+        832.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "2ba2cd5a9433dd376829acf1c8e8c6c8d11d8a5022907cb4861c47efd4e64356"
+    },
+    {
+      "name": "terrain_10_19",
+      "mesh": "terrain_10_19.dae",
+      "origin": [
+        960.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "ac282430ae3c4d50a278d496c39d5fe368940047452d5d285733e153863eba4b"
+    },
+    {
+      "name": "terrain_10_20",
+      "mesh": "terrain_10_20.dae",
+      "origin": [
+        1088.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "c2ae0643d4f51a4aee260600c02e9dc067f9cf39853a5abbc22a3263da1b300f"
+    },
+    {
+      "name": "terrain_10_21",
+      "mesh": "terrain_10_21.dae",
+      "origin": [
+        1216.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "423220d479e2cb15e5cf167aef0d1dfbecd167af708d9b30f2dd9fea83a3c819"
+    },
+    {
+      "name": "terrain_10_22",
+      "mesh": "terrain_10_22.dae",
+      "origin": [
+        1344.0,
+        192.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "825af4c78441cad819e69328f0aa4b34c1b473a1906520ca8f1b437f4b2f3a36"
+    },
+    {
+      "name": "terrain_10_23",
+      "mesh": "terrain_10_23.dae",
+      "origin": [
+        1472.0,
+        192.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "59da4373c516a5a31812fd802e40d2ed380c0c85fa8dc2b607a31d32ae306a9f"
+    },
+    {
+      "name": "terrain_11_07",
+      "mesh": "terrain_11_07.dae",
+      "origin": [
+        -576.0,
+        320.0
+      ],
+      "vertices": 6,
+      "triangles": 4,
+      "sha256": "d715a0a45699337fcbccabb67c3eba05159b8803d777e82f02c1727c4caed10e"
+    },
+    {
+      "name": "terrain_11_08",
+      "mesh": "terrain_11_08.dae",
+      "origin": [
+        -448.0,
+        320.0
+      ],
+      "vertices": 144,
+      "triangles": 210,
+      "sha256": "4b7e197f0d7c3aa9413b78b458a3f9f840d56734af7080b76e57922eeb7a8052"
+    },
+    {
+      "name": "terrain_11_09",
+      "mesh": "terrain_11_09.dae",
+      "origin": [
+        -320.0,
+        320.0
+      ],
+      "vertices": 309,
+      "triangles": 530,
+      "sha256": "d740b9e1997b96dabfdf63c52332ef14579917a25c30ef71926062758d661e02"
+    },
+    {
+      "name": "terrain_11_10",
+      "mesh": "terrain_11_10.dae",
+      "origin": [
+        -192.0,
+        320.0
+      ],
+      "vertices": 474,
+      "triangles": 850,
+      "sha256": "1fece79450c1607e3d875a53530e8ee2055dcbae9f7bff1cf00643077c80ddfe"
+    },
+    {
+      "name": "terrain_11_11",
+      "mesh": "terrain_11_11.dae",
+      "origin": [
+        -64.0,
+        320.0
+      ],
+      "vertices": 639,
+      "triangles": 1170,
+      "sha256": "f6d8b7dc5170d81aa2b035f1bed97a2a8011cb081f6ef286354c85d0eae8bc6b"
+    },
+    {
+      "name": "terrain_11_12",
+      "mesh": "terrain_11_12.dae",
+      "origin": [
+        64.0,
+        320.0
+      ],
+      "vertices": 803,
+      "triangles": 1488,
+      "sha256": "6666c33b3431f1504fe1e953cc9a30ff3d65d0c5f9048622a1a9eac8bfb1735b"
+    },
+    {
+      "name": "terrain_11_13",
+      "mesh": "terrain_11_13.dae",
+      "origin": [
+        192.0,
+        320.0
+      ],
+      "vertices": 969,
+      "triangles": 1810,
+      "sha256": "e8b02a3c0b9ed5ba9186c5cace2834c293550ad97427345fb0e61be756baaf95"
+    },
+    {
+      "name": "terrain_11_14",
+      "mesh": "terrain_11_14.dae",
+      "origin": [
+        320.0,
+        320.0
+      ],
+      "vertices": 1084,
+      "triangles": 2038,
+      "sha256": "b9b8520af6badb66156d3e34a76c3ac851534dd974a0d664d36d2e232d16cf5b"
+    },
+    {
+      "name": "terrain_11_15",
+      "mesh": "terrain_11_15.dae",
+      "origin": [
+        448.0,
+        320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "ebf8a3d113355c12d9e63eed1828a274805feb6aadea9c59c877f43833b08a22"
+    },
+    {
+      "name": "terrain_11_16",
+      "mesh": "terrain_11_16.dae",
+      "origin": [
+        576.0,
+        320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "0f6f25f122e00750b360a318550c86fad4149ca55274259b8bd10eaf37c3367a"
+    },
+    {
+      "name": "terrain_11_17",
+      "mesh": "terrain_11_17.dae",
+      "origin": [
+        704.0,
+        320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "95663ff1c18afdceda25b86d6fd8daf50970cb89405db5aabf32e3f7e7d221ef"
+    },
+    {
+      "name": "terrain_11_18",
+      "mesh": "terrain_11_18.dae",
+      "origin": [
+        832.0,
+        320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "166f5f9754b307b43c9ea5e0fde37fd1ea0d52e2ce6d047b5fc98e37c15a6ecd"
+    },
+    {
+      "name": "terrain_11_19",
+      "mesh": "terrain_11_19.dae",
+      "origin": [
+        960.0,
+        320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "5ff715acaec54275a89dc57350bdc14b58d8a91d7bdf5f1d42052f801098838d"
+    },
+    {
+      "name": "terrain_11_20",
+      "mesh": "terrain_11_20.dae",
+      "origin": [
+        1088.0,
+        320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "622a4f37c2715cfd25ba08e35f23ec3b1a72cfa3871bff76fd9f8b5c5803df24"
+    },
+    {
+      "name": "terrain_11_21",
+      "mesh": "terrain_11_21.dae",
+      "origin": [
+        1216.0,
+        320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "aebfc9f7b084455d92bbc59a5a5356f04adcb681bae728fbf1425ed2d9958ed0"
+    },
+    {
+      "name": "terrain_11_22",
+      "mesh": "terrain_11_22.dae",
+      "origin": [
+        1344.0,
+        320.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "e53722c9c18c4a30e0cfe5eb2304d32e344d5c13ddd19e2b1bdee03d02f87095"
+    },
+    {
+      "name": "terrain_11_23",
+      "mesh": "terrain_11_23.dae",
+      "origin": [
+        1472.0,
+        320.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "23e6efa58e8caee06ddc5ca8785da5192f63302448f90467786b930a95cd582a"
+    },
+    {
+      "name": "terrain_12_14",
+      "mesh": "terrain_12_14.dae",
+      "origin": [
+        320.0,
+        448.0
+      ],
+      "vertices": 72,
+      "triangles": 92,
+      "sha256": "9d60b3850b9370cfffa0b39938b06d84dd6607c5570c14483c162b1e8974303b"
+    },
+    {
+      "name": "terrain_12_15",
+      "mesh": "terrain_12_15.dae",
+      "origin": [
+        448.0,
+        448.0
+      ],
+      "vertices": 243,
+      "triangles": 402,
+      "sha256": "e1b2ab5ac7c76c2c63b6c47558f281757c334bd32479aa0e2943350ac2f64ac9"
+    },
+    {
+      "name": "terrain_12_16",
+      "mesh": "terrain_12_16.dae",
+      "origin": [
+        576.0,
+        448.0
+      ],
+      "vertices": 409,
+      "triangles": 724,
+      "sha256": "dbfa97fca3a56ddd40588f4bc15def437452eb04cf2f188b110b74f79f80848c"
+    },
+    {
+      "name": "terrain_12_17",
+      "mesh": "terrain_12_17.dae",
+      "origin": [
+        704.0,
+        448.0
+      ],
+      "vertices": 573,
+      "triangles": 1042,
+      "sha256": "62d016bfe9ff71ff475f56ee1b7a8003130c780588d342b2762cc66aa2e5032f"
+    },
+    {
+      "name": "terrain_12_18",
+      "mesh": "terrain_12_18.dae",
+      "origin": [
+        832.0,
+        448.0
+      ],
+      "vertices": 738,
+      "triangles": 1362,
+      "sha256": "ec708b950a626fbe311005021bb0cbd74d847b4e1db4be6e88941173edd571bd"
+    },
+    {
+      "name": "terrain_12_19",
+      "mesh": "terrain_12_19.dae",
+      "origin": [
+        960.0,
+        448.0
+      ],
+      "vertices": 903,
+      "triangles": 1682,
+      "sha256": "49145642259654fc620a766a32ce54246ee21fed851b73c9ad71f1ae5d199f3b"
+    },
+    {
+      "name": "terrain_12_20",
+      "mesh": "terrain_12_20.dae",
+      "origin": [
+        1088.0,
+        448.0
+      ],
+      "vertices": 1056,
+      "triangles": 1982,
+      "sha256": "3462daa5796602b50a8861ded8723f4ddb073c4ad02c2c0b2c01077c18da5237"
+    },
+    {
+      "name": "terrain_12_21",
+      "mesh": "terrain_12_21.dae",
+      "origin": [
+        1216.0,
+        448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "6eed3330679371369cb09b125ba7fd23331239ac8f2316d37bf7449fba6a7ccf"
+    },
+    {
+      "name": "terrain_12_22",
+      "mesh": "terrain_12_22.dae",
+      "origin": [
+        1344.0,
+        448.0
+      ],
+      "vertices": 1089,
+      "triangles": 2048,
+      "sha256": "90127de4c787f61b373d0d52715a4999a39189a2641644b7e61b1f457648759e"
+    },
+    {
+      "name": "terrain_12_23",
+      "mesh": "terrain_12_23.dae",
+      "origin": [
+        1472.0,
+        448.0
+      ],
+      "vertices": 495,
+      "triangles": 896,
+      "sha256": "03eae57d7b5b43109a6638cf9374ec5dbb84e38c7058b68974e13bcd15be06ec"
+    },
+    {
+      "name": "terrain_13_20",
+      "mesh": "terrain_13_20.dae",
+      "origin": [
+        1088.0,
+        576.0
+      ],
+      "vertices": 21,
+      "triangles": 20,
+      "sha256": "0485b1c29fa2328a010dbc9927130281dc96ea968c151a299de5ceeace8abd1e"
+    },
+    {
+      "name": "terrain_13_21",
+      "mesh": "terrain_13_21.dae",
+      "origin": [
+        1216.0,
+        576.0
+      ],
+      "vertices": 177,
+      "triangles": 274,
+      "sha256": "92dae5cfcfb5cd5c90a60c6cb9fa71ab55e55a9654a2dda1a8ad490f437210a8"
+    },
+    {
+      "name": "terrain_13_22",
+      "mesh": "terrain_13_22.dae",
+      "origin": [
+        1344.0,
+        576.0
+      ],
+      "vertices": 342,
+      "triangles": 594,
+      "sha256": "092cd31745400d3165874fe2bae4433bd0b2ab4940e27c070536135bb21e9565"
+    },
+    {
+      "name": "terrain_13_23",
+      "mesh": "terrain_13_23.dae",
+      "origin": [
+        1472.0,
+        576.0
+      ],
+      "vertices": 209,
+      "triangles": 360,
+      "sha256": "2489125e092fc3284b9a70e326a67f32bcc94bdf165fadf957815ca9d0da3ca9"
+    },
+    {
+      "name": "terrain_spawn",
+      "mesh": "terrain_spawn.dae",
+      "origin": [
+        -64.0,
+        -64.0
+      ],
+      "vertices": 16641,
+      "triangles": 32768,
+      "sha256": "f2f434d15d8fddd293bba4bacad91dca62f53274f15f155365a66b598d9d092c"
+    }
+  ],
+  "triangles": 587784,
+  "processing": {
+    "ground_class": 2,
+    "withheld_excluded": true,
+    "maximum_hole_fill_m": 8.0,
+    "method": "Local least-squares planes at grid nodes; nearest small-gap fill; tiled triangles",
+    "local_boundary_blend_m": 4.0,
+    "vertical_exaggeration": 1.0,
+    "texture": "Synthetic regolith reused from this package, not aerial imagery",
+    "non_ground_objects": "Not reconstructed; this is bare-earth terrain"
+  }
+}

@@ -1,7 +1,7 @@
 """Launch a rover_sim world in Gazebo Classic using gazebo_ros.
 
-world: a name in this package's worlds/ folder (mars, desert) or a path to a
-.world file. Default: mars.
+world: a name in this package's worlds/ folder (usgs, mars, desert) or a path
+to a .world file. Default: imported USGS terrain.
 """
 
 import os
@@ -44,8 +44,8 @@ def generate_launch_description():
             'gui', default_value='true', description='Open the Gazebo Classic GUI.'
         ),
         DeclareLaunchArgument(
-            'world', default_value='mars',
-            description='World name in rover_sim/worlds (mars, desert) or a .world file path.'
+            'world', default_value='usgs',
+            description='World name (usgs, mars, desert) or a .world file path.'
         ),
         OpaqueFunction(function=gazebo),
     ])

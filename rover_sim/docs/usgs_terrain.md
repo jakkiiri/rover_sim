@@ -1,0 +1,184 @@
+# Imported Southern Utah survey terrain
+
+The normal `rover_desert.launch.py` now defaults to `world:=usgs`. The six
+user-provided USGS LPC Southern Utah 2018 / LAS 2019 LAZ files replace the
+synthetic Mars environment. The rover, steering/drive controller, keyboard,
+watchdog, stereo camera and LiDAR configuration are unchanged.
+
+## Run
+
+From a regular Ubuntu terminal:
+
+```bash
+cd ~/rover_ws
+source /opt/ros/humble/setup.bash
+colcon build --packages-select rover_sim rover_planner
+source ~/rover_ws/install/setup.bash
+env -u GTK_PATH -u GTK_EXE_PREFIX -u GIO_MODULE_DIR -u GTK_IM_MODULE_FILE \
+  ros2 launch rover_sim rover_desert.launch.py rviz:=true
+```
+
+Your reduced LiDAR settings remain available without rebuilding:
+
+```bash
+env -u GTK_PATH -u GTK_EXE_PREFIX -u GIO_MODULE_DIR -u GTK_IM_MODULE_FILE \
+  ros2 launch rover_sim rover_desert.launch.py rviz:=true \
+  lidar_profile:=lite lidar_samples:=180 lidar_rate:=3
+```
+
+Use one launch at a time. Teleop is still a separate sourced terminal running
+`ros2 run rover_sim rover_teleop`: W/S forward/backward, A/D rotate, Space
+stop, Ctrl+C stop/exit. The original environments remain selectable using
+`world:=mars` or `world:=desert`.
+
+### Snap IDE GUI workaround
+
+If launching from the Snap IDE produces a GLib `antialiasing` schema error,
+use a regular Ubuntu terminal. In that IDE terminal, the following process-local
+command clears the inherited GTK/schema paths and selects system data/X11.
+It does not change desktop settings or shell startup files:
+
+```bash
+env -u GTK_PATH -u GTK_EXE_PREFIX -u GIO_MODULE_DIR -u GTK_IM_MODULE_FILE \
+  -u GSETTINGS_SCHEMA_DIR -u GDK_PIXBUF_MODULE_FILE \
+  XDG_DATA_DIRS=/usr/local/share:/usr/share:/var/lib/snapd/desktop \
+  QT_QPA_PLATFORM=xcb QT_STYLE_OVERRIDE=Fusion \
+  ros2 launch rover_sim rover_desert.launch.py rviz:=true
+```
+
+A standalone Gazebo viewer should use `ros2 launch gazebo_ros gzclient.launch.py`
+in its sourced terminal (and the same domain/master if isolated). That launch
+sets Gazebo model paths from package exports; plain `gzclient` can miss them.
+
+## Data, scale and surface reconstruction
+
+All **47,893,699 points** were streamed; **33,726,963 class-2 ground returns**
+contribute to the terrain. Withheld points and other classifications are
+excluded from ground elevation. The source files are read only and are not
+required at runtime: the portable generated meshes, grids and world ship
+inside this package. The originals are not duplicated into the repository.
+
+[worlds/usgs.terrain.json](../worlds/usgs.terrain.json) records each input
+basename, SHA-256, point/class counts and bounds, plus CRS WKT, processing,
+the local origin and mesh checksums. The source files are:
+
+- `USGS_LPC_UT_Southern_QL1_2018_12SWH1851_LAS_2019.laz`
+- `USGS_LPC_UT_Southern_QL1_2018_12SWH1852_LAS_2019.laz`
+- `USGS_LPC_UT_Southern_QL1_2018_12SWH1951_LAS_2019.laz`
+- `USGS_LPC_UT_Southern_QL1_2018_12SWH1952_LAS_2019.laz`
+- `USGS_LPC_UT_Southern_QL1_2018_12SWH2051_LAS_2019.laz`
+- `USGS_LPC_UT_Southern_QL1_2018_12SWH2052_LAS_2019.laz`
+
+The compound CRS is NAD83(2011) / UTM 12N (horizontal EPSG:6341) plus
+NAVD88 / Geoid12B elevations, all in metres. Gazebo local x is easting,
+y northing and z up. The coordinate translation is:
+
+```text
+projected_easting  = local_x + 519472.000
+projected_northing = local_y + 4252088.000
+NAVD88_elevation   = local_z + 1394.008
+```
+
+There is no scale change, vertical exaggeration, rotation or flattening.
+The full bounding rectangle is 3000 × 1720 m, with an irregular northern
+survey boundary. About 4.48 km² of ground nodes are supported. Reconstructed
+elevations span approximately 1337.574–1430.606 m. Large absolute survey
+coordinates are removed to preserve simulator numerical precision.
+
+The world contains **294 static triangle-mesh tiles / 587,784 triangles**.
+The background uses 4 m grid spacing; a 128 × 128 m patch around spawn uses
+1 m spacing. Small ground gaps are filled only within observed survey
+coverage and within 8 m of a ground observation. Unsupported regions remain
+open; no flat floor is invented outside the survey.
+
+Each grid node uses a local least-squares ground plane, with a mean-height
+fallback for sparse, ill-conditioned or strongly extrapolated fits. This
+avoids isolated plane-fitting spikes. Fine-patch edges blend to the coarse
+surface over 4 m and have matching boundary heights. Tiles use identical
+visual and collision meshes, counterclockwise upward-facing triangles,
+and the existing 0.8 ground friction. A synthetic regolith texture is reused
+from the existing package; it is not aerial imagery or measured ground color.
+
+The default spawn lies on a measured 0.595° coarse slope (maximum nearby
+coarse slope 1.228°). `z:=auto` evaluates the exact exported terrain triangles
+at launch x/y and adds the existing 0.36 m rover spawn clearance. Explicit
+`z:=...` remains available. An automatic spawn outside supported terrain is
+rejected. The query gives a starting height, not a guarantee that arbitrary
+slopes/ledges support a safe rover pose.
+
+The converter uses a mesh rather than a Gazebo heightmap because this
+project previously observed ODE CPU ray/heightfield stalls. No `gz sim`,
+`ros_gz`, new sensor, controller or physics plugin is introduced.
+
+![Survey footprint, elevations and local spawn patch](validation/usgs_terrain_preview.png)
+
+## Recreate the assets
+
+Conversion dependencies are optional and isolated from ROS Python. A clean
+machine needs the Ubuntu venv package once:
+
+```bash
+sudo apt install python3-venv
+python3 -m venv ~/.local/share/rover_sim/terrain-venv
+~/.local/share/rover_sim/terrain-venv/bin/python -m pip install \
+  -r ~/rover_ws/src/rover_sim/rover_sim/requirements-terrain.txt
+```
+
+With all six originals in `~/Downloads`, run from the package directory:
+
+```bash
+cd ~/rover_ws/src/rover_sim/rover_sim
+~/.local/share/rover_sim/terrain-venv/bin/python scripts/import_usgs_terrain.py \
+  ~/Downloads/USGS_LPC_UT_Southern_QL1_2018_12SWH{1851,1852,1951,1952,2051,2052}_LAS_2019.laz
+```
+
+The defaults are `--spacing 4 --local-spacing 1 --tile-size 128`. The script
+validates matching metric coordinate systems and rejects duplicate inputs.
+It recreates only the USGS asset directory/world/manifest. Rebuild from
+`~/rover_ws` after regenerating assets. Normal operation uses the ROS setup
+and installed workspace, not the conversion venv.
+
+## Validation
+
+Unit tests check plane reconstruction, sparse-fit stability, coverage/holes,
+triangle orientation, exact height interpolation, fine/coarse seams, all six
+source identities, spawn behavior and the default launch. Run the normal
+workspace `colcon test --packages-select rover_sim rover_planner` and
+`colcon test-result --verbose`.
+
+For integration, use unused domain/master values and no teleop/planner or
+other command publisher. The validator moves the rover and inserts/removes
+one temporary measurement box. Terminal 1 after building:
+
+```bash
+source /opt/ros/humble/setup.bash
+source ~/rover_ws/install/setup.bash
+export ROS_DOMAIN_ID=60
+export GAZEBO_MASTER_URI=http://127.0.0.1:11370
+env -u GTK_PATH -u GTK_EXE_PREFIX -u GIO_MODULE_DIR -u GTK_IM_MODULE_FILE \
+  ros2 launch rover_sim rover_desert.launch.py gui:=false rviz:=false
+```
+
+Terminal 2:
+
+```bash
+source /opt/ros/humble/setup.bash
+source ~/rover_ws/install/setup.bash
+export ROS_DOMAIN_ID=60
+export GAZEBO_MASTER_URI=http://127.0.0.1:11370
+ros2 run rover_sim validate_survey_terrain.py \
+  --output ~/rover_ws/src/rover_sim/rover_sim/docs/validation/local_usgs_simulation.json
+```
+
+The required JSON output includes spawn/rate/RTF, resting drift, wheel-ground
+gaps, chassis clearance, LiDAR-versus-mesh errors, a 5 m box-face check,
+forward/backward/left/right/no-strafe checks and watchdog epochs. Add
+`--expected-rate 3` if Terminal 1 uses `lidar_rate:=3`. Stop the isolated
+launch afterward and unset the domain/master before normal operation.
+
+Limitations: this is bare-earth terrain, not a reconstruction of trees,
+buildings, water physics or overhangs. Four-metre background sampling loses
+small obstacles; 1 m sampling is still coarse relative to wheel contact.
+Terrain is rigid with approximate friction. Survey coverage has open edges.
+Large-world traversal, high-speed/slope mobility and planner performance
+over the entire survey are not established by local prototype checks.

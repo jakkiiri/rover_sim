@@ -2,7 +2,7 @@
 
 robot:=real (default: the real rover from its Onshape CAD, rocker suspension,
 stowed arm, 3D LiDAR on a 1 m pole) or robot:=proxy (the original box rover).
-world:=mars (default) or world:=desert, or a path to a .world file.
+world:=usgs (default), world:=mars or world:=desert, or a .world file path.
 lidar_mode:=3d (default, 3D LiDAR on /points) or 2d (/scan);
 lidar_profile:=airy (default: RoboSense Airy-style 48-beam hemispherical dome
 mounted upside down, horizon to straight down) or lite|standard|high|dense
@@ -25,6 +25,7 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 from rover_sim import stereo_launch
+from rover_sim.survey_terrain import spawn_height
 
 # 3D LiDAR profiles: (channels, lowest beam deg, highest beam deg, minimum
 # range m). Must match urdf/upstream/mars_lidar3d.urdf.xacro.
@@ -115,8 +116,8 @@ def generate_launch_description():
     args = [DeclareLaunchArgument('robot', default_value='real', choices=['real', 'proxy'],
                                   description='real (CAD model, rockers, LiDAR pole) or proxy (box rover)'),
             DeclareLaunchArgument('gui', default_value='true'),
-            DeclareLaunchArgument('world', default_value='mars',
-                                  description='mars, desert, or a path to a .world file'),
+            DeclareLaunchArgument('world', default_value='usgs',
+                                  description='usgs survey terrain, mars, desert, or a .world file'),
             DeclareLaunchArgument('lidar', default_value='true', description='Enable the Classic ray LiDAR'),
             DeclareLaunchArgument('lidar_mode', default_value='3d', choices=['2d', '3d']),
             DeclareLaunchArgument('lidar_profile', default_value='airy', choices=list(LIDAR3D_PROFILES)),
@@ -132,17 +133,19 @@ def generate_launch_description():
     args.append(DeclareLaunchArgument('stereo', default_value='true', description='Enable the stereo camera'))
     for name, value in stereo_launch.LAUNCH_ARGS.items():
         args.append(DeclareLaunchArgument(name, default_value=value))
-    for name, value in [('x', '0'), ('y', '0'), ('z', '0.36'),
+    for name, value in [('x', '0'), ('y', '0'), ('z', 'auto'),
                         ('roll', '0'), ('pitch', '0'), ('yaw', '0')]:
         args.append(DeclareLaunchArgument(name, default_value=value))
     # Entity name kept as proxy_rover for both robots: validators move it by name.
-    spawn_args = ['-entity', 'proxy_rover', '-topic', 'robot_description',
-                  '-timeout', '60']
-    for option, name in [('x', 'x'), ('y', 'y'), ('z', 'z'),
-                         ('R', 'roll'), ('P', 'pitch'), ('Y', 'yaw')]:
-        spawn_args.extend(['-' + option, LaunchConfiguration(name)])
-
     def robot_nodes(context):
+        # The survey is shifted so its default spawn has ground z=0. Other
+        # x/y locations need their actual triangle elevation, not a flat z.
+        z = spawn_height(LaunchConfiguration('world').perform(context), share,
+                         LaunchConfiguration('x').perform(context), LaunchConfiguration('y').perform(context),
+                         LaunchConfiguration('z').perform(context))
+        spawn_args = ['-entity', 'proxy_rover', '-topic', 'robot_description', '-timeout', '60', '-z', str(z)]
+        for option, name in [('x', 'x'), ('y', 'y'), ('R', 'roll'), ('P', 'pitch'), ('Y', 'yaw')]:
+            spawn_args.extend(['-' + option, LaunchConfiguration(name)])
         watchdog = float(LaunchConfiguration('actuator_watchdog').perform(context))
         if not math.isfinite(watchdog) or watchdog <= 0:
             raise ValueError('actuator_watchdog must be finite and positive')
