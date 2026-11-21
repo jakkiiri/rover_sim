@@ -251,10 +251,12 @@ def main():
         for window in range(args.windows):
             started = time.monotonic()
             wait_for(lambda: time.monotonic() - started >= args.duration, args.duration + 5., 'window')
+            # list() copies each deque in one step; the subscription callbacks
+            # append without the lock, and Fortress's /clock arrives at 1 kHz.
             with lock:
-                clock_window = [(w, s) for w, s in clocks if w >= started]
-                scan_window = [(w, m) for w, m in scans if w >= started]
-                stream = {k: [(w, s, key) for w, s, key in v if w >= started] for k, v in stamps.items()}
+                clock_window = [(w, s) for w, s in list(clocks) if w >= started]
+                scan_window = [(w, m) for w, m in list(scans) if w >= started]
+                stream = {k: [(w, s, key) for w, s, key in list(v) if w >= started] for k, v in stamps.items()}
             beats = [w for w in list(heartbeats) if w >= started]
             if len(clock_window) < 2 or len(beats) < 2:
                 raise RuntimeError('Missing clock or actuator samples in performance window')
@@ -300,7 +302,9 @@ def main():
                           '/stereo/depth/camera_info': 'sensor_msgs/msg/CameraInfo',
                           '/stereo/points2': 'sensor_msgs/msg/PointCloud2'}
         owners = {topic: [i.node_name for i in node.get_publishers_info_by_topic(topic)] for topic in expected_types}
-        expected_owner = {'/stereo/left/image_raw': 'stereo_camera', '/stereo/left/camera_info': 'stereo_camera',
+        # Fortress: ros_gz_bridge publishes /stereo/gazebo/*; the relay republishes both sides.
+        expected_owner = {'/stereo/left/image_raw': 'stereo_camera_relay',
+                          '/stereo/left/camera_info': 'stereo_camera_relay',
                           '/stereo/right/image_raw': 'stereo_camera_relay',
                           '/stereo/right/camera_info': 'stereo_camera_relay'}
         stereo_nodes = ('stereo_camera_relay', 'stereo_processor')
@@ -360,7 +364,8 @@ def main():
             'left_tx_zero': li.p[3] == 0,
             'right_tx_minus_fx_baseline': math.isclose(ri.p[3], -ri.p[0] * baseline, rel_tol=1e-9),
             'no_distortion': all(v == 0 for v in list(li.d) + list(ri.d)),
-            'plugin_right_tx_was_zero': list(gi.p)[3] == 0,
+            # Fortress fills the right camera's Tx itself (Classic's plugin left it 0).
+            'gazebo_right_tx_minus_fx_baseline': math.isclose(gi.p[3], -gi.p[0] * baseline, rel_tol=1e-4),
             # DisparityImage.f and .t are float32 fields, so compare at float32 precision.
             'disparity_f_t': math.isclose(disparity.t, baseline, rel_tol=1e-6)
             and math.isclose(disparity.f, li.p[0], rel_tol=1e-6)}

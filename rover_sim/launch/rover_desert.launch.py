@@ -224,6 +224,6 @@ def generate_launch_description():
         OpaqueFunction(function=robot_nodes),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(os.path.join(share, 'launch', 'desert.launch.py')),
-            launch_arguments={'gui': LaunchConfiguration('gui'),
-                              'world': LaunchConfiguration('world')}.items()),
+            launch_arguments={name: LaunchConfiguration(name)
+                              for name in ('gui', 'world', 'lidar', 'lidar_mode', 'stereo')}.items()),
     ])

@@ -68,7 +68,7 @@ def main():
             spinner.start()
             try:
                 deadline = time.monotonic() + 90
-                while 'Eight-joint bridge ready' not in log_path.read_text():
+                while 'Eight-joint gz-sim bridge ready' not in log_path.read_text():
                     if process.poll() is not None or time.monotonic() > deadline:
                         raise RuntimeError(f'{name}: launch did not become ready')
                     time.sleep(.2)

@@ -139,3 +139,40 @@ def test_isolation_requires_domain_and_partition(monkeypatch):
     errors.clear()
     sim_services.require_isolation(parser)
     assert not errors
+
+
+def bridge_topics(sensors):
+    import yaml
+    entries = yaml.safe_load((PACKAGE / 'config' / 'ros_gz_bridge.yaml').read_text())
+    return {e['ros_topic_name'] for e in WORLD.bridge_entries(entries, sensors)}
+
+
+def test_bridge_carries_only_enabled_sensors():
+    always = {'/clock', '/cmd_vel'}
+    stereo = {f'/stereo/gazebo/{side}/{kind}' for side in ('left', 'right') for kind in ('image_raw', 'camera_info')}
+    assert bridge_topics(set()) == always
+    assert bridge_topics({'lidar3d'}) == always | {'/points_raw'}
+    assert bridge_topics({'lidar2d', 'stereo'}) == always | {'/scan'} | stereo
+    assert bridge_topics(set(WORLD.SENSOR_TOPICS)) == always | {'/points_raw', '/scan'} | stereo
+
+
+@pytest.mark.parametrize('lidar, mode, stereo, expected', [
+    ('true', '3d', 'true', {'lidar3d', 'stereo'}), ('true', '2d', 'false', {'lidar2d'}),
+    ('false', '3d', 'true', {'stereo'}), ('False', '2D', 'FALSE', set())])
+def test_enabled_sensors(lidar, mode, stereo, expected):
+    assert WORLD.enabled_sensors(lidar, mode, stereo) == expected
+
+
+@pytest.mark.parametrize('args', [('yes', '3d', 'true'), ('true', '4d', 'true'), ('true', '3d', '1')])
+def test_enabled_sensors_rejects_bad_values(args):
+    with pytest.raises(ValueError):
+        WORLD.enabled_sensors(*args)
+
+
+def test_rover_launch_passes_its_sensor_choice_to_the_world_launch():
+    from launch.actions import IncludeLaunchDescription
+    include = [e for e in ROVER.generate_launch_description().entities if isinstance(e, IncludeLaunchDescription)]
+    assert len(include) == 1
+    names = {''.join(p.perform(LaunchContext()) if hasattr(p, 'perform') else p for p in k) if isinstance(k, (list, tuple)) else k
+             for k, _ in include[0].launch_arguments}
+    assert {'gui', 'world', 'lidar', 'lidar_mode', 'stereo'} <= names

@@ -9,14 +9,19 @@ Started here:
 - ``ign gazebo`` with this package's models on IGN_GAZEBO_RESOURCE_PATH and
   its lib folder (librover_swerve_gz_system.so) on IGN_GAZEBO_SYSTEM_PLUGIN_PATH;
   when it exits the whole launch shuts down.
-- ros_gz_bridge: the topics in config/ros_gz_bridge.yaml, plus the world's
+- ros_gz_bridge: the topics in config/ros_gz_bridge.yaml for the sensors that
+  are enabled (lidar, lidar_mode, stereo; set by rover_desert.launch.py, all on
+  when this file runs alone), plus the world's
   services under fixed ROS names (``sim_services``) so tools do not need the
   world name: /sim/spawn_entity, /sim/delete_entity, /sim/set_entity_pose,
   /sim/control (ros_gz_interfaces/srv/{SpawnEntity,DeleteEntity,SetEntityPose,ControlWorld}).
 """
 
 import os
+import tempfile
 import xml.etree.ElementTree as ET
+
+import yaml
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -32,6 +37,47 @@ SIM_SERVICES = {
     '/sim/set_entity_pose': ('set_pose', 'SetEntityPose'),
     '/sim/control': ('control', 'ControlWorld'),
 }
+
+
+# Sensor -> gz topic prefix of its bridge entries; entries matching none are always bridged.
+SENSOR_TOPICS = {'lidar3d': '/rover/lidar3d/', 'lidar2d': '/rover/scan', 'stereo': '/stereo/gazebo/'}
+
+
+def enabled_sensors(lidar, lidar_mode, stereo):
+    """Sensor groups present on the robot, from the launch arguments' text."""
+    def flag(value, name):
+        value = value.strip().lower()
+        if value not in ('true', 'false'):
+            raise ValueError(f'{name} must be true or false, got {value!r}')
+        return value == 'true'
+    mode = lidar_mode.strip().lower()
+    if mode not in ('2d', '3d'):
+        raise ValueError(f'lidar_mode must be 2d or 3d, got {lidar_mode!r}')
+    sensors = {'stereo'} if flag(stereo, 'stereo') else set()
+    if flag(lidar, 'lidar'):
+        sensors.add('lidar' + mode)
+    return sensors
+
+
+def bridge_entries(entries, sensors):
+    """Bridge config entries without the topics of sensors that are not on the robot.
+
+    Bridging a missing sensor would still advertise its ROS topic (e.g. /scan
+    with lidar:=false), which tools take as the sensor being present.
+    """
+    def wanted(entry):
+        groups = [g for g, prefix in SENSOR_TOPICS.items() if entry['gz_topic_name'].startswith(prefix)]
+        return not groups or groups[0] in sensors
+    return [e for e in entries if wanted(e)]
+
+
+def bridge_config_file(share, sensors):
+    """Write the filtered bridge config to a temporary file and return its path."""
+    with open(os.path.join(share, 'config', 'ros_gz_bridge.yaml')) as f:
+        entries = bridge_entries(yaml.safe_load(f), sensors)
+    with tempfile.NamedTemporaryFile('w', prefix='rover_sim_bridge_', suffix='.yaml', delete=False) as f:
+        yaml.safe_dump(entries, f, sort_keys=False)
+        return f.name
 
 
 def world_path(name):
@@ -87,12 +133,13 @@ def gazebo(context):
     path = world_path(LaunchConfiguration('world').perform(context))
     gui = IfCondition(LaunchConfiguration('gui')).evaluate(context)
     arguments, remappings = sim_services(world_name(path))
+    sensors = enabled_sensors(*(LaunchConfiguration(n).perform(context) for n in ('lidar', 'lidar_mode', 'stereo')))
     return [
         ExecuteProcess(cmd=gazebo_command(path, gui), additional_env=gazebo_environment(share),
                        output='screen', on_exit=Shutdown(reason='Gazebo exited')),
         Node(package='ros_gz_bridge', executable='parameter_bridge', name='ros_gz_bridge',
              arguments=arguments, remappings=remappings, output='screen',
-             parameters=[{'config_file': os.path.join(share, 'config', 'ros_gz_bridge.yaml'),
+             parameters=[{'config_file': bridge_config_file(share, sensors),
                           'use_sim_time': True}]),
     ]
 
@@ -103,5 +150,9 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'world', default_value='mars',
             description='World name in rover_sim/worlds (mars, desert) or a world file path.'),
+        # Declared again (same names) by rover_desert.launch.py, whose values win.
+        DeclareLaunchArgument('lidar', default_value='true', description='Bridge the LiDAR topics.'),
+        DeclareLaunchArgument('lidar_mode', default_value='3d', description='Which LiDAR to bridge: 3d or 2d.'),
+        DeclareLaunchArgument('stereo', default_value='true', description='Bridge the stereo camera topics.'),
         OpaqueFunction(function=gazebo),
     ])

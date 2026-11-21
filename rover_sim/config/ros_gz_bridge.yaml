@@ -2,7 +2,8 @@
 # config_file). gz topic names are set in the URDF sensors
 # (urdf/upstream/mars_lidar3d.urdf.xacro, urdf/sensors/lidar.urdf.xacro,
 # urdf/sensors/stereo.urdf.xacro) and the world GUI (rover_sim/fortress_world.py).
-# Topics without a publisher simply stay idle (e.g. /scan with the 3D LiDAR).
+# desert.launch.py drops the entries of sensors the robot does not have
+# (lidar:=false, lidar_mode, stereo:=false), so their ROS topics do not appear.
 # Sensor streams use reliable QoS on the ROS side (the bridge default), which
 # lidar_postprocess, stereo_camera_relay and RViz subscribe with.
 
