@@ -161,7 +161,8 @@ def test_exported_meshes_and_world_have_real_collisions(survey):
     root = ET.parse(PACKAGE/'worlds/usgs.world').getroot()
     assert root.find('world').get('name') == 'usgs'
     assert root.findall('.//heightmap') == []
-    models = root.findall('world/model')
+    # Tiles only; the synthetic rock fields (rover_sim/usgs_sites.py) follow them.
+    models = [m for m in root.findall('world/model') if m.get('name').startswith('terrain_')]
     assert len(models) == len(survey.metadata['tiles'])
     assert len(models) > 10
     for model, tile in zip(models, survey.metadata['tiles']):

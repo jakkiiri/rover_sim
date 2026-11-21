@@ -35,7 +35,8 @@ def evaluate(**overrides):
 
 
 def executable(node):
-    return node._Node__node_executable
+    # None for plain processes (the GUI camera move is an ExecuteProcess).
+    return getattr(node, '_Node__node_executable', None)
 
 
 def perform(value):

@@ -2,6 +2,7 @@
 """Check the USGS world in a dedicated Fortress launch; moves the rover.
 
 Requires isolated ROS_DOMAIN_ID / IGN_PARTITION and no teleop/planner.
+Launch with site:=flat (the hills site's rocks would read as survey errors).
 Ground truth is used solely to validate collision, ground contact and LiDAR.
 """
 import argparse

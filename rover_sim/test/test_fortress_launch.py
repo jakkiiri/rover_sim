@@ -176,3 +176,44 @@ def test_rover_launch_passes_its_sensor_choice_to_the_world_launch():
     names = {''.join(p.perform(LaunchContext()) if hasattr(p, 'perform') else p for p in k) if isinstance(k, (list, tuple)) else k
              for k, _ in include[0].launch_arguments}
     assert {'gui', 'world', 'lidar', 'lidar_mode', 'stereo'} <= names
+
+
+def create_pairs(nodes):
+    create = [n for n in nodes if isinstance(n, Node) and n._Node__node_executable == 'create']
+    assert len(create) == 1
+    flat = [a if isinstance(a, str) else ''.join(x.perform(LaunchContext()) for x in a)
+            for a in create[0]._Node__arguments]
+    return dict(zip(flat[::2], flat[1::2]))
+
+
+def test_usgs_spawns_at_the_hills_site_on_the_ground_by_default():
+    pairs = create_pairs(evaluate(ROVER))
+    assert pairs['-world'] == 'usgs'
+    assert (float(pairs['-x']), float(pairs['-y'])) == (-444.0, 64.0)
+    from rover_sim.survey_terrain import SurveySurface
+    ground = SurveySurface(PACKAGE / 'worlds/usgs.terrain.json').height(-444.0, 64.0)
+    assert math.isclose(float(pairs['-z']), ground + 0.36, abs_tol=1e-9)
+
+
+def test_site_flat_and_explicit_coordinates_select_the_spawn():
+    pairs = create_pairs(evaluate(ROVER, site='flat'))
+    assert (float(pairs['-x']), float(pairs['-y']), float(pairs['-z'])) == (0.0, 0.0, 0.36)
+    pairs = create_pairs(evaluate(ROVER, site='hills', x='10', y='-5'))
+    assert (float(pairs['-x']), float(pairs['-y'])) == (10.0, -5.0)
+
+
+def test_gui_camera_moves_behind_the_rover_only_with_the_gui():
+    def camera(nodes):
+        return [n for n in nodes if isinstance(n, ExecuteProcess) and not isinstance(n, Node)]
+    with_gui = camera(evaluate(ROVER, world='desert', x='2', yaw='0'))
+    assert len(with_gui) == 1
+    command = ' '.join(''.join(s.perform(LaunchContext()) for s in part) for part in with_gui[0].cmd)
+    assert '/gui/move_to/pose' in command and 'x: -5.000' in command
+    assert with_gui[0].condition.evaluate(context_with(gui='true'))
+    assert not with_gui[0].condition.evaluate(context_with(gui='false'))
+
+
+def context_with(**values):
+    context = LaunchContext()
+    context.launch_configurations.update(values)
+    return context

@@ -3,6 +3,10 @@
 robot:=real (default: the real rover from its Onshape CAD, rocker suspension,
 stowed arm, 3D LiDAR on a 1 m pole) or robot:=proxy (the original box rover).
 world:=usgs (default), world:=mars or world:=desert, or a .world file path.
+site:=hills (default) or site:=flat picks the spawn on the usgs world
+(config/usgs_sites.yaml; hills has a rock field); x:=/y:= override it, and on
+other worlds x/y default to 0. z:=auto puts the rover 0.36 m above the ground.
+With the GUI on, its camera moves to just behind the spawned rover.
 lidar_mode:=3d (default, 3D LiDAR on /points) or 2d (/scan);
 lidar_profile:=airy (default: RoboSense Airy-style 48-beam hemispherical dome
 mounted upside down, horizon to straight down) or lite|standard|high|dense
@@ -19,13 +23,13 @@ import xacro
 import yaml
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-from rover_sim import stereo_launch
+from rover_sim import stereo_launch, usgs_sites
 from rover_sim.survey_terrain import spawn_height
 
 
@@ -123,21 +127,32 @@ def lidar3d_samples(samples):
 ENTITY = 'proxy_rover'
 
 
-def spawn_arguments(world, context, z):
+def spawn_arguments(world, context, x, y, z):
     """ros_gz_sim create arguments: the robot_description topic at the launch pose.
 
-    z is the resolved height (survey_terrain.spawn_height turns z:=auto into
-    the terrain height under x/y plus 0.36 m).
+    x/y come from the site or x:=/y:= (usgs_sites.resolve_xy); z is the resolved
+    height (survey_terrain.spawn_height turns z:=auto into the terrain height
+    under x/y plus 0.36 m).
     """
-    arguments = ['-world', world, '-name', ENTITY, '-topic', 'robot_description', '-z', repr(float(z))]
-    if not math.isfinite(float(z)):
-        raise ValueError('z must be finite')
-    for flag, name in [('x', 'x'), ('y', 'y'), ('R', 'roll'), ('P', 'pitch'), ('Y', 'yaw')]:
+    if not all(math.isfinite(float(v)) for v in (x, y, z)):
+        raise ValueError('x, y and z must be finite')
+    arguments = ['-world', world, '-name', ENTITY, '-topic', 'robot_description',
+                 '-x', repr(float(x)), '-y', repr(float(y)), '-z', repr(float(z))]
+    for flag, name in [('R', 'roll'), ('P', 'pitch'), ('Y', 'yaw')]:
         value = float(LaunchConfiguration(name).perform(context))
         if not math.isfinite(value):
             raise ValueError(f'{name} must be finite')
         arguments += ['-' + flag, repr(value)]
     return arguments
+
+
+def gui_camera_command(x, y, z, yaw):
+    """Move the Gazebo GUI camera behind the rover once the GUI's service is up."""
+    request = usgs_sites.camera_request(x, y, z, yaw)
+    service = ('ign service -s /gui/move_to/pose --reqtype ignition.msgs.GUICamera '
+               f"--reptype ignition.msgs.Boolean --timeout 2000 --req '{request}'")
+    return ['bash', '-c', f'for i in $(seq 90); do {service} 2>/dev/null | grep -q true && exit 0; sleep 1; done; '
+            'echo "GUI camera: /gui/move_to/pose not available" >&2']
 
 
 def rviz_config(stereo, mode):
@@ -168,16 +183,22 @@ def generate_launch_description():
     args.append(DeclareLaunchArgument('stereo', default_value='true', description='Enable the stereo camera'))
     for name, value in stereo_launch.LAUNCH_ARGS.items():
         args.append(DeclareLaunchArgument(name, default_value=value))
-    for name, value in [('x', '0'), ('y', '0'), ('z', 'auto'),
+    args.append(DeclareLaunchArgument('site', default_value='',
+                                      description='usgs spawn site from config/usgs_sites.yaml '
+                                                  "(hills, flat; '' = its default_site)"))
+    for name, value in [('x', ''), ('y', ''), ('z', 'auto'),
                         ('roll', '0'), ('pitch', '0'), ('yaw', '0')]:
         args.append(DeclareLaunchArgument(name, default_value=value))
 
     def robot_nodes(context):
         # The survey is shifted so its default spawn has ground z=0. Other
         # x/y locations need their actual triangle elevation, not a flat z.
-        z = spawn_height(LaunchConfiguration('world').perform(context), share,
-                         LaunchConfiguration('x').perform(context), LaunchConfiguration('y').perform(context),
-                         LaunchConfiguration('z').perform(context))
+        world_arg = LaunchConfiguration('world').perform(context)
+        x, y = usgs_sites.resolve_xy(world_arg, LaunchConfiguration('site').perform(context),
+                                     LaunchConfiguration('x').perform(context),
+                                     LaunchConfiguration('y').perform(context),
+                                     usgs_sites.load_sites(os.path.join(share, 'config', 'usgs_sites.yaml')))
+        z = spawn_height(world_arg, share, x, y, LaunchConfiguration('z').perform(context))
         watchdog = float(LaunchConfiguration('actuator_watchdog').perform(context))
         if not math.isfinite(watchdog) or watchdog <= 0:
             raise ValueError('actuator_watchdog must be finite and positive')
@@ -214,7 +235,9 @@ def generate_launch_description():
             # create waits for robot_description (latched) and the world's create
             # service; no fixed startup delay.
             Node(package='ros_gz_sim', executable='create',
-                 arguments=spawn_arguments(world, context, z), output='screen'),
+                 arguments=spawn_arguments(world, context, x, y, z), output='screen'),
+            ExecuteProcess(cmd=gui_camera_command(x, y, z, float(LaunchConfiguration('yaw').perform(context))),
+                           condition=IfCondition(LaunchConfiguration('gui')), output='screen'),
             # With stereo on, RViz opens the combined LiDAR + stereo view.
             Node(package='rviz2', executable='rviz2', name='rviz2',
                  arguments=['-d', os.path.join(share, 'rviz', rviz_config(stereo, mode))],

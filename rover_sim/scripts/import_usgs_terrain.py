@@ -21,7 +21,8 @@ import numpy as np
 PACKAGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PACKAGE))
 from rover_sim.fortress_world import SYSTEMS, gui_block, physics_block  # noqa: E402
-from rover_sim.survey_terrain import GroundGrid, grid_height, grid_mesh  # noqa: E402
+from rover_sim.survey_terrain import GroundGrid, SurveySurface, grid_height, grid_mesh  # noqa: E402
+from rover_sim import usgs_sites  # noqa: E402
 
 
 def digest(path):
@@ -83,7 +84,7 @@ def tile_link(name, mesh, x, y):
       <visual name="visual">{geometry}</visual></link>'''
 
 
-def world_xml(tiles):
+def world_xml(tiles, extra=''):
     models = '\n'.join(f'<model name="{t["name"]}"><static>true</static>' +
                         tile_link('ground', t['mesh'], *t['origin'])+'</model>' for t in tiles)
     return f'''<?xml version="1.0"?>
@@ -106,17 +107,32 @@ def world_xml(tiles):
       <direction>-0.4 0.2 -0.85</direction>
     </light>
 {gui_block('-15 -18 14 0 0.45 0.85', '0.65 0.78 0.89')}{models}
-  </world>
+{extra}  </world>
 </sdf>
 '''
 
 
 def write_world_from_manifest():
-    """Rewrite worlds/usgs.world from the tiles listed in worlds/usgs.terrain.json."""
+    """Write worlds/usgs.world: the tiles in usgs.terrain.json plus the rock
+    fields of config/usgs_sites.yaml (layout recorded in worlds/usgs_rocks.json)."""
     world = PACKAGE/'worlds/usgs.world'
-    tiles = json.loads(world.with_suffix('.terrain.json').read_text())['tiles']
-    world.write_text(world_xml(tiles))
-    print(f'Wrote {world} with {len(tiles)} terrain tiles', flush=True)
+    manifest = world.with_suffix('.terrain.json')
+    tiles = json.loads(manifest.read_text())['tiles']
+    sites = usgs_sites.load_sites(PACKAGE/'config/usgs_sites.yaml')
+    surface = SurveySurface(manifest)
+    tops = [usgs_sites.mesh_top(PACKAGE/f'models/mars_rocks/meshes/rock_{k}.dae')
+            for k in range(usgs_sites.ROCK_MESHES)]
+    extra, layout = '', {'generator': 'scripts/import_usgs_terrain.py --world-only',
+                         'config': 'config/usgs_sites.yaml', 'fields': []}
+    for field in sites.get('rock_fields', []):
+        site = sites['sites'][field['site']]
+        rocks = usgs_sites.place_rocks(field, (site['x'], site['y']), surface, tops)
+        extra += usgs_sites.rocks_sdf(rocks, field['site'])
+        layout['fields'].append({'site': field['site'], 'centre': [site['x'], site['y']], 'rocks': rocks})
+    world.write_text(world_xml(tiles, extra))
+    (PACKAGE/'worlds/usgs_rocks.json').write_text(json.dumps(layout, indent=1)+'\n')
+    counts = {f['site']: len(f['rocks']) for f in layout['fields']}
+    print(f'Wrote {world} with {len(tiles)} terrain tiles and rocks {counts}', flush=True)
 
 
 def main():
@@ -225,7 +241,6 @@ def main():
     links = '\n'.join(tile_link(t['name'], t['mesh'], *t['origin']) for t in tiles)
     (asset/'model.sdf').write_text('<sdf version="1.6"><model name="usgs_terrain"><static>true</static>'+links+'</model></sdf>\n')
     world = PACKAGE/'worlds/usgs.world'
-    world.write_text(world_xml(tiles))
     metadata = dict(schema=1, source='Six user-provided USGS LPC Southern Utah 2018 tiles (LAS 2019)',
                     crs_wkt=reference_crs.to_wkt(), horizontal_epsg=6341, vertical_datum='NAVD88 / Geoid12B, metres',
                     origin_projected_m=[spawn_x, spawn_y, zorigin],
@@ -247,7 +262,7 @@ def main():
                                 'non_ground_objects': 'Not reconstructed; this is bare-earth terrain'})
     world.with_suffix('.terrain.json').write_text(json.dumps(metadata, indent=2, allow_nan=False)+'\n')
     print(json.dumps({k: metadata[k] for k in ('origin_projected_m', 'source_ground_elevation_m', 'triangles', 'spawn')}, indent=2))
-    print(f'Wrote {world} with {len(tiles)} terrain tiles', flush=True)
+    write_world_from_manifest()
 
 
 if __name__ == '__main__':

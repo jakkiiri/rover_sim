@@ -116,6 +116,28 @@ and desert worlds). The 294 meshes keep their own COLLADA texture
 
 ![Survey footprint, elevations and local spawn patch](validation/usgs_terrain_preview.png)
 
+## Test sites and rocks
+
+`config/usgs_sites.yaml` names the spawn sites; `site:=` picks one and
+`x:=`/`y:=` override it:
+
+| Site | x, y (m) | What is there |
+| --- | --- | --- |
+| `hills` (default) | −444, 64 | 2.3° under the rover; within 24 m 44 % of the ground is 8–25°, 4 % is ≥ 30°, 7.4 m relief; 83 synthetic rocks |
+| `flat` | 0, 0 | The importer's spawn: flattest point, 1 m mesh patch, no rocks |
+
+The hills ground is the 4 m mesh, so small bumps are smoothed; the rocks
+supply the small obstacles. They reuse the Mars rock meshes (40 pebbles,
+35 rocks, 8 boulders up to about 0.6 m tall, within 20 m and outside 3 m of
+the spawn, none on ground steeper than 25°), are buried to their downhill
+edge, and are listed in `worlds/usgs_rocks.json`. After editing the YAML run
+`python3 scripts/import_usgs_terrain.py --world-only` and rebuild.
+
+With the GUI on, the launch moves the Gazebo camera to 7 m behind and 4 m
+above the spawned rover (`/gui/move_to/pose`); the camera stays free to orbit.
+`validate_survey_terrain.py` needs `site:=flat`: rocks would count as
+LiDAR-versus-survey errors.
+
 ## Recreate the assets
 
 Conversion dependencies are optional and isolated from ROS Python. A clean
@@ -164,7 +186,7 @@ source ~/rover_ws/install/setup.bash
 export ROS_DOMAIN_ID=60
 export IGN_PARTITION=usgs_check
 env -u GTK_PATH -u GTK_EXE_PREFIX -u GIO_MODULE_DIR -u GTK_IM_MODULE_FILE \
-  ros2 launch rover_sim rover_desert.launch.py gui:=false rviz:=false
+  ros2 launch rover_sim rover_desert.launch.py gui:=false rviz:=false site:=flat
 ```
 
 Terminal 2:

@@ -55,6 +55,8 @@ if(BUILD_TESTING)
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
   ament_add_pytest_test(survey_terrain test/test_survey_terrain.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
+  ament_add_pytest_test(usgs_sites test/test_usgs_sites.py
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 install(DIRECTORY launch worlds urdf LICENSES docs config rviz
