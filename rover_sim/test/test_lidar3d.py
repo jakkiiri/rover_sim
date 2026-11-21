@@ -98,7 +98,7 @@ def test_modes_do_not_change_actuators_or_drive_geometry():
         assert modules_from_urdf(ET.tostring(root)) == expected
         for j in roots[0].findall('joint'):
             assert ET.tostring(root.find(f"joint[@name='{j.get('name')}']")) == ET.tostring(j)
-        path = ".//plugin[@filename='librover_swerve_actuators.so']"
+        path = ".//plugin[@filename='librover_swerve_gz_system.so']"
         assert ET.tostring(root.find(path)) == ET.tostring(roots[0].find(path))
 
 

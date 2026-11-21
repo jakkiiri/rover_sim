@@ -51,7 +51,7 @@ def test_disabled_lidar_has_no_sensor_or_extra_tf_frame(descriptions):
     assert root.find("joint[@name='lidar_joint']") is None
     assert root.findall('.//sensor') == []
     assert root.find(".//plugin[@filename='libgazebo_ros_ray_sensor.so']") is None
-    assert root.find(".//plugin[@filename='librover_swerve_actuators.so']") is not None
+    assert root.find(".//plugin[@filename='librover_swerve_gz_system.so']") is not None
 
 
 def test_fixed_mount_is_above_chassis_with_ros_axes(descriptions):
@@ -142,7 +142,7 @@ def test_sensor_addition_preserves_moving_joints_and_actuator_plugin(description
     for joint in moving:
         counterpart = after.find(f"joint[@name='{joint.get('name')}']")
         assert ET.tostring(counterpart) == ET.tostring(joint)
-    path = ".//plugin[@filename='librover_swerve_actuators.so']"
+    path = ".//plugin[@filename='librover_swerve_gz_system.so']"
     assert ET.tostring(after.find(path)) == ET.tostring(before.find(path))
 
 

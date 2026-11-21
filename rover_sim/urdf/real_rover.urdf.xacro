@@ -81,8 +81,8 @@
     </collision>
   </xacro:macro>
 
-  <!-- Massless ROS root avoids the KDL root-inertia warning; the p3d plugin
-       reports base_root, which Gazebo merges with base_link. -->
+  <!-- Massless ROS root avoids the KDL root-inertia warning; the swerve System's
+       ground truth reports base_root, which the URDF import merges with base_link. -->
   <link name="base_root"/>
   <joint name="base_root_joint" type="fixed">
     <parent link="base_root"/><child link="base_link"/>
@@ -215,20 +215,16 @@
   </xacro:if>
   <xacro:if value="$(arg enable_control)">
     <gazebo>
-      <plugin name="swerve_actuators" filename="librover_swerve_actuators.so">
+      <!-- Fortress System (src/swerve_gz_system.cpp): actuators, parking hold,
+           rocker differential, and /ground_truth/odom (pose and world-frame
+           twist of base_root; URDF import merges base_link into it). -->
+      <plugin name="rover_sim::SwerveGzSystem" filename="librover_swerve_gz_system.so">
         <watchdog_timeout>$(arg actuator_watchdog)</watchdog_timeout>
         <differential_stiffness>$(arg differential_stiffness)</differential_stiffness>
         <differential_damping>$(arg differential_damping)</differential_damping>
-      </plugin>
-    </gazebo>
-  </xacro:if>
-  <xacro:if value="$(arg ground_truth)">
-    <gazebo>
-      <plugin name="ground_truth_pose" filename="libgazebo_ros_p3d.so">
-        <ros><remapping>odom:=/ground_truth/odom</remapping></ros>
+        <ground_truth>$(arg ground_truth)</ground_truth>
         <body_name>base_root</body_name>
-        <frame_name>world</frame_name>
-        <update_rate>50</update_rate>
+        <ground_truth_rate>50</ground_truth_rate>
       </plugin>
     </gazebo>
   </xacro:if>

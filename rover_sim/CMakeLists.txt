@@ -3,16 +3,20 @@ project(rover_sim)
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
-find_package(gazebo_dev REQUIRED)
-find_package(gazebo_ros REQUIRED)
+find_package(ignition-gazebo6 REQUIRED)
+find_package(ignition-plugin1 REQUIRED COMPONENTS register)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 
-add_library(rover_swerve_actuators SHARED src/swerve_gazebo_plugin.cpp)
-target_compile_features(rover_swerve_actuators PUBLIC cxx_std_17)
-ament_target_dependencies(rover_swerve_actuators gazebo_dev gazebo_ros rclcpp sensor_msgs std_msgs)
-install(TARGETS rover_swerve_actuators LIBRARY DESTINATION lib)
+# Gazebo Fortress (gz-sim 6) swerve actuator System; the URDFs load it as
+# librover_swerve_gz_system.so (found through IGN_GAZEBO_SYSTEM_PLUGIN_PATH).
+add_library(rover_swerve_gz_system SHARED src/swerve_gz_system.cpp)
+target_compile_features(rover_swerve_gz_system PUBLIC cxx_std_17)
+target_link_libraries(rover_swerve_gz_system ignition-gazebo6::ignition-gazebo6 ignition-plugin1::register)
+ament_target_dependencies(rover_swerve_gz_system rclcpp sensor_msgs std_msgs nav_msgs)
+install(TARGETS rover_swerve_gz_system LIBRARY DESTINATION lib)
 ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS scripts/swerve_controller scripts/validate_swerve.py
   scripts/rover_teleop scripts/validate_teleop.py scripts/validate_hardening.py

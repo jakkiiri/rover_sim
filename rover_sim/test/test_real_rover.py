@@ -81,9 +81,17 @@ def test_rockers_are_passive_pivots_across_the_rover(root):
         assert j.find('axis').get('xyz') == '0 1 0'
         assert xyz(j)[1] == pytest.approx(sign * GEOMETRY['rocker_y'])
         assert float(j.find('limit').get('lower')) < 0 < float(j.find('limit').get('upper'))
-    plugin = root.find("gazebo/plugin[@name='swerve_actuators']")
+    plugin = root.find("gazebo/plugin[@filename='librover_swerve_gz_system.so']")
+    assert plugin.get('name') == 'rover_sim::SwerveGzSystem'
     assert float(plugin.find('differential_stiffness').text) > 0
     assert float(plugin.find('differential_damping').text) > 0
+
+
+def test_ground_truth_comes_from_the_swerve_system_not_classic_p3d(root):
+    assert root.find(".//plugin[@filename='libgazebo_ros_p3d.so']") is None
+    plugin = root.find("gazebo/plugin[@filename='librover_swerve_gz_system.so']")
+    assert plugin.findtext('ground_truth') in ('true', '1')
+    assert plugin.findtext('body_name') == 'base_root'
 
 
 def test_wheels_rest_on_the_ground_plane_below_base_link():

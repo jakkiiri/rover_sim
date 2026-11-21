@@ -105,23 +105,14 @@
   </xacro:if>
   <xacro:if value="$(arg enable_control)">
     <gazebo>
-      <plugin name="swerve_actuators" filename="librover_swerve_actuators.so">
+      <!-- Fortress System (src/swerve_gz_system.cpp): actuators, parking hold,
+           rocker differential, and /ground_truth/odom (pose and world-frame
+           twist of base_root; URDF import merges base_link into it). -->
+      <plugin name="rover_sim::SwerveGzSystem" filename="librover_swerve_gz_system.so">
         <watchdog_timeout>$(arg actuator_watchdog)</watchdog_timeout>
-      </plugin>
-    </gazebo>
-  </xacro:if>
-  <!-- Publishes the rover's exact pose in Gazebo's world frame as
-       nav_msgs/Odometry on /ground_truth/odom. It adds no TF, sensor, mass or
-       collision; rover_planner's ground_truth_odom node turns it into /odom
-       and the odom -> base_root TF. Gazebo merges base_link into base_root
-       (fixed joint, zero offset), so base_root is the body Gazebo knows. -->
-  <xacro:if value="$(arg ground_truth)">
-    <gazebo>
-      <plugin name="ground_truth_pose" filename="libgazebo_ros_p3d.so">
-        <ros><remapping>odom:=/ground_truth/odom</remapping></ros>
+        <ground_truth>$(arg ground_truth)</ground_truth>
         <body_name>base_root</body_name>
-        <frame_name>world</frame_name>
-        <update_rate>50</update_rate>
+        <ground_truth_rate>50</ground_truth_rate>
       </plugin>
     </gazebo>
   </xacro:if>

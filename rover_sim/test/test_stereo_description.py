@@ -146,7 +146,7 @@ def test_stereo_does_not_change_mass_geometry_joints_or_actuators(combos):
         for joint in off.findall('joint'):
             twin = on.find(f"joint[@name='{joint.get('name')}']")
             assert ET.tostring(twin) == ET.tostring(joint)
-        plugin = ".//plugin[@filename='librover_swerve_actuators.so']"
+        plugin = ".//plugin[@filename='librover_swerve_gz_system.so']"
         assert ET.tostring(on.find(plugin)) == ET.tostring(off.find(plugin))
 
 
