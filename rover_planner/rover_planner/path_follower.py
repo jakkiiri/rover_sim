@@ -34,8 +34,8 @@ from rclpy.node import Node
 
 PARAMETERS = {
     'lookahead': 0.5,        # m along the path to aim at
-    'max_linear': 0.4,       # m/s, teleop's speed
-    'max_angular': 0.5,      # rad/s, teleop's turn rate
+    'max_linear': 0.6,       # m/s, teleop's speed
+    'max_angular': 0.75,     # rad/s, teleop's turn rate
     'min_angular': 0.15,     # rad/s, so in-place turns do not stall
     'turn_angle': 0.5,       # rad off the nose (~30 deg) above which it turns in place
     'heading_gain': 1.5,     # rad/s per rad of heading error

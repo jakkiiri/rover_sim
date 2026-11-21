@@ -27,18 +27,19 @@ def is_survey_world(world):
     return world == 'usgs' or Path(str(world)).name == 'usgs.world'
 
 
-def resolve_xy(world, site, x, y, sites):
-    """Spawn x/y: explicit values win; otherwise the site's on the survey world, else 0."""
-    explicit = [str(v).strip() for v in (x, y)]
-    base = (0.0, 0.0)
+def resolve_pose(world, site, x, y, yaw, sites):
+    """Spawn (x, y, yaw): explicit values win; otherwise the site's on the survey world, else 0."""
+    explicit = [str(v).strip() for v in (x, y, yaw)]
+    base = (0.0, 0.0, 0.0)
     if is_survey_world(world):
         name = site or sites['default_site']
         if name not in sites['sites']:
             raise ValueError(f"Unknown site '{name}'; choose one of {sorted(sites['sites'])}")
-        base = (float(sites['sites'][name]['x']), float(sites['sites'][name]['y']))
+        entry = sites['sites'][name]
+        base = (float(entry['x']), float(entry['y']), float(entry.get('yaw', 0.0)))
     values = tuple(float(v) if v else b for v, b in zip(explicit, base))
     if not all(math.isfinite(v) for v in values):
-        raise ValueError('Spawn x/y must be finite')
+        raise ValueError('Spawn x/y/yaw must be finite')
     return values
 
 

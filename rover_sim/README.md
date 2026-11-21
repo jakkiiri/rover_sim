@@ -223,8 +223,8 @@ ros2 run rover_sim rover_teleop
 ```
 
 Keep this terminal focused. W/S drive forward/backward, A/D rotate left/right,
-Space stops, and Ctrl+C stops and exits. Defaults are 0.4 m/s longitudinal
-speed and 0.5 rad/s yaw. Motion expires after 0.7 seconds without a key event.
+Space stops, and Ctrl+C stops and exits. Defaults are 0.6 m/s longitudinal
+speed and 0.75 rad/s yaw. Motion expires after 0.7 seconds without a key event.
 See [teleop configuration and terminal behavior](docs/teleop.md).
 
 `/cmd_vel` uses `geometry_msgs/msg/Twist`: `linear.x` is forward and

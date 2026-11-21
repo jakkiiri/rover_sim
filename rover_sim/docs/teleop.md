@@ -15,10 +15,10 @@ simultaneous keys do not combine into translating-turn commands.
 
 | Key | Action | Default Twist field/value |
 | --- | --- | --- |
-| W | Forward | linear.x = 0.4 m/s |
-| S | Backward | linear.x = -0.4 m/s |
-| A | Turn / rotate left | angular.z = 0.5 rad/s |
-| D | Turn / rotate right | angular.z = -0.5 rad/s |
+| W | Forward | linear.x = 0.6 m/s |
+| S | Backward | linear.x = -0.6 m/s |
+| A | Turn / rotate left | angular.z = 0.75 rad/s |
+| D | Turn / rotate right | angular.z = -0.75 rad/s |
 | Space | Stop immediately | All fields zero |
 | Ctrl+C | Stop and quit | All fields zero |
 

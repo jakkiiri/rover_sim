@@ -22,22 +22,24 @@ def surface():
 def test_survey_world_defaults_to_the_hills_site():
     assert SITES['default_site'] == 'hills'
     hills = SITES['sites']['hills']
-    assert usgs_sites.resolve_xy('usgs', '', '', '', SITES) == (hills['x'], hills['y'])
-    assert usgs_sites.resolve_xy('usgs', 'flat', '', '', SITES) == (0.0, 0.0)
+    assert usgs_sites.resolve_pose('usgs', '', '', '', '', SITES) == (hills['x'], hills['y'], hills['yaw'])
+    assert usgs_sites.resolve_pose('usgs', 'flat', '', '', '', SITES) == (0.0, 0.0, 0.0)
 
 
 def test_explicit_coordinates_override_the_site_and_other_worlds_default_to_zero():
-    assert usgs_sites.resolve_xy('usgs', 'hills', '5', '', SITES) == (5.0, SITES['sites']['hills']['y'])
-    assert usgs_sites.resolve_xy('mars', '', '', '', SITES) == (0.0, 0.0)
-    assert usgs_sites.resolve_xy('desert', 'hills', '1.5', '-2', SITES) == (1.5, -2.0)
-    assert usgs_sites.resolve_xy('/tmp/x/usgs.world', 'flat', '', '', SITES) == (0.0, 0.0)
+    hills = SITES['sites']['hills']
+    assert usgs_sites.resolve_pose('usgs', 'hills', '5', '', '', SITES) == (5.0, hills['y'], hills['yaw'])
+    assert usgs_sites.resolve_pose('usgs', 'hills', '', '', '0.5', SITES) == (hills['x'], hills['y'], 0.5)
+    assert usgs_sites.resolve_pose('mars', '', '', '', '', SITES) == (0.0, 0.0, 0.0)
+    assert usgs_sites.resolve_pose('desert', 'hills', '1.5', '-2', '', SITES) == (1.5, -2.0, 0.0)
+    assert usgs_sites.resolve_pose('/tmp/x/usgs.world', 'flat', '', '', '', SITES) == (0.0, 0.0, 0.0)
 
 
 def test_unknown_site_and_non_finite_coordinates_are_rejected():
     with pytest.raises(ValueError, match='Unknown site'):
-        usgs_sites.resolve_xy('usgs', 'moon', '', '', SITES)
+        usgs_sites.resolve_pose('usgs', 'moon', '', '', '', SITES)
     with pytest.raises(ValueError, match='finite'):
-        usgs_sites.resolve_xy('usgs', '', 'nan', '', SITES)
+        usgs_sites.resolve_pose('usgs', '', 'nan', '', '', SITES)
 
 
 @pytest.mark.parametrize('name', sorted(SITES['sites']))
@@ -47,6 +49,15 @@ def test_every_site_is_gentle_under_the_rover(surface, name):
     for dx, dy in [(0, 0), (-0.6, -0.6), (0.6, -0.6), (-0.6, 0.6), (0.6, 0.6)]:
         grade = usgs_sites.ground_slope(surface, site['x'] + dx, site['y'] + dy, 1.0)
         assert math.degrees(math.atan(grade)) < 6.0
+
+
+def test_hills_site_faces_a_climbable_hill(surface):
+    site = SITES['sites']['hills']
+    heights = [surface.height(site['x'] + d * math.cos(site['yaw']), site['y'] + d * math.sin(site['yaw']))
+               for d in np.arange(0.0, 41.0, 2.0)]
+    steps = np.degrees(np.arctan(np.diff(heights) / 2.0))
+    assert heights[-1] - heights[0] > 8.0          # a real hill ahead
+    assert steps.max() < 22.0 and steps.min() > -3.0   # climbable all the way, no dips
 
 
 def test_hills_site_has_driveable_and_lethal_slopes_nearby(surface):

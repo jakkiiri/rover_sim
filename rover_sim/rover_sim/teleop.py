@@ -15,14 +15,14 @@ from rclpy.node import Node
 from rclpy.signals import SignalHandlerOptions
 
 ZERO = (0.0, 0.0, 0.0)
-DEFAULTS = dict(linear_speed=0.4, angular_speed=0.5,
+DEFAULTS = dict(linear_speed=0.6, angular_speed=0.75,
                 key_timeout=0.7, publish_rate=20.0)
 
 
 class KeyboardCommand:
     """Input state, with an explicit monotonic time supplied by the caller."""
 
-    def __init__(self, linear_speed=0.4, angular_speed=0.5,
+    def __init__(self, linear_speed=0.6, angular_speed=0.75,
                  key_timeout=0.7, publish_rate=20.0):
         for name, value in locals().copy().items():
             if name == 'self':

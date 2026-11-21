@@ -11,8 +11,8 @@ from rover_sim.teleop import KeyboardCommand, RoverTeleop, ZERO, keyboard_termin
 
 
 @pytest.mark.parametrize('key,expected', [
-    ('w', (0.4, 0.0, 0.0)), ('s', (-0.4, 0.0, 0.0)),
-    ('a', (0.0, 0.0, 0.5)), ('d', (0.0, 0.0, -0.5)),
+    ('w', (0.6, 0.0, 0.0)), ('s', (-0.6, 0.0, 0.0)),
+    ('a', (0.0, 0.0, 0.75)), ('d', (0.0, 0.0, -0.75)),
 ])
 def test_key_mapping(key, expected):
     for variant in (key, key.upper()):
@@ -52,7 +52,7 @@ def test_escape_sequences_never_turn_into_motion():
         state.feed(chunk, 0.1)
         assert state.command == ZERO
     state.feed(b'd', 0.2)
-    assert state.command == (0.0, 0.0, -0.5)
+    assert state.command == (0.0, 0.0, -0.75)
 
 
 def test_configured_speeds_and_idle():

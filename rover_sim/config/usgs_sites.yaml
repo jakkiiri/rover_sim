@@ -1,6 +1,7 @@
 # Named spawn sites on the USGS survey world (worlds/usgs.world), in its local
 # metres (worlds/usgs.terrain.json). rover_desert.launch.py picks one with
-# site:=<name> when world is usgs; explicit x:=/y:= override the site's.
+# site:=<name> when world is usgs; explicit x:=/y:=/yaw:= override the site's
+# (yaw in rad, optional, default 0).
 # Rock fields are written into the world by
 #   python3 scripts/import_usgs_terrain.py --world-only
 # (rebuild afterwards). See docs/usgs_terrain.md, "Test sites and rocks".
@@ -9,10 +10,11 @@ sites:
   # The importer's spawn: the flattest supported point, inside the 1 m mesh
   # patch. validate_survey_terrain.py expects this site (no rocks nearby).
   flat: {x: 0.0, y: 0.0}
-  # Chosen from the 4 m grid for costmap tests: 2.3 deg under the rover; within
-  # 24 m, 44 % of the ground is 8-25 deg, 4 % is 30 deg or steeper, and the
-  # relief is 7.4 m. Ground here is the 4 m mesh (small bumps are smoothed).
-  hills: {x: -444.0, y: 64.0}
+  # Foot of a hill, chosen from the 4 m grid for costmap tests: under 3 deg at
+  # the rover and no lower ground within 8 m. Facing the yaw (210 deg, south-
+  # west) the ground climbs 9.2 m in 40 m, 12.8 deg mean, 19 deg at most
+  # (driveable). Ground here is the 4 m mesh (small bumps are smoothed).
+  hills: {x: -396.0, y: 52.0, yaw: -2.618}
 rock_fields:
   - site: hills
     seed: 20261121

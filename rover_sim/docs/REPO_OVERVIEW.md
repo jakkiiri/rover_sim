@@ -289,8 +289,8 @@ valid snapshot seeds the steering targets from measured (possibly multi-turn) an
 
 | Key | Twist |
 | --- | --- |
-| W / S | linear.x = ±`linear_speed` (0.4) |
-| A / D | angular.z = ±`angular_speed` (0.5) |
+| W / S | linear.x = ±`linear_speed` (0.6) |
+| A / D | angular.z = ±`angular_speed` (0.75) |
 | Space | zero |
 | Ctrl+C | zero ×3 then exit 0 |
 | anything else (incl. Q/E, arrows) | stop |

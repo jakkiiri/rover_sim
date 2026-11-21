@@ -125,7 +125,7 @@ Gazebo ground-truth plugin --/ground_truth/odom--> ground_truth_odom --> /odom +
 - **Path follower** (`path_follower.py`, settings in
   `config/path_follower.yaml`): turn-then-drive like the original's
   `navigate()`. It aims 0.5 m along the path; more than 30° off the nose it
-  turns in place, otherwise it drives at up to 0.4 m/s (teleop's speed),
+  turns in place, otherwise it drives at up to 0.6 m/s (teleop's speed),
   steering towards that point and slowing within 0.6 m of the end. It stops
   when the path is empty (goal reached or unreachable) or when the path or
   pose is more than 1 s old. It publishes at 10 Hz while driving and nothing

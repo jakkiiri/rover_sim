@@ -119,12 +119,12 @@ and desert worlds). The 294 meshes keep their own COLLADA texture
 ## Test sites and rocks
 
 `config/usgs_sites.yaml` names the spawn sites; `site:=` picks one and
-`x:=`/`y:=` override it:
+`x:=`/`y:=`/`yaw:=` override it:
 
-| Site | x, y (m) | What is there |
+| Site | x, y (m), yaw | What is there |
 | --- | --- | --- |
-| `hills` (default) | −444, 64 | 2.3° under the rover; within 24 m 44 % of the ground is 8–25°, 4 % is ≥ 30°, 7.4 m relief; 83 synthetic rocks |
-| `flat` | 0, 0 | The importer's spawn: flattest point, 1 m mesh patch, no rocks |
+| `hills` (default) | −396, 52, facing 210° | Foot of a hill: under 3° at the rover; ahead the ground climbs 9.2 m in 40 m (12.8° mean, 19° max); 83 synthetic rocks |
+| `flat` | 0, 0, 0 | The importer's spawn: flattest point, 1 m mesh patch, no rocks |
 
 The hills ground is the 4 m mesh, so small bumps are smoothed; the rocks
 supply the small obstacles. They reuse the Mars rock meshes (40 pebbles,

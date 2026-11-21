@@ -189,9 +189,9 @@ def create_pairs(nodes):
 def test_usgs_spawns_at_the_hills_site_on_the_ground_by_default():
     pairs = create_pairs(evaluate(ROVER))
     assert pairs['-world'] == 'usgs'
-    assert (float(pairs['-x']), float(pairs['-y'])) == (-444.0, 64.0)
+    assert (float(pairs['-x']), float(pairs['-y']), float(pairs['-Y'])) == (-396.0, 52.0, -2.618)
     from rover_sim.survey_terrain import SurveySurface
-    ground = SurveySurface(PACKAGE / 'worlds/usgs.terrain.json').height(-444.0, 64.0)
+    ground = SurveySurface(PACKAGE / 'worlds/usgs.terrain.json').height(-396.0, 52.0)
     assert math.isclose(float(pairs['-z']), ground + 0.36, abs_tol=1e-9)
 
 

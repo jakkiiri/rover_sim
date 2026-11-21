@@ -4,8 +4,8 @@ robot:=real (default: the real rover from its Onshape CAD, rocker suspension,
 stowed arm, 3D LiDAR on a 1 m pole) or robot:=proxy (the original box rover).
 world:=usgs (default), world:=mars or world:=desert, or a .world file path.
 site:=hills (default) or site:=flat picks the spawn on the usgs world
-(config/usgs_sites.yaml; hills has a rock field); x:=/y:= override it, and on
-other worlds x/y default to 0. z:=auto puts the rover 0.36 m above the ground.
+(config/usgs_sites.yaml; hills has a rock field); x:=/y:=/yaw:= override it,
+and on other worlds they default to 0. z:=auto puts the rover 0.36 m above the ground.
 With the GUI on, its camera moves to just behind the spawned rover.
 lidar_mode:=3d (default, 3D LiDAR on /points) or 2d (/scan);
 lidar_profile:=airy (default: RoboSense Airy-style 48-beam hemispherical dome
@@ -127,18 +127,18 @@ def lidar3d_samples(samples):
 ENTITY = 'proxy_rover'
 
 
-def spawn_arguments(world, context, x, y, z):
+def spawn_arguments(world, context, x, y, z, yaw):
     """ros_gz_sim create arguments: the robot_description topic at the launch pose.
 
-    x/y come from the site or x:=/y:= (usgs_sites.resolve_xy); z is the resolved
+    x/y/yaw come from the site or x:=/y:=/yaw:= (usgs_sites.resolve_pose); z is the resolved
     height (survey_terrain.spawn_height turns z:=auto into the terrain height
     under x/y plus 0.36 m).
     """
-    if not all(math.isfinite(float(v)) for v in (x, y, z)):
-        raise ValueError('x, y and z must be finite')
+    if not all(math.isfinite(float(v)) for v in (x, y, z, yaw)):
+        raise ValueError('x, y, z and yaw must be finite')
     arguments = ['-world', world, '-name', ENTITY, '-topic', 'robot_description',
-                 '-x', repr(float(x)), '-y', repr(float(y)), '-z', repr(float(z))]
-    for flag, name in [('R', 'roll'), ('P', 'pitch'), ('Y', 'yaw')]:
+                 '-x', repr(float(x)), '-y', repr(float(y)), '-z', repr(float(z)), '-Y', repr(float(yaw))]
+    for flag, name in [('R', 'roll'), ('P', 'pitch')]:
         value = float(LaunchConfiguration(name).perform(context))
         if not math.isfinite(value):
             raise ValueError(f'{name} must be finite')
@@ -187,17 +187,17 @@ def generate_launch_description():
                                       description='usgs spawn site from config/usgs_sites.yaml '
                                                   "(hills, flat; '' = its default_site)"))
     for name, value in [('x', ''), ('y', ''), ('z', 'auto'),
-                        ('roll', '0'), ('pitch', '0'), ('yaw', '0')]:
+                        ('roll', '0'), ('pitch', '0'), ('yaw', '')]:
         args.append(DeclareLaunchArgument(name, default_value=value))
 
     def robot_nodes(context):
         # The survey is shifted so its default spawn has ground z=0. Other
         # x/y locations need their actual triangle elevation, not a flat z.
         world_arg = LaunchConfiguration('world').perform(context)
-        x, y = usgs_sites.resolve_xy(world_arg, LaunchConfiguration('site').perform(context),
-                                     LaunchConfiguration('x').perform(context),
-                                     LaunchConfiguration('y').perform(context),
-                                     usgs_sites.load_sites(os.path.join(share, 'config', 'usgs_sites.yaml')))
+        x, y, yaw = usgs_sites.resolve_pose(
+            world_arg, LaunchConfiguration('site').perform(context),
+            *(LaunchConfiguration(name).perform(context) for name in ('x', 'y', 'yaw')),
+            usgs_sites.load_sites(os.path.join(share, 'config', 'usgs_sites.yaml')))
         z = spawn_height(world_arg, share, x, y, LaunchConfiguration('z').perform(context))
         watchdog = float(LaunchConfiguration('actuator_watchdog').perform(context))
         if not math.isfinite(watchdog) or watchdog <= 0:
@@ -235,8 +235,8 @@ def generate_launch_description():
             # create waits for robot_description (latched) and the world's create
             # service; no fixed startup delay.
             Node(package='ros_gz_sim', executable='create',
-                 arguments=spawn_arguments(world, context, x, y, z), output='screen'),
-            ExecuteProcess(cmd=gui_camera_command(x, y, z, float(LaunchConfiguration('yaw').perform(context))),
+                 arguments=spawn_arguments(world, context, x, y, z, yaw), output='screen'),
+            ExecuteProcess(cmd=gui_camera_command(x, y, z, yaw),
                            condition=IfCondition(LaunchConfiguration('gui')), output='screen'),
             # With stereo on, RViz opens the combined LiDAR + stereo view.
             Node(package='rviz2', executable='rviz2', name='rviz2',
