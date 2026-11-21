@@ -61,35 +61,56 @@ def image(frame, array, stamp=(3, 5)):
 @pytest.fixture
 def relay():
     log, warnings = logger()
-    fake = SimpleNamespace(baseline=B, image_pub=Recorder(), info_pub=Recorder(), get_logger=lambda: log)
+    fake = SimpleNamespace(baseline=B, get_logger=lambda: log,
+                           image_pubs={'left': Recorder(), 'right': Recorder()},
+                           info_pubs={'left': Recorder(), 'right': Recorder()})
     return fake, warnings
 
 
-def test_relay_relabels_right_image_without_touching_stamp_or_pixels(relay):
+def fortress_info(frame, tx):
+    """camera_info as Fortress publishes it: principal point at (w/2, h/2)."""
+    msg = info(frame, tx)
+    msg.k[2], msg.k[5] = W / 2, H / 2
+    msg.p[2], msg.p[6] = W / 2, H / 2
+    return msg
+
+
+@pytest.mark.parametrize('side', ['left', 'right'])
+def test_relay_passes_images_through_with_the_side_frame(relay, side):
     fake, _ = relay
-    msg = image('stereo_left_optical_frame', np.zeros((H, W, 3), np.uint8))
-    StereoCameraRelay.on_image(fake, msg)
-    out = fake.image_pub.messages[-1]
-    assert out.header.frame_id == RIGHT_FRAME
+    msg = image(f'stereo_{side}_optical_frame', np.zeros((H, W, 3), np.uint8))
+    StereoCameraRelay.on_image(fake, side, msg)
+    out = fake.image_pubs[side].messages[-1]
+    assert out.header.frame_id == f'stereo_{side}_optical_frame'
     assert (out.header.stamp.sec, out.header.stamp.nanosec) == (3, 5)
     assert bytes(out.data) == bytes(msg.data)
+    other = 'right' if side == 'left' else 'left'
+    assert fake.image_pubs[other].messages == []
 
 
-def test_relay_sets_right_tx_and_frame(relay):
+def test_relay_fixes_principal_point_and_tx(relay):
     fake, _ = relay
-    StereoCameraRelay.on_info(fake, info('stereo_left_optical_frame', 0.0))
-    out = fake.info_pub.messages[-1]
-    assert out.header.frame_id == RIGHT_FRAME
-    assert out.p[3] == pytest.approx(-FX * B)
-    assert list(out.k) == list(info('x', 0.0).k)
+    StereoCameraRelay.on_info(fake, 'left', fortress_info('stereo_left_optical_frame', 0.0))
+    StereoCameraRelay.on_info(fake, 'right', fortress_info('stereo_right_optical_frame', -FX * B))
+    left, right = fake.info_pubs['left'].messages[-1], fake.info_pubs['right'].messages[-1]
+    assert left.header.frame_id == 'stereo_left_optical_frame' and right.header.frame_id == RIGHT_FRAME
+    assert list(left.k) == list(info('x', 0.0).k) and list(right.k) == list(info('x', 0.0).k)
+    assert list(left.p) == projection(0.0)
+    assert list(right.p) == pytest.approx(projection(-FX * B))
+
+
+def test_relay_sets_right_tx_even_if_the_sensor_reports_none(relay):
+    fake, _ = relay
+    StereoCameraRelay.on_info(fake, 'right', fortress_info('stereo_right_optical_frame', 0.0))
+    assert fake.info_pubs['right'].messages[-1].p[3] == pytest.approx(-FX * B)
 
 
 def test_relay_drops_invalid_camera_info(relay):
     fake, warnings = relay
-    bad = info('stereo_left_optical_frame', 0.0)
+    bad = fortress_info('stereo_left_optical_frame', 0.0)
     bad.p[0] = float('nan')
-    StereoCameraRelay.on_info(fake, bad)
-    assert fake.info_pub.messages == [] and warnings
+    StereoCameraRelay.on_info(fake, 'left', bad)
+    assert fake.info_pubs['left'].messages == [] and warnings
 
 
 @pytest.fixture

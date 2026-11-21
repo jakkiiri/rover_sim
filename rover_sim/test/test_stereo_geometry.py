@@ -6,6 +6,7 @@ import pytest
 from rover_sim.stereo_geometry import (
     Keepout, baseline_from_urdf, camera_info_fields, intrinsics, keepout_violations,
     link_transforms, point_in_keepout, right_projection, validate_stereo_config)
+from rover_sim.stereo_geometry import camera_info_fields, corrected_camera_info
 
 
 def urdf(left_xyz='0.03 0.06 0', right_xyz='0.03 -0.06 0', rpy='-1.5707963267948966 0 -1.5707963267948966',
@@ -119,3 +120,27 @@ def test_keepout_violations_report_stereo_links_in_the_band():
     assert bad and {name for name, _ in bad} >= {'stereo_link'}
     wide = keepout_violations(urdf(), Keepout(vfov_min=-30))
     assert wide
+
+
+@pytest.mark.parametrize('side', ['left', 'right'])
+def test_corrected_camera_info_matches_the_exact_fields(side):
+    w, h, hfov, b = 480, 360, math.pi / 2, 0.12
+    exact = camera_info_fields(w, h, hfov, b, side)
+    fx = exact['k'][0]
+    # Fortress: principal point (w/2, h/2), Tx already -fx*b on the right.
+    k = [fx, 0, w / 2, 0, fx, h / 2, 0, 0, 1]
+    p = [fx, 0, w / 2, (-fx * b if side == 'right' else 0), 0, fx, h / 2, 0, 0, 0, 1, 0]
+    k2, p2 = corrected_camera_info(k, p, w, h, b, side)
+    assert k2 == pytest.approx(exact['k']) and p2 == pytest.approx(exact['p'])
+
+
+@pytest.mark.parametrize('k, p, w, h, side', [
+    ([0.0] * 9, [1.0] * 12, 480, 360, 'left'),
+    ([1.0] * 9, [float('nan')] * 12, 480, 360, 'left'),
+    ([1.0] * 8, [1.0] * 12, 480, 360, 'left'),
+    ([1.0] * 9, [1.0] * 12, 1, 360, 'left'),
+    ([1.0] * 9, [1.0] * 12, 480, 360, 'middle'),
+])
+def test_corrected_camera_info_fails_closed(k, p, w, h, side):
+    with pytest.raises(ValueError):
+        corrected_camera_info(k, p, w, h, 0.12, side)

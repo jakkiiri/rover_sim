@@ -13,6 +13,15 @@ from rover_sim.kinematics import modules_from_urdf
 PACKAGE = Path(__file__).resolve().parents[1]
 
 
+def bridged(gz_topic):
+    """ROS topic that config/ros_gz_bridge.yaml maps a gz topic to (gz -> ROS)."""
+    entries = yaml.safe_load((PACKAGE / 'config' / 'ros_gz_bridge.yaml').read_text())
+    matches = [e for e in entries if e['gz_topic_name'] == gz_topic]
+    assert len(matches) == 1, gz_topic
+    assert matches[0]['direction'] == 'GZ_TO_ROS'
+    return matches[0]['ros_topic_name']
+
+
 @pytest.fixture(scope='module')
 def descriptions():
     path = str(PACKAGE / 'urdf' / 'proxy_rover.urdf.xacro')
@@ -84,9 +93,9 @@ def test_sensor_mass_and_inertia_are_physical(descriptions):
     assert max(xx, yy, zz) <= (xx + yy + zz) / 2 + 1e-12
 
 
-def test_cpu_ray_is_single_horizontal_360_degree_scan(sensor):
-    assert sensor.get('type') == 'ray'
-    horizontal = sensor.find('ray/scan/horizontal')
+def test_gpu_lidar_is_single_horizontal_360_degree_scan(sensor):
+    assert sensor.get('type') == 'gpu_lidar'
+    horizontal = sensor.find('lidar/scan/horizontal')
     samples = int(horizontal.findtext('samples'))
     resolution = float(horizontal.findtext('resolution'))
     minimum = float(horizontal.findtext('min_angle'))
@@ -95,7 +104,7 @@ def test_cpu_ray_is_single_horizontal_360_degree_scan(sensor):
     assert resolution == 1
     assert (minimum, maximum) == pytest.approx((-math.pi, math.pi))
     assert math.degrees((maximum - minimum) / (samples - 1)) == pytest.approx(360 / 719)
-    vertical = sensor.find('ray/scan/vertical')
+    vertical = sensor.find('lidar/scan/vertical')
     if vertical is not None:
         assert int(vertical.findtext('samples')) == 1
         assert float(vertical.findtext('min_angle')) == 0
@@ -105,28 +114,23 @@ def test_cpu_ray_is_single_horizontal_360_degree_scan(sensor):
 def test_rate_and_range_are_explicit(sensor):
     assert sensor.findtext('always_on').lower() in ('true', '1')
     assert float(sensor.findtext('update_rate')) == 10
-    limits = sensor.find('ray/range')
+    limits = sensor.find('lidar/range')
     assert float(limits.findtext('min')) == pytest.approx(0.12)
     assert float(limits.findtext('max')) == pytest.approx(30)
     assert 0 < float(limits.findtext('resolution')) <= 0.01
 
 
 def test_range_noise_is_small_unbiased_gaussian(sensor):
-    noise = sensor.find('ray/noise')
+    noise = sensor.find('lidar/noise')
     assert noise.findtext('type') == 'gaussian'
     assert float(noise.findtext('mean')) == 0
     assert float(noise.findtext('stddev')) == pytest.approx(0.01)
 
 
-def test_classic_plugin_publishes_required_ros_interface(sensor):
-    plugins = sensor.findall('plugin')
-    assert len(plugins) == 1
-    plugin = plugins[0]
-    assert plugin.get('filename') == 'libgazebo_ros_ray_sensor.so'
-    assert plugin.findtext('output_type') == 'sensor_msgs/LaserScan'
-    assert plugin.findtext('frame_name') == 'lidar_link'
-    remappings = [element.text.strip() for element in plugin.findall('ros/remapping')]
-    assert '~/out:=/scan' in remappings
+def test_gz_topic_is_bridged_to_scan_in_lidar_link(sensor):
+    assert sensor.findall('plugin') == []
+    assert sensor.findtext('ignition_frame_id') == 'lidar_link'
+    assert bridged('/' + sensor.findtext('topic')) == '/scan'
 
 
 def test_sensor_addition_preserves_actual_swerve_geometry(descriptions):

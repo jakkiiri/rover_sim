@@ -1,0 +1,94 @@
+# Gazebo Fortress port
+
+Branch `Silvio-Fortress` moves rover_sim from Gazebo Classic 11 to Gazebo
+Fortress (gz-sim 6, the Gazebo paired with ROS 2 Humble). It is Fortress
+only; the last Classic version is the git tag `classic-final`. The port is
+done in steps, each verified headless on the development laptop (one
+simulator at a time) before it is committed. Measurements below are from
+2026-11-21, Fortress 6.18.
+
+| Step | What | Status |
+| --- | --- | --- |
+| 1 | Swerve actuators as a gz-sim System, parking hold, ground truth | done |
+| 2 | Worlds: DART physics, gz-sim systems, GUI, PBR materials | done |
+| 3 | Sensors: gpu_lidar 3D/2D LiDAR, two camera sensors, ros_gz_bridge | done |
+| 4 | Launch files (ros_gz_sim, spawn, bridge), validators' Gazebo services | pending |
+| 5 | Full validation: tests, slope, planner drives, stereo/LiDAR validators | pending |
+
+## 1. Swerve actuators (`src/swerve_gz_system.cpp`)
+
+Same ROS interface as the Classic ModelPlugin: `/swerve/joint_commands` in,
+`/joint_states` (8 actuated + 2 rocker joints) out, reset epochs, wall
+watchdog, rocker differential. `/ground_truth/odom` now comes from the System
+(Classic used `libgazebo_ros_p3d`), same message: `base_root` pose and
+world-frame twist.
+
+**Parking hold.** A zero or stale wheel target holds each wheel at the
+position where the hold engaged (PD, kp 40, kd 6, limited to the joint's
+effort limit), engaging at any speed. Classic only drove the wheel velocity to
+zero with a P term, so the rover crept down slopes of 25° and more after
+stopping. Real rover on a 30° ramp: 0.0 mm in 24 s (hold gains set to 0: it
+rolls off the ramp within 2.5 s).
+
+## 2. Worlds (`rover_sim/fortress_world.py`)
+
+Every world (desert, mars, rover_planner's slope_test ramps) uses one header:
+DART at 1 ms with the Bullet collision detector, the gz-sim systems that
+Classic loaded implicitly, and a GUI with a Teleop panel on `/cmd_vel`.
+
+- The Mars terrain was already a triangle mesh (not a `<heightmap>`), so
+  Fortress's heightmap limits do not apply.
+- ogre2 ignores OGRE material scripts: textures are PBR albedo maps. The
+  desert ground visual is a mesh plane whose UVs repeat every 8 m, as the
+  Classic material's texture scale did.
+- Real rover on mars.world: rests at 0.346 m (Classic 0.345), drives 7.36 m
+  in 15 s at 0.5 m/s, RTF 1.00 with Bullet or DART's default detector (no
+  sensors). Bullet is kept: on feat/mars-overhaul it held RTF 0.98 against
+  0.64 with many dynamic bodies on mesh terrain.
+
+## 3. Sensors
+
+| Sensor | Classic | Fortress |
+| --- | --- | --- |
+| 3D LiDAR | `ray` + `libgazebo_ros_ray_sensor` → `/points_raw` | `gpu_lidar`, gz `/rover/lidar3d/points` → bridged to `/points_raw` |
+| 2D LiDAR | `ray` → `/scan` | `gpu_lidar`, gz `/rover/scan` → `/scan` |
+| Stereo | one `multicamera` + `libgazebo_ros_camera`, relay fixes right frame/Tx | two `camera` sensors, gz `/stereo/gazebo/{left,right}/…` → relay → `/stereo/{left,right}/…` |
+
+Bridged topics are in `config/ros_gz_bridge.yaml`. `lidar_postprocess`,
+`stereo_processor` and RViz are unchanged.
+
+**3D LiDAR range accuracy depends on samples per beam.** ogre2's gpu_lidar
+looks ranges up in a cube map whose resolution follows the horizontal sample
+count. Real rover in the desert, Airy dome (39 simulated beams), ground height
+error of the raw cloud by horizontal distance (sensor noise σ 2 cm included):
+
+| Samples | 1–3 m | 3–6 m | 6–10 m | 10–20 m | 20–50 m |
+| --- | --- | --- | --- | --- | --- |
+| 360 (Classic setting) | −0 ± 14 mm | −2 ± 17 mm | −3 ± 35 mm | −38 ± 46 mm | 38 ± 65 mm, 27% > 15 cm |
+| **900 (default)** | −1 ± 13 mm | −3 ± 12 mm | −6 ± 18 mm | 3 ± 30 mm | −54 ± 43 mm |
+| 1800 | −1 ± 13 mm | −3 ± 10 mm | −5 ± 10 mm | −1 ± 16 mm | −9 ± 53 mm |
+
+(median ± standard deviation). Simulation speed on mars.world with the LiDAR
+at 5 Hz and stereo at 2 Hz was RTF 1.00 at all three. The Airy profile now
+uses 900 samples (Classic used 360 to save CPU ray cost; 900 was its original
+value). Use `lidar_samples:=1800` for accurate returns beyond 10 m, at twice
+the points per sweep for `lidar_postprocess` and the planner.
+
+**Stereo.** gz-sim renders all due sensors in one pass, so left/right images
+carry identical stamps (50/50 pairs) and exact-time sync works without a
+multicamera sensor. Fortress's camera_info has the right Tx
+(−fx·B = −28.8) but puts the principal point at (w/2, h/2); the relay rewrites
+it to ((w−1)/2, (h−1)/2) for both cameras. Depth against the analytic truth
+(real rover at rest in the desert, one frame, pixels not covered by the arm):
+
+| Distance | 0.4–1 m | 1–2 m | 2–3 m | 3–4 m | 4–5 m |
+| --- | --- | --- | --- | --- | --- |
+| Valid (Classic) | 87% (69%) | 74% (75%) | 46% (73%) | 44% (66%) | 37% (67%) |
+| Median error (Classic) | 2 mm (2) | 9 mm (9) | 58 mm (38) | 126 mm (92) | 235 mm (171) |
+
+Close range matches Classic; beyond 2 m fewer pixels match and errors are
+larger, though within the validator tolerance. Likely cause: Classic's sand
+material used 16× anisotropic filtering, which ogre2 PBR materials do not
+expose, so the ground texture blurs at grazing angles. To revisit in step 5.
+The real rover's stowed arm also covers the right ~25% of the left image
+(the Classic stereo results were measured on the proxy rover).

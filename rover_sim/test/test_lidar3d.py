@@ -17,6 +17,15 @@ from rover_sim.lidar_postprocess import cloud_to_array, make_cloud, make_scan, p
 PACKAGE = Path(__file__).resolve().parents[1]
 
 
+def bridged(gz_topic):
+    """ROS topic that config/ros_gz_bridge.yaml maps a gz topic to (gz -> ROS)."""
+    entries = yaml.safe_load((PACKAGE / 'config' / 'ros_gz_bridge.yaml').read_text())
+    matches = [e for e in entries if e['gz_topic_name'] == gz_topic]
+    assert len(matches) == 1, gz_topic
+    assert matches[0]['direction'] == 'GZ_TO_ROS'
+    return matches[0]['ros_topic_name']
+
+
 def expand(**mappings):
     return ET.fromstring(xacro.process_file(
         str(PACKAGE / 'urdf/proxy_rover.urdf.xacro'),
@@ -34,43 +43,42 @@ def sensor(root):
     ('high', 32, 1024, -22.5, 22.5, .5), ('dense', 64, 1024, -22.5, 22.5, .5),
     # Airy: 48 beams from -90 to 0 deg; the lowest 21 only see the rover and are not simulated.
     # The top beam sits 0.1 deg below the horizon (Gazebo's horizontal rays hit the Mars mesh falsely).
-    ('airy', 27, 360, -90 + 21 * 90 / 47, -0.1, .1)])
+    # 900 samples: Fortress gpu_lidar range accuracy falls with fewer (docs/fortress.md).
+    ('airy', 27, 900, -90 + 21 * 90 / 47, -0.1, .1)])
 def test_profile_beams(profile, channels, samples, low, high, min_range):
     s = sensor(expand(lidar_profile=profile))
-    assert s.get('type') == 'ray'
+    assert s.get('type') == 'gpu_lidar'
     assert float(s.findtext('update_rate')) == 10
-    h, v = s.find('ray/scan/horizontal'), s.find('ray/scan/vertical')
+    h, v = s.find('lidar/scan/horizontal'), s.find('lidar/scan/vertical')
     assert int(h.findtext('samples')) == samples
     assert int(v.findtext('samples')) == channels
     assert [float(h.findtext(k)) for k in ('min_angle', 'max_angle')] == pytest.approx([-math.pi, math.pi])
     assert [float(v.findtext(k)) for k in ('min_angle', 'max_angle')] == pytest.approx(
         [math.radians(low), math.radians(high)])
-    assert float(s.findtext('ray/range/min')) == min_range
+    assert float(s.findtext('lidar/range/min')) == min_range
 
 
-def test_operator_sensor_is_cpu_only_with_classic_interface():
+def test_sensor_is_fortress_gpu_lidar_bridged_to_points_raw():
     s = sensor(expand())
-    assert s.get('type') == 'ray'
-    v = s.find('ray/scan/vertical')
+    assert s.get('type') == 'gpu_lidar'
+    v = s.find('lidar/scan/vertical')
     assert int(v.findtext('samples')) == 16
     assert math.degrees(float(v.findtext('min_angle'))) == pytest.approx(-15)
-    plugin = s.find('plugin')
-    assert plugin.get('filename') == 'libgazebo_ros_ray_sensor.so'
-    assert plugin.findtext('output_type') == 'sensor_msgs/PointCloud2'
-    assert plugin.findtext('frame_name') == 'lidar_link'
-    assert plugin.findtext('ros/remapping') == '~/out:=/points_raw'
-    assert expand().find('.//ignition_frame_id') is None
+    assert s.find('plugin') is None and s.find('ray') is None
+    assert s.findtext('ignition_frame_id') == 'lidar_link'
+    # gpu_lidar publishes the organised cloud on <topic>/points.
+    assert bridged('/' + s.findtext('topic') + '/points') == '/points_raw'
     wrapper = ET.parse(PACKAGE / 'urdf/sensors/lidar3d.urdf.xacro')
     call = wrapper.find('.//{http://ros.org/wiki/xacro}rover_lidar3d')
-    assert call.get('gpu') == 'false'
+    assert call.get('gpu') is None
 
 
 def test_3d_range_and_sensor_noise():
     s = sensor(expand())
-    assert float(s.findtext('ray/range/min')) == .5
-    assert float(s.findtext('ray/range/max')) == 100
-    assert s.findtext('ray/noise/type') == 'gaussian'
-    assert float(s.findtext('ray/noise/stddev')) == .02
+    assert float(s.findtext('lidar/range/min')) == .5
+    assert float(s.findtext('lidar/range/max')) == 100
+    assert s.findtext('lidar/noise/type') == 'gaussian'
+    assert float(s.findtext('lidar/noise/stddev')) == .02
 
 
 def test_mount_clears_chassis_and_wheels_at_widest_fov():

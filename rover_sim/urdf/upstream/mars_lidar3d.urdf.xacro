@@ -9,7 +9,8 @@
      are macro parameters (local launch args lidar_rate / lidar_range).
      Added the "airy" profile: a RoboSense Airy-style hemispherical dome
      mounted upside down, 48 beams from horizontal (0 deg) to straight down
-     (-90 deg), 360 samples per beam (1 deg; was 900, cut for sim speed), 0.1 m minimum range. The beam angles
+     (-90 deg), 900 samples per beam (0.4 deg; Classic ran 360 for CPU ray cost; Fortress's
+     gpu_lidar range accuracy falls with fewer samples, docs/fortress.md), 0.1 m minimum range. The beam angles
      are flipped instead of the link, so lidar_link stays z-up; the top beam
      is lowered 0.1 deg (see lidar_vmax). Its beams
      below -50.7 deg (the lowest 21) only ever hit the rover's own body, which
@@ -20,18 +21,24 @@
      robot has its own pole) and min_beam_deg (overrides the profile's lowest
      beam worth simulating, for a different mount height) were added for the
      real rover model.
+     Gazebo Fortress port (Silvio-Fortress): the sensor is always gz-sim's
+     gpu_lidar (Fortress has no CPU ray sensor), declared with <lidar>,
+     publishing on the gz topic rover/lidar3d; the gz cloud
+     rover/lidar3d/points is bridged to ROS /points_raw (config/ros_gz_bridge.yaml).
+     The libgazebo_ros_ray_sensor plugin and the gpu argument are gone.
      See THIRD_PARTY_NOTICES.md and LICENSES/Apache-2.0.txt.
      3-D spinning LiDAR (VLP-16-like): lite 16x450, standard 16x900,
-     high 32x1024, dense 64x1024, airy 48x360 dome, 10 Hz (launch default 5). GPU needs display/OpenGL.
+     high 32x1024, dense 64x1024, airy 48x900 dome, 10 Hz (launch default 5). Rendered with ogre2
+     (headless EGL works).
      Raw cloud on /points_raw; lidar_postprocess publishes /points. -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="rover_lidar3d" params="parent xyz profile gpu channels:='' samples:='' vfov_deg:='' max_range:=100.0 rate:=10 mast_length:=0.265 min_beam_deg:=''">
+  <xacro:macro name="rover_lidar3d" params="parent xyz profile channels:='' samples:='' vfov_deg:='' max_range:=100.0 rate:=10 mast_length:=0.265 min_beam_deg:=''">
     <!-- profile: (channels, samples, lowest beam deg, highest beam deg, minimum range m,
          lowest beam worth simulating deg) -->
     <xacro:property name="lidar_profiles" value="${dict(
         lite=(16, 450, -15.0, 15.0, 0.5, -90.0), standard=(16, 900, -15.0, 15.0, 0.5, -90.0),
         high=(32, 1024, -22.5, 22.5, 0.5, -90.0), dense=(64, 1024, -22.5, 22.5, 0.5, -90.0),
-        airy=(48, 360, -90.0, 0.0, 0.1, -50.7))}"/>
+        airy=(48, 900, -90.0, 0.0, 0.1, -50.7))}"/>
     <xacro:property name="lidar_profile" value="${lidar_profiles[profile]}"/>
     <xacro:property name="lidar_all_channels" value="${int(channels) if str(channels) else lidar_profile[0]}"/>
     <xacro:property name="lidar_samples" value="${int(samples) if str(samples) else lidar_profile[1]}"/>
@@ -48,7 +55,6 @@
          the Mars terrain mesh (Gazebo ray vs. trimesh, horizontal rays only; the
          flat desert has none), so it is lowered by 0.1 deg (1.7 cm at 10 m). -->
     <xacro:property name="lidar_vmax" value="${radians(lidar_full_vmax - 0.1 if lidar_full_vmax * lidar_full_vmax &lt; 1e-18 else lidar_full_vmax)}"/>
-    <xacro:property name="lidar_type" value="${'gpu_ray' if str(gpu).lower() in ('true', '1') else 'ray'}"/>
     <link name="lidar_link">
       <inertial>
         <mass value="0.8"/>
@@ -74,12 +80,14 @@
     </joint>
     <gazebo reference="lidar_link">
       <material>Gazebo/Black</material>
-      <sensor name="lidar3d" type="${lidar_type}">
+      <sensor name="lidar3d" type="gpu_lidar">
         <pose>0 0 0 0 0 0</pose>
         <always_on>true</always_on>
         <update_rate>${rate}</update_rate>
         <visualize>false</visualize>
-        <ray>
+        <topic>rover/lidar3d</topic>
+        <ignition_frame_id>lidar_link</ignition_frame_id>
+        <lidar>
           <scan>
             <horizontal>
               <samples>${lidar_samples}</samples><resolution>1</resolution>
@@ -92,12 +100,7 @@
           </scan>
           <range><min>${lidar_profile[4]}</min><max>${max_range}</max><resolution>0.002</resolution></range>
           <noise><type>gaussian</type><mean>0.0</mean><stddev>0.02</stddev></noise>
-        </ray>
-        <plugin name="lidar3d_ros" filename="libgazebo_ros_ray_sensor.so">
-          <ros><remapping>~/out:=/points_raw</remapping></ros>
-          <output_type>sensor_msgs/PointCloud2</output_type>
-          <frame_name>lidar_link</frame_name>
-        </plugin>
+        </lidar>
       </sensor>
     </gazebo>
   </xacro:macro>

@@ -115,7 +115,7 @@ def test_lidar_sits_on_the_one_metre_pole_without_a_mast(root):
 
 
 def test_dome_beams_down_to_the_launch_cut_off(root):
-    vertical = root.find("gazebo[@reference='lidar_link']/sensor/ray/scan/vertical")
+    vertical = root.find("gazebo[@reference='lidar_link']/sensor/lidar/scan/vertical")
     low = math.degrees(float(vertical.find('min_angle').text))
     step = 90.0 / 47
     assert int(vertical.find('samples').text) == 48 - round((low + 90) / step)

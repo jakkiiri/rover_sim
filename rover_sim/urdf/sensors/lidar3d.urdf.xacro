@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- Local adapter for the pinned, Classic-only upstream 3D LiDAR. -->
+<!-- Local adapter for the pinned upstream 3D LiDAR (ported to Fortress gpu_lidar). -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:include filename="../upstream/mars_lidar3d.urdf.xacro"/>
   <!-- Defaults are the proxy rover's: at 0.40 m the lowest beam clears the
@@ -8,7 +8,7 @@
   <xacro:macro name="proxy_lidar3d" params="parent profile rate:=10 max_range:=100.0 samples:=''
                                            xyz:='0 0 0.40' mast_length:=0.265 min_beam_deg:=''">
     <xacro:rover_lidar3d parent="${parent}" xyz="${xyz}"
-                        profile="${profile}" gpu="false"
+                        profile="${profile}"
                         rate="${rate}" max_range="${max_range}" samples="${samples}"
                         mast_length="${mast_length}" min_beam_deg="${min_beam_deg}"/>
   </xacro:macro>

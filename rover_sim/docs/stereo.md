@@ -1,5 +1,11 @@
 # Stereo camera: disparity, depth image and point cloud
 
+> **Gazebo Fortress (branch Silvio-Fortress):** the camera is now two
+> Fortress `camera` sensors bridged by `ros_gz_bridge`, and the relay rewrites
+> both cameras' camera_info. See [fortress.md](fortress.md#3-sensors) for the
+> new pipeline and measurements; the Classic description below is kept for
+> reference (tag `classic-final`).
+
 The rover carries a forward-looking stereo camera that runs alongside the LiDAR
 in the same Gazebo Classic world. It publishes left/right images, a disparity
 image, a metric depth image and a coloured 3D point cloud, all under `/stereo/`.

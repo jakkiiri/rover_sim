@@ -40,12 +40,13 @@ def validate_stereo_config(width, height, rate, baseline, hfov):
 
 
 def intrinsics(width, height, hfov):
-    """Pinhole intrinsics of a symmetric Gazebo Classic camera.
+    """Pinhole intrinsics of a symmetric Gazebo camera.
 
     Gazebo renders a symmetric frustum, so the optical axis passes through the
     image centre. In the ROS convention (pixel (0, 0) is the centre of the first
-    pixel) that centre is ((w-1)/2, (h-1)/2). The gazebo_ros plugin's default,
-    (w+1)/2, is one pixel off, so the xacro sets cx and cy explicitly.
+    pixel) that centre is ((w-1)/2, (h-1)/2). Fortress's camera_info reports
+    (w/2, h/2), half a pixel off (Classic's gazebo_ros default, (w+1)/2, was a
+    full pixel off), so stereo_camera_relay rewrites it (corrected_camera_info).
     """
     validate_stereo_config(width, height, 1.0, 0.1, hfov)
     fx = width / (2.0 * math.tan(hfov / 2.0))
@@ -79,6 +80,31 @@ def right_projection(p, baseline):
         raise ValueError('baseline must be positive')
     p[3] = -p[0] * baseline
     return p
+
+
+def corrected_camera_info(k, p, width, height, baseline, side):
+    """Return (k, p) with the principal point at ((w-1)/2, (h-1)/2) and Tx for 'side'.
+
+    fx and fy are kept from the sensor (Fortress derives them from the FOV);
+    Tx is 0 for the left camera and -fx * baseline for the right one.
+    """
+    if side not in ('left', 'right'):
+        raise ValueError("side must be 'left' or 'right'")
+    k, p = [float(v) for v in k], [float(v) for v in p]
+    if len(k) != 9 or len(p) != 12 or not all(math.isfinite(v) for v in k + p):
+        raise ValueError('camera_info K and P must contain 9 and 12 finite values')
+    if k[0] <= 0 or k[4] <= 0:
+        raise ValueError('camera_info fx and fy must be positive')
+    if isinstance(width, bool) or isinstance(height, bool) or width <= 1 or height <= 1:
+        raise ValueError('camera_info width and height must be above 1 pixel')
+    cx, cy = (width - 1) / 2.0, (height - 1) / 2.0
+    k[2], k[5] = cx, cy
+    p[0], p[5] = k[0], k[4]
+    p[2], p[6] = cx, cy
+    p[3] = 0.0
+    if side == 'right':
+        p = right_projection(p, baseline)
+    return k, p
 
 
 def rotation(rpy):

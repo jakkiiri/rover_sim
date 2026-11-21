@@ -95,7 +95,7 @@ def test_every_combination_produces_the_expected_nodes_and_sensors(stereo, lidar
     assert names == sorted(expected)
     robot = robot_description(nodes)
     sensors = sorted(s.get('type') for s in robot.iter('sensor'))
-    assert sensors == sorted((['multicamera'] if stereo else []) + (['ray'] if lidar else []))
+    assert sensors == sorted((['camera', 'camera'] if stereo else []) + (['gpu_lidar'] if lidar else []))
     links = {l.get('name') for l in robot.findall('link')}
     assert ('stereo_link' in links) == stereo and ('lidar_link' in links) == lidar
     if lidar:
@@ -146,11 +146,14 @@ def test_stereo_nodes_share_the_exact_robot_description():
 def test_stereo_launch_args_reach_the_sensor():
     _, nodes, _ = evaluate(stereo_width=320, stereo_height=240, stereo_rate=10, stereo_baseline=0.2,
                            stereo_hfov=1.2)
-    sensor = robot_description(nodes).find("gazebo[@reference='stereo_link']/sensor")
-    assert float(sensor.findtext('update_rate')) == 10
-    camera = sensor.find('camera')
-    assert camera.findtext('image/width') == '320' and float(camera.findtext('horizontal_fov')) == pytest.approx(1.2)
-    poses = [float(c.findtext('pose').split()[1]) for c in sensor.findall('camera')]
+    sensors = robot_description(nodes).findall("gazebo[@reference='stereo_link']/sensor")
+    assert [s.get('name') for s in sensors] == ['stereo_left', 'stereo_right']
+    for sensor in sensors:
+        assert float(sensor.findtext('update_rate')) == 10
+        camera = sensor.find('camera')
+        assert camera.findtext('image/width') == '320'
+        assert float(camera.findtext('horizontal_fov')) == pytest.approx(1.2)
+    poses = [float(s.findtext('pose').split()[1]) for s in sensors]
     assert poses == pytest.approx([0.1, -0.1])
 
 
@@ -228,7 +231,7 @@ def test_default_frames_fit_default_shared_memory_and_large_frames_warn():
 
 def test_lidar_samples_override_reaches_the_sensor_and_is_validated():
     _, nodes, _ = evaluate(lidar_samples='450')
-    scan = robot_description(nodes).find("gazebo[@reference='lidar_link']/sensor/ray/scan/horizontal")
+    scan = robot_description(nodes).find("gazebo[@reference='lidar_link']/sensor/lidar/scan/horizontal")
     assert int(scan.findtext('samples')) == 450
     with pytest.raises(ValueError):
         evaluate(lidar_samples='5')

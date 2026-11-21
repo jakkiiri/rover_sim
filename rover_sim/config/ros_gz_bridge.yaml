@@ -1,0 +1,56 @@
+# ros_gz_bridge topics between Gazebo Fortress and ROS 2 (parameter_bridge
+# config_file). gz topic names are set in the URDF sensors
+# (urdf/upstream/mars_lidar3d.urdf.xacro, urdf/sensors/lidar.urdf.xacro,
+# urdf/sensors/stereo.urdf.xacro) and the world GUI (rover_sim/fortress_world.py).
+# Topics without a publisher simply stay idle (e.g. /scan with the 3D LiDAR).
+# Sensor streams use reliable QoS on the ROS side (the bridge default), which
+# lidar_postprocess, stereo_camera_relay and RViz subscribe with.
+
+- ros_topic_name: /clock
+  gz_topic_name: /clock
+  ros_type_name: rosgraph_msgs/msg/Clock
+  gz_type_name: ignition.msgs.Clock
+  direction: GZ_TO_ROS
+
+# 3D LiDAR: gpu_lidar publishes the organised cloud on <topic>/points.
+- ros_topic_name: /points_raw
+  gz_topic_name: /rover/lidar3d/points
+  ros_type_name: sensor_msgs/msg/PointCloud2
+  gz_type_name: ignition.msgs.PointCloudPacked
+  direction: GZ_TO_ROS
+
+# 2D LiDAR (lidar_mode:=2d).
+- ros_topic_name: /scan
+  gz_topic_name: /rover/scan
+  ros_type_name: sensor_msgs/msg/LaserScan
+  gz_type_name: ignition.msgs.LaserScan
+  direction: GZ_TO_ROS
+
+# Stereo: raw gz streams; stereo_camera_relay fixes frames and intrinsics.
+- ros_topic_name: /stereo/gazebo/left/image_raw
+  gz_topic_name: /stereo/gazebo/left/image_raw
+  ros_type_name: sensor_msgs/msg/Image
+  gz_type_name: ignition.msgs.Image
+  direction: GZ_TO_ROS
+- ros_topic_name: /stereo/gazebo/left/camera_info
+  gz_topic_name: /stereo/gazebo/left/camera_info
+  ros_type_name: sensor_msgs/msg/CameraInfo
+  gz_type_name: ignition.msgs.CameraInfo
+  direction: GZ_TO_ROS
+- ros_topic_name: /stereo/gazebo/right/image_raw
+  gz_topic_name: /stereo/gazebo/right/image_raw
+  ros_type_name: sensor_msgs/msg/Image
+  gz_type_name: ignition.msgs.Image
+  direction: GZ_TO_ROS
+- ros_topic_name: /stereo/gazebo/right/camera_info
+  gz_topic_name: /stereo/gazebo/right/camera_info
+  ros_type_name: sensor_msgs/msg/CameraInfo
+  gz_type_name: ignition.msgs.CameraInfo
+  direction: GZ_TO_ROS
+
+# GUI Teleop panel -> swerve_controller.
+- ros_topic_name: /cmd_vel
+  gz_topic_name: /cmd_vel
+  ros_type_name: geometry_msgs/msg/Twist
+  gz_type_name: ignition.msgs.Twist
+  direction: GZ_TO_ROS
