@@ -21,7 +21,7 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS scripts/swerve_controller scripts/validate_swerve.py
   scripts/rover_teleop scripts/validate_teleop.py scripts/validate_hardening.py
   scripts/validate_shutdown.py scripts/validate_lidar.py scripts/lidar_postprocess
-  scripts/validate_lidar3d.py scripts/terrain_chunks DESTINATION lib/${PROJECT_NAME})
+  scripts/validate_lidar3d.py scripts/terrain_chunks scripts/gazebo_gui DESTINATION lib/${PROJECT_NAME})
 install(PROGRAMS scripts/stereo_camera_relay scripts/stereo_processor scripts/generate_sand_texture.py
   scripts/validate_stereo.py scripts/validate_launch_matrix.py scripts/generate_mars_world.py
   scripts/generate_real_rover.py scripts/import_usgs_terrain.py scripts/validate_survey_terrain.py
@@ -56,6 +56,8 @@ if(BUILD_TESTING)
   ament_add_pytest_test(survey_terrain test/test_survey_terrain.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
   ament_add_pytest_test(usgs_sites test/test_usgs_sites.py
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
+  ament_add_pytest_test(gazebo_gui test/test_gazebo_gui.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 

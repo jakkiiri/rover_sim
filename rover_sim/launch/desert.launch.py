@@ -2,11 +2,14 @@
 
 world: a name in this package's worlds/ folder (usgs, mars, desert) or a path
 to a .world/.sdf file. Default: usgs, the imported USGS Utah survey terrain.
-gui:=false runs the server only, with EGL headless rendering so the GPU
-LiDAR and cameras still work.
+The server always runs headless (EGL rendering, so the GPU LiDAR and cameras
+work); gui:=true (default) adds the GUI as a separate process through
+rover_sim.gazebo_gui, which loads a lighter plugin set, puts the window on the
+left half of the screen and points the camera at the rover. Closing the GUI
+window ends the launch, as before.
 
 Started here:
-- ``ign gazebo`` with this package's models on IGN_GAZEBO_RESOURCE_PATH and
+- ``ign gazebo -s`` with this package's models on IGN_GAZEBO_RESOURCE_PATH and
   its lib folder (librover_swerve_gz_system.so) on IGN_GAZEBO_SYSTEM_PLUGIN_PATH;
   when it exits the whole launch shuts down.
 - ros_gz_bridge: the topics in config/ros_gz_bridge.yaml for the sensors that
@@ -18,6 +21,7 @@ Started here:
 """
 
 import os
+import sys
 import tempfile
 import xml.etree.ElementTree as ET
 
@@ -29,6 +33,8 @@ from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+
+from rover_sim.gazebo_gui import gazebo_environment
 
 # ROS name -> (gz service under /world/<name>/, ros_gz_interfaces type)
 SIM_SERVICES = {
@@ -110,22 +116,17 @@ def sim_services(name):
     return arguments, remappings
 
 
-def gazebo_environment(share):
-    """IGN_GAZEBO_* search paths with this package's models and plugin library added."""
-    lib = os.path.normpath(os.path.join(share, '..', '..', 'lib'))
-
-    def extend(key, value):
-        current = os.environ.get(key, '')
-        return os.pathsep.join([value] + ([current] if current else []))
-    return {'IGN_GAZEBO_RESOURCE_PATH': extend('IGN_GAZEBO_RESOURCE_PATH', os.path.join(share, 'models')),
-            'IGN_GAZEBO_SYSTEM_PLUGIN_PATH': extend('IGN_GAZEBO_SYSTEM_PLUGIN_PATH', lib)}
+def gazebo_command(path):
+    return ['ign', 'gazebo', '-r', '-v', '2', '-s', '--headless-rendering', path]
 
 
-def gazebo_command(path, gui):
-    command = ['ign', 'gazebo', '-r', '-v', '2']
-    if not gui:
-        command += ['-s', '--headless-rendering']
-    return command + [path]
+def gui_command(path):
+    """The Gazebo GUI on the server started here (rover_sim.gazebo_gui).
+
+    Run directly, not through ``ros2 run``: that wrapper swallows the launch's
+    SIGINT instead of passing it on, which left the window open after shutdown.
+    """
+    return [sys.executable, '-m', 'rover_sim.gazebo_gui', '--world-file', path]
 
 
 def gazebo(context):
@@ -135,8 +136,10 @@ def gazebo(context):
     arguments, remappings = sim_services(world_name(path))
     sensors = enabled_sensors(*(LaunchConfiguration(n).perform(context) for n in ('lidar', 'lidar_mode', 'stereo')))
     return [
-        ExecuteProcess(cmd=gazebo_command(path, gui), additional_env=gazebo_environment(share),
+        ExecuteProcess(cmd=gazebo_command(path), additional_env=gazebo_environment(share),
                        output='screen', on_exit=Shutdown(reason='Gazebo exited')),
+        *([ExecuteProcess(cmd=gui_command(path), output='screen',
+                          on_exit=Shutdown(reason='Gazebo GUI closed'))] if gui else []),
         Node(package='ros_gz_bridge', executable='parameter_bridge', name='ros_gz_bridge',
              arguments=arguments, remappings=remappings, output='screen',
              parameters=[{'config_file': bridge_config_file(share, sensors),

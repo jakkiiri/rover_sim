@@ -95,7 +95,9 @@ The real rover's stowed arm also covers the right ~25% of the left image
 
 ## 4. Launch files and Gazebo services (`rover_sim/sim_services.py`)
 
-`desert.launch.py` runs `ign gazebo` (`gui:=false` adds `-s --headless-rendering`)
+`desert.launch.py` runs the server as `ign gazebo -s --headless-rendering`
+(GPU sensors still render) and, with `gui:=true`, the GUI as a separate
+process (`rover_sim/gazebo_gui.py`; closing its window ends the launch),
 with this package's models and plugin library on the IGN_GAZEBO_* paths, and
 one `ros_gz_bridge` for the topics in `config/ros_gz_bridge.yaml` plus the
 world's services under fixed names, whatever the world is called:
@@ -231,3 +233,24 @@ cherry-picked with its authorship, then ported:
 - `validate_survey_terrain.py` uses `sim_services` (SpawnEntity/DeleteEntity,
   IGN_PARTITION isolation). Fortress run: 13/13, RTF 1.0
   ([report](validation/usgs_terrain.md)).
+
+## Gazebo GUI cost (2026-11-28)
+
+`rover_sim/gazebo_gui.py` opens the GUI for the launch (`gui:=true`) and for
+`ros2 run rover_sim gazebo_gui` on a running sim. Fortress maximizes its
+window whatever the GUI config says, so the script un-maximizes it through the
+window manager (EWMH) and puts it on the left half of the screen; the planner's
+RViz takes the right half. It drops the entity tree, which lists every model
+(hundreds of terrain chunks and rocks on usgs), and `SceneBroadcaster` sends
+the scene at 30 Hz instead of 60 (`fortress_world.SYSTEMS`). Together these took
+the GUI from about 240% to about 200% CPU.
+
+They did not measurably raise the real-time factor. On the usgs hills site
+(real rover, `lidar_samples:=180`, planner with RViz, laptop on battery), the
+sim ran at RTF 0.97-0.99 without the GUI and 0.73-0.86 with it, whatever the
+GUI plugins or the broadcast rate, and still with the window minimized. The
+sim's main thread runs at about 95% of one core, so it is CPU-bound: two
+busy-loop processes and no GUI took it to 0.88. On battery, the GUI's
+extra load lowers the clock that thread runs at. The GPU stays at about 18%.
+Open the GUI to look, and close it (or use `gui:=false`) for runs that need
+real time.

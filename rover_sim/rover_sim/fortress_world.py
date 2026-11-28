@@ -27,11 +27,16 @@ PHYSICS_STEP = 0.001
 # mesh terrain (jakkiiri's feat/mars-overhaul measurements: RTF 0.98 vs 0.64).
 PHYSICS_DETECTOR = 'bullet'
 
+# SceneBroadcaster sends the GUI the scene at 30 Hz instead of its default 60:
+# it runs in the sim loop, and the usgs world has hundreds of terrain chunks
+# and rocks (docs/fortress.md).
 SYSTEMS = '''    <plugin filename="ignition-gazebo-physics-system" name="ignition::gazebo::systems::Physics">
       <engine><filename>ignition-physics-dartsim-plugin</filename></engine>
     </plugin>
     <plugin filename="ignition-gazebo-user-commands-system" name="ignition::gazebo::systems::UserCommands"/>
-    <plugin filename="ignition-gazebo-scene-broadcaster-system" name="ignition::gazebo::systems::SceneBroadcaster"/>
+    <plugin filename="ignition-gazebo-scene-broadcaster-system" name="ignition::gazebo::systems::SceneBroadcaster">
+      <state_hertz>30</state_hertz><dynamic_pose_hertz>30</dynamic_pose_hertz>
+    </plugin>
     <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
       <render_engine>ogre2</render_engine>
     </plugin>

@@ -8,7 +8,7 @@ from launch import LaunchContext
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
 from launch_ros.actions import Node
 
-from rover_sim import sim_services
+from rover_sim import gazebo_gui, sim_services
 
 PACKAGE = Path(__file__).resolve().parents[1]
 
@@ -54,15 +54,14 @@ def test_services_are_bridged_under_fixed_ros_names():
 
 
 def test_headless_server_keeps_rendering_for_sensors():
-    assert WORLD.gazebo_command('/w.world', True) == ['ign', 'gazebo', '-r', '-v', '2', '/w.world']
-    assert WORLD.gazebo_command('/w.world', False) == ['ign', 'gazebo', '-r', '-v', '2', '-s',
-                                                       '--headless-rendering', '/w.world']
+    assert WORLD.gazebo_command('/w.world') == ['ign', 'gazebo', '-r', '-v', '2', '-s',
+                                                '--headless-rendering', '/w.world']
 
 
 def test_environment_adds_models_and_plugin_library(monkeypatch):
     monkeypatch.setenv('IGN_GAZEBO_RESOURCE_PATH', '/other/models')
     monkeypatch.delenv('IGN_GAZEBO_SYSTEM_PLUGIN_PATH', raising=False)
-    env = WORLD.gazebo_environment('/ws/install/rover_sim/share/rover_sim')
+    env = gazebo_gui.gazebo_environment('/ws/install/rover_sim/share/rover_sim')
     assert env['IGN_GAZEBO_RESOURCE_PATH'] == '/ws/install/rover_sim/share/rover_sim/models:/other/models'
     assert env['IGN_GAZEBO_SYSTEM_PLUGIN_PATH'] == '/ws/install/rover_sim/lib'
 
@@ -202,15 +201,15 @@ def test_site_flat_and_explicit_coordinates_select_the_spawn():
     assert (float(pairs['-x']), float(pairs['-y'])) == (10.0, -5.0)
 
 
-def test_gui_camera_moves_behind_the_rover_only_with_the_gui():
-    def camera(nodes):
-        return [n for n in nodes if isinstance(n, ExecuteProcess) and not isinstance(n, Node)]
-    with_gui = camera(evaluate(ROVER, world='desert', x='2', yaw='0'))
-    assert len(with_gui) == 1
-    command = ' '.join(''.join(s.perform(LaunchContext()) for s in part) for part in with_gui[0].cmd)
-    assert '/gui/move_to/pose' in command and 'x: -5.000' in command
-    assert with_gui[0].condition.evaluate(context_with(gui='true'))
-    assert not with_gui[0].condition.evaluate(context_with(gui='false'))
+def test_gui_is_a_separate_gazebo_gui_process_only_with_the_gui():
+    def commands(actions):
+        return [' '.join(''.join(s.perform(LaunchContext()) for s in part) for part in a.cmd)
+                for a in actions if isinstance(a, ExecuteProcess) and not isinstance(a, Node)]
+    with_gui = commands(evaluate(WORLD, world='desert', gui='true'))
+    assert len(with_gui) == 2 and '-s --headless-rendering' in with_gui[0]
+    assert ' -m rover_sim.gazebo_gui --world-file ' in with_gui[1]
+    assert with_gui[1].endswith('desert.world')
+    assert len(commands(evaluate(WORLD, world='desert', gui='false'))) == 1
 
 
 def context_with(**values):

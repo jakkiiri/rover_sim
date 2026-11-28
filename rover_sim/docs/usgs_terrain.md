@@ -46,10 +46,12 @@ env -u GTK_PATH -u GTK_EXE_PREFIX -u GIO_MODULE_DIR -u GTK_IM_MODULE_FILE \
   ros2 launch rover_sim rover_desert.launch.py rviz:=true
 ```
 
-`gui:=true` (the default) opens the Gazebo Fortress GUI. A separate viewer
-(`ign gazebo -g`) needs the same `IGN_PARTITION` and an `IGN_GAZEBO_RESOURCE_PATH`
-that includes the installed `share/rover_sim/models`, which the launch sets for
-its own processes.
+`gui:=true` (the default) opens the Gazebo Fortress GUI. To look at a sim
+started with `gui:=false`, run `ros2 run rover_sim gazebo_gui` in a sourced
+terminal (same `IGN_PARTITION`, if one is set): it sets the model path, puts the
+window on the left half of the screen and points the camera at the rover.
+A bare `ign gazebo -g` leaves the camera at the world origin, about 400 m from
+the hills spawn, where no chunks are loaded, so it shows only sky.
 
 ## Data, scale and surface reconstruction
 
@@ -157,8 +159,9 @@ the spawn, none on ground steeper than 25°), are buried to their downhill
 edge, and are listed in `worlds/usgs_rocks.json`. After editing the YAML run
 `python3 scripts/import_usgs_terrain.py --world-only` and rebuild.
 
-With the GUI on, the launch moves the Gazebo camera to 7 m behind and 4 m
-above the spawned rover (`/gui/move_to/pose`); the camera stays free to orbit.
+With the GUI on, `gazebo_gui` moves the Gazebo camera to 7 m behind and 4 m
+above the rover once it is spawned (`/gui/move_to/pose`); the camera stays free
+to orbit.
 `validate_survey_terrain.py` needs `site:=flat`: rocks would count as
 LiDAR-versus-survey errors.
 

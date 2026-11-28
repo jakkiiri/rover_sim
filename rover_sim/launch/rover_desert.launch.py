@@ -6,7 +6,8 @@ world:=usgs (default), world:=mars or world:=desert, or a .world file path.
 site:=hills (default) or site:=flat picks the spawn on the usgs world
 (config/usgs_sites.yaml; hills has a rock field); x:=/y:=/yaw:= override it,
 and on other worlds they default to 0. z:=auto puts the rover 0.36 m above the ground.
-With the GUI on, its camera moves to just behind the spawned rover.
+With the GUI on (rover_sim.gazebo_gui), its camera moves to just behind the
+rover once it is spawned, and its window takes the left half of the screen.
 lidar_mode:=3d (default, 3D LiDAR on /points) or 2d (/scan);
 lidar_profile:=airy (default: RoboSense Airy-style 48-beam hemispherical dome
 mounted upside down, horizon to straight down) or lite|standard|high|dense
@@ -150,15 +151,6 @@ def spawn_arguments(world, context, x, y, z, yaw):
     return arguments
 
 
-def gui_camera_command(x, y, z, yaw):
-    """Move the Gazebo GUI camera behind the rover once the GUI's service is up."""
-    request = usgs_sites.camera_request(x, y, z, yaw)
-    service = ('ign service -s /gui/move_to/pose --reqtype ignition.msgs.GUICamera '
-               f"--reptype ignition.msgs.Boolean --timeout 2000 --req '{request}'")
-    return ['bash', '-c', f'for i in $(seq 90); do {service} 2>/dev/null | grep -q true && exit 0; sleep 1; done; '
-            'echo "GUI camera: /gui/move_to/pose not available" >&2']
-
-
 def rviz_config(stereo, mode):
     if stereo:
         return 'rover_sensors_3d.rviz' if mode == '3d' else 'rover_sensors.rviz'
@@ -269,8 +261,6 @@ def generate_launch_description():
             # service; no fixed startup delay.
             Node(package='ros_gz_sim', executable='create',
                  arguments=spawn_arguments(world, context, x, y, z, yaw), output='screen'),
-            ExecuteProcess(cmd=gui_camera_command(x, y, z, yaw),
-                           condition=IfCondition(LaunchConfiguration('gui')), output='screen'),
             # With stereo on, RViz opens the combined LiDAR + stereo view.
             Node(package='rviz2', executable='rviz2', name='rviz2',
                  arguments=['-d', os.path.join(share, 'rviz', rviz_config(stereo, mode))],
